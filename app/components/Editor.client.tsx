@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { EditorContent, BubbleMenu, Editor } from "@tiptap/react";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import selectText from "~/lib/selectRange";
+import { DIVIDER } from "~/constant";
 
 let select = 0;
 
@@ -24,14 +25,14 @@ function EditorContainer({ editor }: { editor: Editor }) {
       setTimeout(() => {
         if (clickCount === 1) {
           // Single click
-          if (content[spaceToAddLocation] === " ") {
+          if (content[spaceToAddLocation] === DIVIDER) {
             modifiedContent =
               modifiedContent.slice(0, spaceToAddLocation) +
               modifiedContent.slice(spaceToAddLocation + 1);
           } else {
             modifiedContent =
               modifiedContent.slice(0, spaceToAddLocation) +
-              " " +
+              DIVIDER +
               modifiedContent.slice(spaceToAddLocation);
           }
           const newText = insertHTMLonText(modifiedContent);

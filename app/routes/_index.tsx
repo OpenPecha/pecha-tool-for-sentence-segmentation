@@ -13,7 +13,7 @@ import Sidebar from "~/components/Sidebar";
 import { replaceSpacesWithHTMLTag } from "~/lib/utils";
 import { getTextToDisplay, getTextToDisplayByUser } from "~/model/text";
 import globalStyle from "~/styles/global.css";
-import { Space } from "~/tiptapProps/extension/space";
+import { Divider } from "~/tiptapProps/extension/divider";
 import { Character } from "~/tiptapProps/extension/character";
 import { editorProps } from "~/tiptapProps/events";
 import checkUnknown from "~/lib/checkUnknown";
@@ -35,7 +35,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
     let text = await getTextToDisplay(activeText, user?.id, history);
     let textFromUser = await getTextToDisplayByUser(user?.id);
-
+    console.log({ text, textFromUser, user, KEY, CLUSTER, NODE_ENV });
     return { text, textFromUser, user, KEY, CLUSTER, NODE_ENV };
   }
 };
@@ -52,9 +52,10 @@ export const links: LinksFunction = () => {
 export default function Index() {
   let fetcher = useFetcher();
   const data = useLoaderData();
-  let text = data?.text?.original_text.trim() || "";
+  let text = data?.text?.original_text?.trim();
+
   const { textOnline } = usePusherPresence(
-    `presence-text-${data.NODE_ENV}`,
+    `presence-sentense-${data.NODE_ENV}`,
     data?.KEY,
     data?.CLUSTER,
     data?.user,
@@ -63,20 +64,16 @@ export default function Index() {
   let user = data.user;
   let insertHTML = insertHTMLonText(text);
   let newText = checkUnknown(insertHTML);
-
   const setter = () => {};
   const charClick = () => {};
-  let textMemo = useMemo(() => {
-    if (newText) return newText;
-  }, [newText]);
   const editor = useEditor(
     {
-      extensions: [StarterKit, Space(setter), Character(charClick)],
-      content: textMemo,
+      extensions: [StarterKit, Divider(setter), Character(charClick)],
+      content: newText,
       editorProps,
       editable: false,
     },
-    [textMemo]
+    [newText]
   );
   let saveText = async () => {
     let modified_text = editor!.getText();
@@ -109,18 +106,16 @@ export default function Index() {
   return (
     <div className="main">
       <Sidebar user={data.user} online={textOnline} />
-
       <div
         style={{
           flex: 1,
           display: "flex",
-          justifyContent: "center",
+          justifyContent: "space-around",
           alignItems: "center",
           flexDirection: "column",
         }}
       >
         {!data.text && <div>Thank you . your work is complete ! 😊😊😊</div>}
-
         <div className="container" onClick={() => editor?.commands.focus()}>
           <div className="label">transcript</div>
           <ClientOnly fallback={null}>

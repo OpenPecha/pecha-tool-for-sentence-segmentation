@@ -1,6 +1,6 @@
 import { getMarkRange, Mark, mergeAttributes } from "@tiptap/core";
 import { Plugin, TextSelection } from "prosemirror-state";
-import { removeSpace, replaceSpacesWithHTMLTag } from "../../lib/utils";
+import { removeDivider, replaceSpacesWithHTMLTag } from "../../lib/utils";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 export interface optionType {
   multicolor: boolean;
@@ -28,9 +28,9 @@ declare module "@tiptap/core" {
 export const replace = (replace, editor, dispatch) => {
   dispatch(editor.state.tr.insertText(replace, 1, 3));
 };
-export const Space = (setter) =>
+export const Divider = (setter) =>
   Mark.create({
-    name: "Space",
+    name: "Divider",
     addOptions() {
       return {
         multicolor: false,
@@ -40,14 +40,14 @@ export const Space = (setter) =>
     addAttributes() {
       return {
         class: {
-          default: "space",
+          default: "Divider",
         },
       };
     },
     parseHTML() {
       return [
         {
-          tag: "Space",
+          tag: "Divider",
         },
       ];
     },
@@ -86,7 +86,10 @@ export const Space = (setter) =>
               if (pos < 0 || pos > doc.content.size) {
                 return false;
               }
-              const range = getMarkRange(doc.resolve(pos), schema.marks.Space);
+              const range = getMarkRange(
+                doc.resolve(pos),
+                schema.marks.Divider
+              );
               if (!range) return false;
               setter();
 
@@ -100,7 +103,7 @@ export const Space = (setter) =>
                 content.substring(0, $start.pos - 1) +
                 content.substring($end.pos - 1);
               let newText = insertHTMLonText(modifiedContent);
-              if (removeSpace(modifiedContent) === removeSpace(content)) {
+              if (removeDivider(modifiedContent) === removeDivider(content)) {
                 this.editor.commands.setContent(newText);
                 this.editor.commands.unsetSpace();
               }

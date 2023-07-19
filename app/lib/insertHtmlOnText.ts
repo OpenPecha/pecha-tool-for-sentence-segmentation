@@ -1,11 +1,13 @@
+import { DIVIDER } from "~/constant";
 import { replaceSpacesWithHTMLTag } from "./utils";
 
 function insertHTMLonText(text: string) {
+  if (!text) return "";
   let split = splitText(text);
   let length = 0;
   let textHTML = "";
   split.forEach((word, index) => {
-    if (word === " ") {
+    if (word === DIVIDER) {
       textHTML += replaceSpacesWithHTMLTag(word);
     } else {
       textHTML += `<Character class='segment s-${length}'>${word}</Character>`;
@@ -16,7 +18,7 @@ function insertHTMLonText(text: string) {
 }
 
 function splitText(text: string) {
-  let splitText = text.match(/[^་།\s]+|[་།\s]/g);
+  let splitText = text.match(/[^་།༔]+|[་།༔]/g);
   var mergedArray = [];
   if (splitText)
     for (var i = 0; i < splitText.length; i++) {

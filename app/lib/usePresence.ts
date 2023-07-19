@@ -9,7 +9,7 @@ const usePusherPresence = (
   text: any
 ) => {
   if (!text) {
-    return { id: user?.id };
+    text = { id: user?.id };
   }
   const [textOnline, settextOnline] = useState([]);
   useEffect(() => {

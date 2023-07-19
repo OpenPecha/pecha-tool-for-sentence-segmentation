@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: sentense-segmentation
+    env: node
+    plan: starter
+    # Update the following line with your Strapi GitHub repo
+    repo: https://github.com/OpenPecha/pecha-tool-for-sentence-segmentation
+    branch: main
+    buildCommand: npm ci --production=false && npm run build && npm prune --production
+    startCommand: npx prisma migrate deploy && npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: ~16.14.2
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sentense-segmentation-pg
+          property: connectionString
+
+databases:
+  - name: sentense-segmentation-pg
+    plan: starter

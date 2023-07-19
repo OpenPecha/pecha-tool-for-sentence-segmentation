@@ -1,14 +1,11 @@
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
+import truncateText from "~/lib/truncate";
 
 function Sidebar({ user, online }) {
   let data = useLoaderData();
   let text = data.text;
-  const fetcher = useFetcher();
   let [openMenu, setOpenMenu] = useState(false);
-  function resetText(id: string) {
-    fetcher.submit({ id }, { method: "DELETE", action: "api/text" });
-  }
 
   return (
     <div className="header">
@@ -56,7 +53,7 @@ function Sidebar({ user, online }) {
                   className="history-item"
                   onClick={() => setOpenMenu(false)}
                 >
-                  {text.modified_text}
+                  {truncateText(text.modified_text, 100)}
                 </Link>
               );
             })}

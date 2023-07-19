@@ -4,7 +4,7 @@
   <br>
 </h1>
 
-<h3 align="center">Prodigy Word segmentation tool</h3>
+<h3 align="center">Prodigy sentence segmentation tool</h3>
 
 <!-- Replace the title of the repository -->
 
@@ -19,7 +19,7 @@
 
 ## Description
 
-Pecha tool web app to segment word with spaces
+Pecha tool web app to segment sentense with spaces
 
 ## Install
 
@@ -51,7 +51,7 @@ uses Pusher for sessions:
 
 ## Acknowledgements
 
-**word segmentation tool** is build using Remix and tiptap.
+**sentense segmentation tool** is build using Remix and tiptap.
 
 We are always open to cooperation in introducing new features, tool integrations and testing solutions.
 

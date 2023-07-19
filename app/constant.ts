@@ -1,0 +1,3 @@
+const DIVIDER = "༔";
+
+export { DIVIDER };

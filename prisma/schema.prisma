@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  text          Text[]   @relation("UserModifiedText")
+  rejected_list Text[]   @relation("UserRejectedText")
+  ignored_list  Text[]   @relation("UserIgnoredText")
+}
+
+model Text {
+  id             Int      @id @default(autoincrement())
+  original_text  String
+  modified_text  String?
+  status         Status?
+  modified_by    User?    @relation("UserModifiedText", fields: [modified_by_id], references: [id])
+  modified_by_id String?
+  rejected_by    User[]   @relation("UserRejectedText")
+  ignored_by     User[]   @relation("UserIgnoredText")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}

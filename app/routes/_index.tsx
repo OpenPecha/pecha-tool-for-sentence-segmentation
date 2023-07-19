@@ -35,7 +35,6 @@ export const loader: LoaderFunction = async ({ request }) => {
     let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
     let text = await getTextToDisplay(activeText, user?.id, history);
     let textFromUser = await getTextToDisplayByUser(user?.id);
-    console.log({ text, textFromUser, user, KEY, CLUSTER, NODE_ENV });
     return { text, textFromUser, user, KEY, CLUSTER, NODE_ENV };
   }
 };

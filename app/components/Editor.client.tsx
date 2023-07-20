@@ -55,7 +55,9 @@ function EditorContainer({ editor }: { editor: Editor }) {
       segment.addEventListener("click", event.listener);
       events[i] = event;
     });
-    selectText(elements[select]);
+    if (select > 1) {
+      selectText(elements[select]);
+    }
     let clickCount = 0;
 
     function handleKeyDown(e) {
@@ -97,7 +99,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
     let content = editor?.getText();
     if (!content) return;
     let modifiedContent =
-      content.substring(0, from - 1) + " " + content.substring(to - 1);
+      content.substring(0, from - 1) + DIVIDER + content.substring(to - 1);
     let newText = insertHTMLonText(modifiedContent);
     editor?.commands.setContent(newText);
   };

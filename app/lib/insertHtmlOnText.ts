@@ -1,5 +1,5 @@
 import { DIVIDER } from "~/constant";
-import { replaceSpacesWithHTMLTag } from "./utils";
+import { replaceNewlinewithTag } from "./utils";
 
 function insertHTMLonText(text: string) {
   if (!text) return "";
@@ -7,8 +7,8 @@ function insertHTMLonText(text: string) {
   let length = 0;
   let textHTML = "";
   split.forEach((word, index) => {
-    if (word === "\n") {
-      textHTML += replaceSpacesWithHTMLTag(word);
+    if (word === DIVIDER) {
+      textHTML += replaceNewlinewithTag(word);
     } else {
       textHTML += `<Ch class='seg s-${length}'>${word}</Ch>`;
     }

@@ -4,7 +4,10 @@
   font-style: normal;
   font-display: swap;
 }
-
+.ProseMirror p br::before {
+  display: block !important;
+  margin: 10px !important;
+}
 :root {
   --purple: #583fcf;
   --normal-btn: #b9b9b9;
@@ -226,6 +229,7 @@ button:disabled {
     left: 15px;
     right: 15px;
   }
+
   .sidebar-Header {
     display: flex;
     background-color: #384451;
@@ -240,5 +244,8 @@ button:disabled {
   .editor-container {
     max-height: 40vh;
     padding: 20px;
+  }
+  .editor-container *::selection {
+    background-color: transparent;
   }
 }

@@ -1,6 +1,6 @@
 import { DIVIDER } from "~/constant";
 
-export function replaceSpacesWithHTMLTag(text: string) {
+export function replaceNewlinewithTag(text: string) {
   const tag = "<br/>";
   const replacedText = text.replace(new RegExp(DIVIDER, "g"), tag);
   return replacedText;

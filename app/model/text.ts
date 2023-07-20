@@ -121,6 +121,7 @@ export async function ignoreText(id: number, userId: string) {
     },
     data: {
       ignored_by: { connect: { id: userId } },
+      modified_by: { disconnect: { id: userId } },
       status: "PENDING",
     },
   });
@@ -134,6 +135,7 @@ export function saveText(id: number, text: string, userId: string) {
       modified_text: text,
       modified_by_id: userId,
       status: "APPROVED",
+      rejected_by: { disconnect: { id: userId } },
     },
   });
 }

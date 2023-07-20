@@ -115,7 +115,7 @@ export default function Index() {
         }}
       >
         {!data.text && <div>Thank you . your work is complete ! 😊😊😊</div>}
-        <div className="container" onClick={() => editor?.commands.focus()}>
+        <div className="container">
           <div className="label">transcript</div>
           <ClientOnly fallback={null}>
             {() => <Editor editor={editor!} />}

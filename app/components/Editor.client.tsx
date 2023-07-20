@@ -9,11 +9,11 @@ let select = 0;
 function EditorContainer({ editor }: { editor: Editor }) {
   let content = useMemo(() => editor.getText(), [editor.getText()]);
   useEffect(() => {
-    editor?.commands.focus();
     const content = editor?.getText();
-    const segments = document.querySelectorAll(".seg");
-    let clickCount = 0;
+    let elements = [];
     const events = [];
+
+    const segments = document.querySelectorAll(".seg");
     const handleSegmentClick = (event) => {
       let modifiedContent = content;
       const selection = event.target.innerText;
@@ -47,6 +47,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
       }, 200);
     };
     segments.forEach((segment, i) => {
+      elements.push(segment);
       const event = {
         segment,
         listener: handleSegmentClick,
@@ -54,6 +55,9 @@ function EditorContainer({ editor }: { editor: Editor }) {
       segment.addEventListener("click", event.listener);
       events[i] = event;
     });
+    selectText(elements[select]);
+    let clickCount = 0;
+
     function handleKeyDown(e) {
       let key = e.key;
       if (
@@ -63,10 +67,6 @@ function EditorContainer({ editor }: { editor: Editor }) {
         key === "ArrowRight" ||
         key === " "
       ) {
-        let elements = [];
-        segments.forEach((segment, i) => {
-          elements.push(segment);
-        });
         if (select >= 0) {
           if (key === "ArrowRight") {
             select = select < segments.length - 1 ? select + 1 : select;
@@ -84,7 +84,6 @@ function EditorContainer({ editor }: { editor: Editor }) {
         }
       }
     }
-
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       segments.forEach((segment, i) => {

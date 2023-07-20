@@ -42,7 +42,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const meta: V2_MetaFunction = () => {
   return [
     { title: "Pecha Tools" },
-    { name: "description", content: "Word segmentation" },
+    { name: "description", content: "Sentence segmentation" },
   ];
 };
 export const links: LinksFunction = () => {

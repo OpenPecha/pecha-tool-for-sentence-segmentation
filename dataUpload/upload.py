@@ -36,7 +36,7 @@ def upload_data_to_postgres(csv_file, database, user, password, host, port, tabl
                 insert_query = f'INSERT INTO "Text" (original_text, "createdAt", "updatedAt") VALUES (%s, %s, %s);'
                 data_to_insert=(original_text, createdAt, modified_text)
                 cursor.execute(insert_query, data_to_insert)
-
+                print(f'row {row} inserted')
             connection.commit()
 
         print("Data upload successful.")
@@ -50,10 +50,10 @@ def upload_data_to_postgres(csv_file, database, user, password, host, port, tabl
             print("Connection closed.")
 
 # Replace these values with your PostgreSQL credentials and table name
-database = "sentensesegmetation"
-user = "postgres"
-password = "123"
-host = "localhost"  # Usually 'localhost' if running locally
+database = "sentense_segmentation_pg"
+user = "sentense_segmentation_pg_user"
+password = "wwwkqQ9cxSWXiyl5R2Vzy9rYAtcYxdyS"
+host = "dpg-cirtanlph6et1sbrka3g-a.oregon-postgres.render.com"  # Usually 'localhost' if running locally
 port = "5432"  # Usually 5432 by default
 table_name = '"Text"'  # Replace 'your_table' with the actual table name in your database
 

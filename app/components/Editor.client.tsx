@@ -11,7 +11,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
   useEffect(() => {
     editor?.commands.focus();
     const content = editor?.getText();
-    const segments = document.querySelectorAll(".segment");
+    const segments = document.querySelectorAll(".seg");
     let clickCount = 0;
     const events = [];
     const handleSegmentClick = (event) => {

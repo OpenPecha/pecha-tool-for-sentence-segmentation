@@ -1,6 +1,8 @@
+import { DIVIDER } from "~/constant";
+
 export function replaceSpacesWithHTMLTag(text: string) {
-  const tag = "<Divider data-color='red'>༔</Divider>";
-  const replacedText = text.replace(/༔/g, tag);
+  const tag = "<br/>";
+  const replacedText = text.replace(new RegExp(DIVIDER, "g"), tag);
   return replacedText;
 }
 
@@ -9,5 +11,5 @@ export function checkContentChange(oldText: string, newText: string) {
 }
 
 export function removeDivider(text: string) {
-  return text.replace(/༔/g, "");
+  return text.replace(new RegExp(DIVIDER, "g"), "");
 }

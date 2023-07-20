@@ -27,7 +27,7 @@ export interface optionType {
 
 export const Character = (charClick) =>
   Mark.create({
-    name: "Character",
+    name: "Ch",
 
     addOptions() {
       return {
@@ -39,7 +39,7 @@ export const Character = (charClick) =>
     addAttributes() {
       return {
         class: {
-          default: "segment",
+          default: "seg",
         },
       };
     },
@@ -47,7 +47,7 @@ export const Character = (charClick) =>
     parseHTML() {
       return [
         {
-          tag: "Character",
+          tag: "Ch",
         },
       ];
     },

@@ -1,12 +1,10 @@
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
 import truncateText from "~/lib/truncate";
-import Tabs from "./Tabs";
 function Sidebar({ user, online }) {
   let data = useLoaderData();
   let text = data.text;
   let [openMenu, setOpenMenu] = useState(false);
-  console.log(user);
   return (
     <div className="header">
       <div className="sidebar_title" onClick={() => setOpenMenu(true)}>

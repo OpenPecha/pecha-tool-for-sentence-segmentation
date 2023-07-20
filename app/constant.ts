@@ -1,3 +1,3 @@
-const DIVIDER = "༔";
+const DIVIDER = "\n";
 
 export { DIVIDER };

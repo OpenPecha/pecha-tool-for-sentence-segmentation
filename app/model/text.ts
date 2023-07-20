@@ -10,7 +10,8 @@ export async function getTextToDisplay(
     const text = await db.text.findUnique({
       where: { id: parseInt(history) },
     });
-    let show = text?.modified_text || text?.original_text;
+    let show =
+      JSON.parse(text?.modified_text).join("\n") || text?.original_text;
     return {
       ...text,
       id: text?.id,
@@ -132,7 +133,7 @@ export function saveText(id: number, text: string, userId: string) {
       id,
     },
     data: {
-      modified_text: text,
+      modified_text: JSON.stringify(text.split("\n")),
       modified_by_id: userId,
       status: "APPROVED",
       rejected_by: { disconnect: { id: userId } },

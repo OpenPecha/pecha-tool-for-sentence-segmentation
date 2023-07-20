@@ -7,10 +7,10 @@ function insertHTMLonText(text: string) {
   let length = 0;
   let textHTML = "";
   split.forEach((word, index) => {
-    if (word === DIVIDER) {
+    if (word === "\n") {
       textHTML += replaceSpacesWithHTMLTag(word);
     } else {
-      textHTML += `<Character class='segment s-${length}'>${word}</Character>`;
+      textHTML += `<Ch class='seg s-${length}'>${word}</Ch>`;
     }
     length += word.length;
   });
@@ -18,18 +18,25 @@ function insertHTMLonText(text: string) {
 }
 
 function splitText(text: string) {
-  let splitText = text.match(/[^་།༔]+|[་།༔]/g);
+  let splitText = text.match(/[^\n་།]+|[་།]|[\n]| /g);
   var mergedArray = [];
   if (splitText)
     for (var i = 0; i < splitText.length; i++) {
-      if (/[་།]/.test(splitText[i])) {
+      let current = splitText[i];
+      if (/[་།]/.test(current)) {
         if (mergedArray.length > 0) {
-          mergedArray[mergedArray.length - 1] += splitText[i];
+          mergedArray[mergedArray.length - 1] += current;
         } else {
-          mergedArray.push(splitText[i]);
+          mergedArray.push(current);
         }
       } else {
-        mergedArray.push(splitText[i]);
+        if (current.includes(" ")) {
+          let temp = current.split(" ");
+          temp = [temp[0], " ", temp[1]];
+          mergedArray = [...mergedArray, ...temp];
+        } else {
+          mergedArray.push(current);
+        }
       }
     }
 

@@ -155,6 +155,8 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 40vh;
+  overflow-y: auto;
 }
 .history-item {
   color: white;
@@ -175,6 +177,17 @@ button:disabled {
 }
 .sidebar-Header {
   display: none;
+}
+.tickSVG,
+.crossSVG {
+  fill: white;
+}
+
+.history-item:hover .tickSVG {
+  fill: #4fd364;
+}
+.history-item:hover .crossSVG {
+  fill: #f74c4a;
 }
 @media only screen and (max-width: 600px) {
   .main {
@@ -222,5 +235,9 @@ button:disabled {
   .sidebar-Header > .close {
     cursor: pointer;
     padding: 10px;
+  }
+  .editor-container {
+    max-height: 40vh;
+    padding: 20px;
   }
 }

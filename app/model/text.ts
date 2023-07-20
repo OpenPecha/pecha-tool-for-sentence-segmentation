@@ -1,3 +1,4 @@
+import { Status } from "@prisma/client";
 import { db } from "~/service/db.server";
 
 export async function getTextToDisplay(
@@ -9,10 +10,11 @@ export async function getTextToDisplay(
     const text = await db.text.findUnique({
       where: { id: parseInt(history) },
     });
+    let show = text?.modified_text || text?.original_text;
     return {
       ...text,
       id: text?.id,
-      original_text: text?.modified_text,
+      original_text: show,
       status: text?.status,
     };
   }
@@ -73,16 +75,45 @@ export function resetText(id: number) {
 }
 
 export async function rejectText(id: number, userId: string) {
-  return db.text.update({
+  let text = await db.text.update({
     where: {
       id,
     },
     data: {
       status: "PENDING",
+      modified_by: { disconnect: { id: userId } },
       rejected_by: { connect: { id: userId } },
     },
   });
+  return text;
 }
+export async function removeRejectText(
+  id: number,
+  userId: string,
+  status: Status
+) {
+  let text = db.text.update({
+    where: {
+      id,
+    },
+    data: {
+      status,
+      rejected_by: { disconnect: { id: userId } },
+    },
+  });
+  let user = db.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      text: {
+        connect: { id },
+      },
+    },
+  });
+  return text;
+}
+
 export async function ignoreText(id: number, userId: string) {
   return db.text.update({
     where: {

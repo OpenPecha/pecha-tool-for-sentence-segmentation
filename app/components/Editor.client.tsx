@@ -38,25 +38,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
           const newText = insertHTMLonText(modifiedContent);
           editor?.commands.setContent(newText);
         } else if (clickCount === 2) {
-          const condition = ["ར་", "ས་", "འི་"];
-          const includedCondition = condition.find((cond) =>
-            selection.includes(cond)
-          );
-          if (includedCondition) {
-            const s = selection.split(includedCondition);
-            s[1] = " ";
-            s[2] = includedCondition;
-            const middle = s.join("");
-            const start = spaceToAddLocation - selection.length;
-            const end =
-              spaceToAddLocation - selection.length + selection.length;
-            modifiedContent =
-              modifiedContent.slice(0, start) +
-              middle +
-              modifiedContent.slice(end);
-            const newText = insertHTMLonText(modifiedContent);
-            editor?.commands.setContent(newText);
-          }
+          console.log("double click");
         }
 
         setTimeout(() => {

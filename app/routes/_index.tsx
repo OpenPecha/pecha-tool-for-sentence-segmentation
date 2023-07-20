@@ -17,12 +17,12 @@ import { Divider } from "~/tiptapProps/extension/divider";
 import { Character } from "~/tiptapProps/extension/character";
 import { editorProps } from "~/tiptapProps/events";
 import checkUnknown from "~/lib/checkUnknown";
-import { useMemo } from "react";
 import { createUserIfNotExists } from "~/model/user";
 import usePusherPresence from "~/lib/usePresence";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import { ClientOnly } from "remix-utils";
 import { getter } from "~/service/pusher.server";
+
 export const loader: LoaderFunction = async ({ request }) => {
   let { KEY, CLUSTER, APP_ID, SECRET, NODE_ENV } = process.env;
   let url = new URL(request.url);

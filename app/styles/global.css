@@ -13,6 +13,8 @@
   --normal-btn: #b9b9b9;
   --success-btn: #4fd364;
   --cancel-btn: #f74c4a;
+  --word: #f1c232;
+  --sentence: #ffff00;
 }
 .main {
   display: flex;
@@ -23,8 +25,12 @@
   margin-inline: 3px;
   cursor: pointer;
 }
-.seg:hover {
-  background-color: yellow;
+.hover {
+  background-color: var(--sentence);
+}
+
+.seg:hover .sen:hover {
+  background-color: var(--word);
   cursor: pointer;
 }
 body {
@@ -45,7 +51,7 @@ body {
   border: 2px solid var(--purple);
 }
 .editor-container {
-  text-align: center;
+  text-align: left;
   color: #444;
   margin: auto;
   padding: 40px;
@@ -61,7 +67,7 @@ body {
   overflow: scroll;
 }
 .editor-container *::selection {
-  background-color: yellow;
+  background-color: var(--word);
 }
 .ProseMirror:focus {
   outline: none;

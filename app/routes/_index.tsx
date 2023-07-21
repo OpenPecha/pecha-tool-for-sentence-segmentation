@@ -10,7 +10,6 @@ import StarterKit from "@tiptap/starter-kit";
 import Button from "~/components/Button";
 import Editor from "~/components/Editor.client";
 import Sidebar from "~/components/Sidebar";
-import { replaceSpacesWithHTMLTag } from "~/lib/utils";
 import { getTextToDisplay, getTextToDisplayByUser } from "~/model/text";
 import globalStyle from "~/styles/global.css";
 import { Divider } from "~/tiptapProps/extension/divider";
@@ -22,6 +21,7 @@ import usePusherPresence from "~/lib/usePresence";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import { ClientOnly } from "remix-utils";
 import { getter } from "~/service/pusher.server";
+import { Sentense } from "~/tiptapProps/extension/sentense";
 
 export const loader: LoaderFunction = async ({ request }) => {
   let { KEY, CLUSTER, APP_ID, SECRET, NODE_ENV } = process.env;
@@ -32,8 +32,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect("/error");
   } else {
     let user = await createUserIfNotExists(session);
-    let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
-    let text = await getTextToDisplay(activeText, user?.id, history);
+    // let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
+    let text = await getTextToDisplay([], user?.id, history);
     let textFromUser = await getTextToDisplayByUser(user?.id);
     return { text, textFromUser, user, KEY, CLUSTER, NODE_ENV };
   }
@@ -67,7 +67,12 @@ export default function Index() {
   const charClick = () => {};
   const editor = useEditor(
     {
-      extensions: [StarterKit, Divider(setter), Character(charClick)],
+      extensions: [
+        StarterKit,
+        Divider(setter),
+        Character(charClick),
+        Sentense(setter),
+      ],
       content: newText,
       editorProps,
       editable: false,

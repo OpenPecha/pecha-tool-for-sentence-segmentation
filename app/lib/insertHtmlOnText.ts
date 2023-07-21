@@ -5,27 +5,43 @@ function insertHTMLonText(text: string) {
   if (!text) return "";
   let split = splitText(text);
   let length = 0;
-  let textHTML = "";
+  let s_count = 1;
+  let textHTML = `<Sn class='sen st-${s_count}'>`;
   split.forEach((word, index) => {
-    if (word === DIVIDER) {
+    if (word.includes(" ")) {
+      textHTML += `<Ch class='seg s-${length}'>${word}</Ch>`;
+      s_count += 1;
+      textHTML += `</Sn><Sn class='sen st-${s_count}'>`;
+      length += word.length;
+    } else if (word === DIVIDER) {
+      textHTML += `</Sn>`;
+      length += 1;
       textHTML += replaceNewlinewithTag(word);
+      textHTML += `<Sn class='sen st-${s_count}'>`;
     } else {
       textHTML += `<Ch class='seg s-${length}'>${word}</Ch>`;
+      length += word.length;
     }
-    length += word.length;
   });
+  textHTML += "</Sn>";
   return textHTML;
 }
 
 function splitText(text: string) {
-  let splitText = text.match(/[^\n་།]+|[་།]|[\n]| /g);
-  var mergedArray = [];
+  let splitText = text.match(/[^\n་།]+|[་།]|[\n]/g);
+  var mergedArray: any = [];
   if (splitText)
     for (var i = 0; i < splitText.length; i++) {
       let current = splitText[i];
-      if (/[་།]/.test(current)) {
+      if (/[་།]|[ ]/.test(current)) {
         if (mergedArray.length > 0) {
-          mergedArray[mergedArray.length - 1] += current;
+          if (current.includes(" ") && current?.length > 1) {
+            let temp = current.split(" ");
+            temp = [temp[0] + " ", temp[1]];
+            mergedArray = [...mergedArray, ...temp];
+          } else {
+            mergedArray[mergedArray.length - 1] += current;
+          }
         } else {
           mergedArray.push(current);
         }
@@ -39,7 +55,6 @@ function splitText(text: string) {
         }
       }
     }
-
   if (mergedArray[mergedArray.length - 1] === "undefined་") {
     mergedArray.pop();
   }

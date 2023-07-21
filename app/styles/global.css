@@ -4,6 +4,20 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* For WebKit-based browsers (Chrome, Safari, etc.) */
+::-webkit-scrollbar {
+  width: 5px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scrollbar thumb */
+  border-radius: 5px; /* Roundness of the scrollbar thumb */
+}
+
+* {
+  scrollbar-width: thin;
+}
 .ProseMirror p br {
   display: block !important;
   margin: 10px !important;
@@ -64,7 +78,7 @@ body {
   word-wrap: break-word;
   white-space: pre-wrap;
   max-height: 65%;
-  overflow: scroll;
+  overflow-y: scroll;
 }
 .editor-container *::selection {
   background-color: var(--word);

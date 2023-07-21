@@ -4,6 +4,10 @@ import insertHTMLonText from "~/lib/insertHtmlOnText";
 import selectText from "~/lib/selectRange";
 import { DIVIDER } from "~/constant";
 
+interface CustomMouseEvent extends MouseEvent {
+  target: HTMLElement;
+}
+
 let select = 0;
 let selectsentence = 0;
 function EditorContainer({ editor }: { editor: Editor }) {
@@ -26,11 +30,11 @@ function EditorContainer({ editor }: { editor: Editor }) {
     let clickCount = 0;
     const segments: HTMLElement[] | any = document.querySelectorAll(".seg");
     const sentenceSegment = document.querySelectorAll(".sen");
-    const handleWordClick = (event) => {
-      let element = event.target.parentElement;
+    const handleWordClick = (event: CustomMouseEvent) => {
+      let parent = event.target.parentElement;
       let modifiedContent = content;
-      const selection = element.innerText;
-      const locationText = element.classList;
+      const selection = parent.innerText;
+      const locationText = parent.classList;
       const spaceToAddLocation =
         parseInt(locationText[1].replace("s-", "")) + selection.length;
       clickCount++;

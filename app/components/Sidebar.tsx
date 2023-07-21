@@ -19,7 +19,7 @@ function Sidebar({ user, online }) {
               x
             </div>
           </div>
-          <div className="sidebar-section-title">Project Info</div>
+          <div className="sidebar-section-title">Sentense segmentation</div>
           <div>
             <span className="info">User :</span> {user?.username}
           </div>

@@ -8,23 +8,57 @@ let select = 0;
 
 function EditorContainer({ editor }: { editor: Editor }) {
   let content = useMemo(() => editor.getText(), [editor.getText()]);
+  function handlemouseOver(event) {
+    let sen_count = event.target.classList[1].replace("st-", "");
+    let select = document.querySelectorAll(".st-" + sen_count);
+    select.forEach((element) => {
+      element.classList.add("hover");
+    });
+  }
+  function handlemouseLeave(event) {
+    let sen_count = event.target.classList[1].replace("st-", "");
+    let select = document.querySelectorAll(".st-" + sen_count);
+    select.forEach((element) => {
+      element.classList.remove("hover");
+    });
+  }
   useEffect(() => {
     const content = editor?.getText();
-    let elements = [];
-    const events = [];
-
+    let clickCount = 0;
     const segments = document.querySelectorAll(".seg");
-    const handleSegmentClick = (event) => {
+    const sentenceSegment = document.querySelectorAll(".sen");
+    const handleWordClick = (event) => {
+      let element = event.target.parentElement;
       let modifiedContent = content;
-      const selection = event.target.innerText;
-      const locationText = event.target.classList;
+      const selection = element.innerText;
+      const locationText = element.classList;
       const spaceToAddLocation =
         parseInt(locationText[1].replace("s-", "")) + selection.length;
       clickCount++;
-
       setTimeout(() => {
         if (clickCount === 1) {
           // Single click
+          let classname = event.target.classList[1];
+          const elements = document.getElementsByClassName(classname);
+          const lastElement = elements[elements.length - 1];
+          let location =
+            parseInt(
+              lastElement?.parentElement?.classList[1].replace("s-", "")
+            ) + lastElement.innerText.length;
+          if (content[location] === DIVIDER) {
+            modifiedContent =
+              modifiedContent.slice(0, location) +
+              modifiedContent.slice(location + 1);
+          } else {
+            modifiedContent =
+              modifiedContent.slice(0, location) +
+              DIVIDER +
+              modifiedContent.slice(location);
+          }
+          const newText = insertHTMLonText(modifiedContent);
+          editor?.commands.setContent(newText);
+        } else if (clickCount === 2) {
+          // Double click
           if (content[spaceToAddLocation] === DIVIDER) {
             modifiedContent =
               modifiedContent.slice(0, spaceToAddLocation) +
@@ -37,8 +71,6 @@ function EditorContainer({ editor }: { editor: Editor }) {
           }
           const newText = insertHTMLonText(modifiedContent);
           editor?.commands.setContent(newText);
-        } else if (clickCount === 2) {
-          console.log("double click");
         }
 
         setTimeout(() => {
@@ -46,22 +78,20 @@ function EditorContainer({ editor }: { editor: Editor }) {
         }, 300);
       }, 200);
     };
-    segments.forEach((segment, i) => {
-      elements.push(segment);
-      const event = {
-        segment,
-        listener: handleSegmentClick,
-      };
-      segment.addEventListener("click", event.listener);
-      events[i] = event;
+    sentenceSegment.forEach((s) => {
+      s.addEventListener("mouseover", handlemouseOver);
+      s.addEventListener("mouseout", handlemouseLeave);
+      s.addEventListener("click", handleWordClick);
     });
+
     if (select > 1) {
+      let elements = document.querySelectorAll(".seg");
       selectText(elements[select]);
     }
-    let clickCount = 0;
-
     function handleKeyDown(e) {
       let key = e.key;
+      let elements = document.querySelectorAll(".seg");
+
       if (
         key === "ArrowUp" ||
         key === "ArrowDown" ||
@@ -69,6 +99,12 @@ function EditorContainer({ editor }: { editor: Editor }) {
         key === "ArrowRight" ||
         key === " "
       ) {
+        if (key === " " && elements) {
+          let id = elements[select].classList[1];
+          console.log(id);
+          let clickElement = document.querySelector("." + id);
+          clickElement?.childNodes[0].click();
+        }
         if (select >= 0) {
           if (key === "ArrowRight") {
             select = select < segments.length - 1 ? select + 1 : select;
@@ -81,15 +117,15 @@ function EditorContainer({ editor }: { editor: Editor }) {
         } else {
           select = 0;
         }
-        if (key === " ") {
-          elements[select].click();
-        }
       }
     }
     document.addEventListener("keydown", handleKeyDown);
+
     return () => {
-      segments.forEach((segment, i) => {
-        segment.removeEventListener("click", events[i].listener);
+      sentenceSegment.forEach((segment) => {
+        segment.removeEventListener("mouseover", handlemouseOver);
+        segment.removeEventListener("mouseout", handlemouseLeave);
+        segment.removeEventListener("click", handleWordClick);
       });
       document.removeEventListener("keydown", handleKeyDown);
     };

@@ -1,7 +1,15 @@
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
-import React, { useState } from "react";
+import { Link, useLoaderData } from "@remix-run/react";
+import { useState } from "react";
 import truncateText from "~/lib/truncate";
-function Sidebar({ user, online }) {
+import { Cross, Hamburger, Tick } from "./SVGS";
+import { Text, User } from "@prisma/client";
+
+interface sidebarProps {
+  user: any;
+  online: any[];
+}
+
+function Sidebar({ user, online }: sidebarProps) {
   let data = useLoaderData();
   let text = data.text;
   let [openMenu, setOpenMenu] = useState(false);
@@ -43,28 +51,26 @@ function Sidebar({ user, online }) {
         <div className="sidebar_menu " style={{ flex: 1 }}>
           <div className="sidebar-section-title">History</div>
           <div className="history-container">
-            {user?.text.map((text) => {
+            {user?.text.map((text: Text) => {
               return (
-                <Link
-                  to={`/?session=${user.username}&history=${text.id}`}
-                  key={text?.id}
-                  className="history-item"
+                <History
+                  content={text?.modified_text}
+                  user={user}
+                  id={text?.id}
+                  key={text.id}
                   onClick={() => setOpenMenu(false)}
-                >
-                  {truncateText(text.modified_text, 40)} <Tick />
-                </Link>
+                />
               );
             })}
-            {user?.rejected_list.map((text) => {
+            {user?.rejected_list.map((text: Text) => {
               return (
-                <Link
-                  to={`/?session=${user.username}&history=${text.id}`}
-                  key={text?.id}
-                  className="history-item"
+                <History
+                  content={text?.original_text}
+                  user={user}
+                  id={text.id}
+                  key={text.id}
                   onClick={() => setOpenMenu(false)}
-                >
-                  {truncateText(text.original_text, 40)} <Cross />
-                </Link>
+                />
               );
             })}
           </div>
@@ -76,43 +82,14 @@ function Sidebar({ user, online }) {
 
 export default Sidebar;
 
-function Hamburger() {
+function History({ content, id, user, onClick }: any) {
   return (
-    <svg
-      aria-hidden="true"
-      fill="gray"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
+    <Link
+      to={`/?session=${user.username}&history=${id}`}
+      className="history-item"
+      onClick={onClick}
     >
-      <path d="M3 5h18q0.414 0 0.707 0.293t0.293 0.707-0.293 0.707-0.707 0.293h-18q-0.414 0-0.707-0.293t-0.293-0.707 0.293-0.707 0.707-0.293zM3 17h18q0.414 0 0.707 0.293t0.293 0.707-0.293 0.707-0.707 0.293h-18q-0.414 0-0.707-0.293t-0.293-0.707 0.293-0.707 0.707-0.293zM3 11h18q0.414 0 0.707 0.293t0.293 0.707-0.293 0.707-0.707 0.293h-18q-0.414 0-0.707-0.293t-0.293-0.707 0.293-0.707 0.707-0.293z"></path>
-    </svg>
-  );
-}
-
-function Tick() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="tickSVG"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-    >
-      <path d="M9 16.172l10.594-10.594 1.406 1.406-12 12-5.578-5.578 1.406-1.406z"></path>
-    </svg>
-  );
-}
-function Cross() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="crossSVG"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-    >
-      <path d="M18.984 6.422l-5.578 5.578 5.578 5.578-1.406 1.406-5.578-5.578-5.578 5.578-1.406-1.406 5.578-5.578-5.578-5.578 1.406-1.406 5.578 5.578 5.578-5.578z"></path>
-    </svg>
+      {truncateText(content, 40)} <Tick />
+    </Link>
   );
 }

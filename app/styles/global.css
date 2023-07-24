@@ -63,10 +63,8 @@ body {
 .editor-container {
   text-align: left;
   color: #444;
-  margin: auto;
   padding: 40px;
   display: flex;
-  justify-content: center;
   background: #fff;
   font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
   border-radius: 0;
@@ -75,6 +73,7 @@ body {
   white-space: pre-wrap;
   max-height: 65%;
   overflow-y: scroll;
+  width: 100%;
 }
 .editor-container *::selection {
   background-color: var(--word);

@@ -70,7 +70,6 @@ body {
   white-space: pre-wrap;
   max-height: 65%;
   overflow-y: scroll;
-  width: 100%;
 }
 .editor-container *::selection {
   background-color: var(--word);

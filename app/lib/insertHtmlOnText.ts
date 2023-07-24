@@ -19,6 +19,7 @@ function insertHTMLonText(content: string) {
     } else if (word === DIVIDER) {
       textHTML += `</Sn>`;
       length += 3;
+      s_count += 1;
       textHTML += replaceNewlinewithTag(word);
       textHTML += `<Sn class='sen st-${s_count}'>`;
     } else {

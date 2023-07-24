@@ -63,10 +63,10 @@ function EditorContainer({ editor }: { editor: Editor }) {
           editor?.commands.setContent(newText);
         } else if (clickCount === 2) {
           // Double click
-          if (content[spaceToAddLocation] === DIVIDER) {
+          if (content[spaceToAddLocation + 2] === DIVIDER) {
             modifiedContent =
               modifiedContent.slice(0, spaceToAddLocation) +
-              modifiedContent.slice(spaceToAddLocation + 1);
+              modifiedContent.slice(spaceToAddLocation + 3);
           } else {
             modifiedContent =
               modifiedContent.slice(0, spaceToAddLocation) +

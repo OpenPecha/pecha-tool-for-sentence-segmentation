@@ -29,7 +29,9 @@
 .main {
   display: flex;
 }
-
+.Divider {
+  cursor: pointer;
+}
 .hover {
   background-color: var(--sentence);
 }

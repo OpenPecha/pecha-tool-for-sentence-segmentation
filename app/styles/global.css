@@ -29,12 +29,7 @@
 .main {
   display: flex;
 }
-.Divider {
-  background-color: hsla(39, 100%, 68%, 1);
-  word-spacing: 0.5ch;
-  margin-inline: 3px;
-  cursor: pointer;
-}
+
 .hover {
   background-color: var(--sentence);
 }

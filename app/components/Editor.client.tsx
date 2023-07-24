@@ -4,6 +4,7 @@ import insertHTMLonText from "~/lib/insertHtmlOnText";
 import selectText from "~/lib/selectRange";
 import { DIVIDER, NEW_LINER } from "~/constant";
 
+let emoteclickable = false;
 interface CustomMouseEvent extends MouseEvent {
   target: HTMLElement;
 }

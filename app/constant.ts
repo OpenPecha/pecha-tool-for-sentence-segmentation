@@ -1,3 +1,4 @@
 const DIVIDER = "\n";
+const NEW_LINER = "↩️";
 
-export { DIVIDER };
+export { DIVIDER, NEW_LINER };

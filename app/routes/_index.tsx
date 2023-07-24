@@ -22,6 +22,7 @@ import insertHTMLonText from "~/lib/insertHtmlOnText";
 import { ClientOnly } from "remix-utils";
 import { getter } from "~/service/pusher.server";
 import { Sentense } from "~/tiptapProps/extension/sentense";
+import { NEW_LINER } from "~/constant";
 
 export const loader: LoaderFunction = async ({ request }) => {
   let { KEY, CLUSTER, APP_ID, SECRET, NODE_ENV } = process.env;
@@ -80,7 +81,9 @@ export default function Index() {
     [newText]
   );
   let saveText = async () => {
-    let modified_text = editor!.getText();
+    let text = editor!.getText();
+    const regex = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    let modified_text = text.replace(regex, "");
     let id = data.text.id;
     fetcher.submit(
       { id, modified_text, userId: user.id },

@@ -1,15 +1,16 @@
-import { DIVIDER } from "~/constant";
+import { DIVIDER, NEW_LINER } from "~/constant";
 import { replaceNewlinewithTag } from "./utils";
 
 function insertHTMLonText(content: string) {
   if (!content) return "";
-  const regex = /\u23CE/g;
-  let text = content.replace(regex, "");
+  const regex = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  let text = content;
   let split = splitText(text);
   let length = 0;
   let s_count = 1;
   let textHTML = `<Sn class='sen st-${s_count}'>`;
   split.forEach((word, index) => {
+    word = word.replace(regex, "");
     if (word.includes(" ")) {
       textHTML += `<Ch class='seg s-${length}'>${word}</Ch>`;
       s_count += 1;
@@ -17,7 +18,7 @@ function insertHTMLonText(content: string) {
       length += word.length;
     } else if (word === DIVIDER) {
       textHTML += `</Sn>`;
-      length += 2;
+      length += 3;
       textHTML += replaceNewlinewithTag(word);
       textHTML += `<Sn class='sen st-${s_count}'>`;
     } else {

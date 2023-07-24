@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { EditorContent, BubbleMenu, Editor } from "@tiptap/react";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import selectText from "~/lib/selectRange";
-import { DIVIDER } from "~/constant";
+import { DIVIDER, NEW_LINER } from "~/constant";
 
 interface CustomMouseEvent extends MouseEvent {
   target: HTMLElement;
@@ -12,6 +12,7 @@ let select = 0;
 let selectsentence = 0;
 function EditorContainer({ editor }: { editor: Editor }) {
   let content = useMemo(() => editor.getText(), [editor.getText()]);
+  const regex = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   function handleMouse(event: MouseEvent, action: "over" | "leave") {
     let sen_count = event.target?.classList[1]?.replace("st-", "");
@@ -48,10 +49,10 @@ function EditorContainer({ editor }: { editor: Editor }) {
             parseInt(
               lastElement?.parentElement?.classList[1].replace("s-", "")
             ) + lastElement.innerText.length;
-          if (content[location] === DIVIDER) {
+          if (content[location + 2] === DIVIDER) {
             modifiedContent =
               modifiedContent.slice(0, location) +
-              modifiedContent.slice(location + 1);
+              modifiedContent.slice(location + 3);
           } else {
             modifiedContent =
               modifiedContent.slice(0, location) +

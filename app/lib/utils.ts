@@ -1,7 +1,7 @@
 import { DIVIDER } from "~/constant";
 
 export function replaceNewlinewithTag(text: string) {
-  const tag = "<br/>";
+  const tag = "⏎<br/>";
   const replacedText = text.replace(new RegExp(DIVIDER, "g"), tag);
   return replacedText;
 }

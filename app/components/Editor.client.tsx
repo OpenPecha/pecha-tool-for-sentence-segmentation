@@ -30,6 +30,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
     let clickCount = 0;
     const segments: HTMLElement[] | any = document.querySelectorAll(".seg");
     const sentenceSegment = document.querySelectorAll(".sen");
+    const divider = document.querySelectorAll(".Divider");
     const handleWordClick = (event: CustomMouseEvent) => {
       let parent = event.target.parentElement;
       let modifiedContent = content;
@@ -49,31 +50,31 @@ function EditorContainer({ editor }: { editor: Editor }) {
               lastElement?.parentElement?.classList[1].replace("s-", "")
             ) + lastElement.innerText.length;
           if (content[location + 2] === DIVIDER) {
-            modifiedContent =
-              modifiedContent.slice(0, location) +
-              modifiedContent.slice(location + 3);
+            // modifiedContent =
+            //   modifiedContent.slice(0, location) +
+            //   modifiedContent.slice(location + 3);
           } else {
             modifiedContent =
               modifiedContent.slice(0, location) +
               DIVIDER +
               modifiedContent.slice(location);
+            const newText = insertHTMLonText(modifiedContent);
+            editor?.commands.setContent(newText);
           }
-          const newText = insertHTMLonText(modifiedContent);
-          editor?.commands.setContent(newText);
         } else if (clickCount === 2) {
           // Double click
           if (content[spaceToAddLocation + 2] === DIVIDER) {
-            modifiedContent =
-              modifiedContent.slice(0, spaceToAddLocation) +
-              modifiedContent.slice(spaceToAddLocation + 3);
+            // modifiedContent =
+            //   modifiedContent.slice(0, spaceToAddLocation) +
+            //   modifiedContent.slice(spaceToAddLocation + 3);
           } else {
             modifiedContent =
               modifiedContent.slice(0, spaceToAddLocation) +
               DIVIDER +
               modifiedContent.slice(spaceToAddLocation);
+            const newText = insertHTMLonText(modifiedContent);
+            editor?.commands.setContent(newText);
           }
-          const newText = insertHTMLonText(modifiedContent);
-          editor?.commands.setContent(newText);
         }
 
         setTimeout(() => {
@@ -81,12 +82,23 @@ function EditorContainer({ editor }: { editor: Editor }) {
         }, 300);
       }, 200);
     };
+    const handleDividerClick = (e: CustomMouseEvent) => {
+      let location = parseInt(e.target.classList[0].replace("d-", ""));
+      let modifiedContent = content;
+      let first = modifiedContent.slice(0, location + 1);
+      let second = modifiedContent.slice(location + 4);
+      modifiedContent = first + second;
+      const newText = insertHTMLonText(modifiedContent);
+      editor?.commands.setContent(newText);
+    };
     sentenceSegment.forEach((s) => {
       s.addEventListener("mouseover", (event) => handleMouse(event, "over"));
       s.addEventListener("mouseout", (event) => handleMouse(event, "leave"));
       s.addEventListener("click", handleWordClick);
     });
-
+    divider.forEach((d) => {
+      d.addEventListener("click", handleDividerClick);
+    });
     if (select > 1) {
       selectText(segments[select]);
     }

@@ -12,7 +12,6 @@ let select = 0;
 let selectsentence = 0;
 function EditorContainer({ editor }: { editor: Editor }) {
   let content = useMemo(() => editor.getText(), [editor.getText()]);
-  const regex = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   function handleMouse(event: MouseEvent, action: "over" | "leave") {
     let sen_count = event.target?.classList[1]?.replace("st-", "");

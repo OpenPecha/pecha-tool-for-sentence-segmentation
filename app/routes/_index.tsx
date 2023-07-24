@@ -82,8 +82,10 @@ export default function Index() {
   );
   let saveText = async () => {
     let text = editor!.getText();
-    const regex = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapedSymbol = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(escapedSymbol, "g");
     let modified_text = text.replace(regex, "");
+
     let id = data.text.id;
     fetcher.submit(
       { id, modified_text, userId: user.id },

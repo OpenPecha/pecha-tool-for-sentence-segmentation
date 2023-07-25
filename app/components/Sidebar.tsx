@@ -58,6 +58,7 @@ function Sidebar({ user, online }: sidebarProps) {
                   id={text?.id}
                   key={text.id}
                   onClick={() => setOpenMenu(false)}
+                  icon={<Tick />}
                 />
               );
             })}
@@ -69,6 +70,7 @@ function Sidebar({ user, online }: sidebarProps) {
                   id={text.id}
                   key={text.id}
                   onClick={() => setOpenMenu(false)}
+                  icon={<Cross />}
                 />
               );
             })}
@@ -81,14 +83,14 @@ function Sidebar({ user, online }: sidebarProps) {
 
 export default Sidebar;
 
-function History({ content, id, user, onClick }: any) {
+function History({ content, id, user, onClick, icon }: any) {
   return (
     <Link
       to={`/?session=${user.username}&history=${id}`}
       className="history-item"
       onClick={onClick}
     >
-      {truncateText(content, 40)} <Tick />
+      {truncateText(content, 40)} {icon}
     </Link>
   );
 }

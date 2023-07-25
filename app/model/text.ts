@@ -11,7 +11,7 @@ export async function getTextToDisplay(
       where: { id: parseInt(history) },
     });
     let show =
-      JSON.parse(text?.modified_text).join("\n") || text?.original_text;
+      JSON.parse(text?.modified_text)?.join("\n") || text?.original_text;
     return {
       ...text,
       id: text?.id,
@@ -88,6 +88,7 @@ export async function rejectText(id: number, userId: string) {
   });
   return text;
 }
+
 export async function removeRejectText(
   id: number,
   userId: string,

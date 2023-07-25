@@ -27,3 +27,36 @@ export const createUserIfNotExists = async (username: string) => {
     return newUser;
   }
 };
+
+export const getUsers = async () => {
+  try {
+    let user = db.user.findMany({
+      include: {
+        text: true,
+        rejected_list: true,
+        ignored_list: true,
+      },
+    });
+    return user;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
+export const getUser = async (username: string) => {
+  try {
+    let user = db.user.findUnique({
+      where: {
+        username,
+      },
+      include: {
+        text: true,
+        rejected_list: true,
+        ignored_list: true,
+      },
+    });
+    return user;
+  } catch (e) {
+    throw new Error(e);
+  }
+};

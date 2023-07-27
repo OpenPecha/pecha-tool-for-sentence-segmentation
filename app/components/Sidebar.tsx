@@ -62,18 +62,19 @@ function Sidebar({ user, online }: sidebarProps) {
                 />
               );
             })}
-            {user?.rejected_list.map((text: Text) => {
-              return (
-                <History
-                  content={text?.original_text}
-                  user={user}
-                  id={text.id}
-                  key={text.id}
-                  onClick={() => setOpenMenu(false)}
-                  icon={<Cross />}
-                />
-              );
-            })}
+            {user?.rejected_list?.length &&
+              user?.rejected_list.map((text: Text) => {
+                return (
+                  <History
+                    content={text?.original_text}
+                    user={user}
+                    id={text.id}
+                    key={text.id}
+                    onClick={() => setOpenMenu(false)}
+                    icon={<Cross />}
+                  />
+                );
+              })}
           </div>
         </div>
       </div>

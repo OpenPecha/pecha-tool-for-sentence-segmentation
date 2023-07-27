@@ -2,7 +2,11 @@ import csv
 import psycopg2
 from psycopg2 import Error
 from datetime import datetime
+import os
+from dotenv import load_dotenv
 
+# Load the environment variables from the .env file
+load_dotenv()
 def clean_text(text):
     # Remove leading and trailing whitespace
     cleaned_text = text.strip()
@@ -33,7 +37,7 @@ def upload_data_to_postgres(csv_file, database, user, password, host, port, tabl
                 original_text = clean_text(row[0])  # Assuming the CSV has two columns 'original_text' and 'modified_text'
                 createdAt = datetime.now()
                 modified_text=datetime.now()
-                insert_query = f'INSERT INTO "Text" (original_text, "createdAt", "updatedAt") VALUES (%s, %s, %s);'
+                insert_query = f'INSERT INTO {table_name} (original_text, "createdAt", "updatedAt") VALUES (%s, %s, %s);'
                 data_to_insert=(original_text, createdAt, modified_text)
                 cursor.execute(insert_query, data_to_insert)
                 print(f'row {row} inserted')
@@ -48,13 +52,12 @@ def upload_data_to_postgres(csv_file, database, user, password, host, port, tabl
             cursor.close()
             connection.close()
             print("Connection closed.")
-
 # Replace these values with your PostgreSQL credentials and table name
-database = "sentence_segmentation_pg"
-user = "sentence_segmentation_pg_user"
-password = "wwwkqQ9cxSWXiyl5R2Vzy9rYAtcYxdyS"
-host = "dpg-cirtanlph6et1sbrka3g-a.oregon-postgres.render.com"  # Usually 'localhost' if running locally
-port = "5432"  # Usually 5432 by default
+database = os.environ.get("DATABASE")
+user = os.environ.get("USER")
+password = os.environ.get("PASSWORD")
+host = os.environ.get("HOST")  # Usually 'localhost' if running locally
+port = os.environ.get("PORT")  # Usually 5432 by default
 table_name = '"Text"'  # Replace 'your_table' with the actual table name in your database
 
 csv_file_path = "data.csv"

@@ -4,7 +4,7 @@ export interface optionType {
   HTMLAttributes: Record<string, any>;
 }
 
-export const Sentense = (charClick) =>
+export const Sentence = (charClick) =>
   Mark.create({
     name: "sn",
 

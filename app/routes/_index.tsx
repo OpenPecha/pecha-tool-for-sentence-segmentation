@@ -21,7 +21,7 @@ import usePusherPresence from "~/lib/usePresence";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import { ClientOnly } from "remix-utils";
 import { getter } from "~/service/pusher.server";
-import { Sentense } from "~/tiptapProps/extension/sentense";
+import { Sentence } from "~/tiptapProps/extension/sentence";
 import { NEW_LINER } from "~/constant";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -55,7 +55,7 @@ export default function Index() {
   let text = data?.text?.original_text?.trim();
 
   const { textOnline } = usePusherPresence(
-    `presence-sentense-${data.NODE_ENV}`,
+    `presence-sentence-${data.NODE_ENV}`,
     data?.KEY,
     data?.CLUSTER,
     data?.user,
@@ -72,7 +72,7 @@ export default function Index() {
         StarterKit,
         Divider(setter),
         Character(charClick),
-        Sentense(setter),
+        Sentence(setter),
       ],
       content: newText,
       editorProps,

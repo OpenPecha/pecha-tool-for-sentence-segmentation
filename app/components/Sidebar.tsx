@@ -17,12 +17,12 @@ function Sidebar({ user, online }: sidebarProps) {
     <div className="header">
       <div className="sidebar_title" onClick={() => setOpenMenu(true)}>
         <Hamburger />
-        Sentense segmentation
+        Sentence segmentation
       </div>
       <div className={`sidebar ${openMenu ? "open" : ""}`}>
         <div className={`sidebar_menu`}>
           <div className="sidebar-Header">
-            <div className="title">Sentense segmentation</div>
+            <div className="title">Sentence segmentation</div>
             <div className="close" onClick={() => setOpenMenu(false)}>
               x
             </div>

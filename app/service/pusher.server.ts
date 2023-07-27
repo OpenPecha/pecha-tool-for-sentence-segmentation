@@ -14,7 +14,7 @@ async function getter(
   });
 
   let channel = await pusher.get({
-    path: `/channels/presence-sentense-${process.env.NODE_ENV}/users`,
+    path: `/channels/presence-sentence-${process.env.NODE_ENV}/users`,
     params: {},
   });
   let presence = await channel.json();

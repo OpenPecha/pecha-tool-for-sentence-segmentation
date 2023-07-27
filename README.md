@@ -19,7 +19,7 @@
 
 ## Description
 
-Pecha tool web app to segment sentense with spaces
+Pecha tool web app to segment sentence with spaces
 
 ## Install
 
@@ -51,7 +51,7 @@ uses Pusher for sessions:
 
 ## Acknowledgements
 
-**sentense segmentation tool** is build using Remix and tiptap.
+**sentence segmentation tool** is build using Remix and tiptap.
 
 We are always open to cooperation in introducing new features, tool integrations and testing solutions.
 

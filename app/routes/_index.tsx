@@ -34,7 +34,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   } else {
     let user = await createUserIfNotExists(session);
     let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
-    let text = await getTextToDisplay(activeText, user?.id, history);
+    let text = await getTextToDisplay(user?.id, history);
     let textFromUser = await getTextToDisplayByUser(user?.id);
     return { text, textFromUser, user, KEY, CLUSTER, NODE_ENV };
   }

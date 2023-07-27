@@ -18,6 +18,8 @@ model User {
   text          Text[]   @relation("UserModifiedText")
   rejected_list Text[]   @relation("UserRejectedText")
   ignored_list  Text[]   @relation("UserIgnoredText")
+  assigned_group Int[]    @default([])
+  role          Role     @default(USER)
 }
 
 model Text {
@@ -31,10 +33,17 @@ model Text {
   ignored_by     User[]   @relation("UserIgnoredText")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  group          Int?     @default(0)
+  batch          String?  @default("")
 }
 
 enum Status {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum Role {
+  USER
+  ADMIN
 }

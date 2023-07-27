@@ -46,6 +46,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
           let classname = event.target.classList[1];
           const elements = document.getElementsByClassName(classname);
           const lastElement = elements[elements.length - 1];
+
           let location =
             parseInt(
               lastElement?.parentElement?.classList[1].replace("s-", "")
@@ -59,6 +60,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
               modifiedContent.slice(0, location) +
               DIVIDER +
               modifiedContent.slice(location);
+            console.log(modifiedContent);
             const newText = insertHTMLonText(modifiedContent);
             editor?.commands.setContent(newText);
           }

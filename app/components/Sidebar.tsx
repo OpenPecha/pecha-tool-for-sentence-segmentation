@@ -62,7 +62,7 @@ function Sidebar({ user, online }: sidebarProps) {
                 />
               );
             })}
-            {user?.rejected_list?.length &&
+            {user?.rejected_list?.length > 0 &&
               user?.rejected_list.map((text: Text) => {
                 return (
                   <History

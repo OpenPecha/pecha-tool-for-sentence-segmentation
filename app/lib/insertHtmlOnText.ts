@@ -42,7 +42,11 @@ function splitText(text: string) {
         if (mergedArray.length > 0) {
           if (current.includes(" ") && current?.length > 1) {
             let temp = current.split(" ");
-            temp = [temp[0] + " ", temp[1]];
+            if (!temp.includes("།")) {
+              temp = [temp[0], " "];
+            } else {
+              temp = [temp[0] + " ", temp[1]];
+            }
             mergedArray = [...mergedArray, ...temp];
           } else {
             mergedArray[mergedArray.length - 1] += current;

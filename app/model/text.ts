@@ -1,11 +1,7 @@
 import { Status } from "@prisma/client";
 import { db } from "~/service/db.server";
 
-export async function getTextToDisplay(
-  activeText: any = [],
-  userId: string,
-  history: any
-) {
+export async function getTextToDisplay(userId: string, history: any) {
   if (history) {
     const text = await db.text.findUnique({
       where: { id: parseInt(history) },
@@ -20,7 +16,6 @@ export async function getTextToDisplay(
     };
   }
 
-  const excludedIds = activeText?.map((item) => parseInt(item.id));
   const user = await db.user.findUnique({
     where: { id: userId },
     include: {
@@ -28,20 +23,26 @@ export async function getTextToDisplay(
       rejected_list: true,
     },
   });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+  const asignedGroup = user?.assigned_group;
   const ignoredIds = user?.ignored_list.map((item: any) => item.id);
   const rejectedIds = user?.rejected_list.map((item: any) => item.id);
-  let text = await db.text.findFirst({
+  const text = await db.text.findFirst({
     where: {
-      NOT: {
-        id: {
-          in: excludedIds,
-        },
-      },
       modified_text: null,
       OR: [{ status: null }, { status: "PENDING" }],
       id: {
         notIn: [...(ignoredIds || []), ...(rejectedIds || [])],
       },
+      group: {
+        in: asignedGroup,
+      },
+    },
+    orderBy: {
+      id: "asc",
     },
   });
   if (!text) return null;
@@ -140,4 +141,31 @@ export function saveText(id: number, text: string, userId: string) {
       rejected_by: { disconnect: { id: userId } },
     },
   });
+}
+
+export async function getUnAsignedGroups() {
+  let data = await db.text.findMany({
+    select: {
+      group: true,
+    },
+  });
+  const uniqueGroups = new Set();
+
+  data.forEach((item) => {
+    uniqueGroups.add(item.group);
+  });
+
+  let numbers = Array.from(uniqueGroups).sort((a, b) => {
+    return a - b;
+  });
+
+  const users = await db.user.findMany({
+    select: { assigned_group: true },
+  });
+  const assignedGroups = users.flatMap((user) => user.assigned_group);
+  const unassignedNumbers = numbers.filter(
+    (number) => !assignedGroups.includes(number)
+  );
+
+  return unassignedNumbers;
 }

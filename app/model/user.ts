@@ -36,6 +36,9 @@ export const getUsers = async () => {
         rejected_list: true,
         ignored_list: true,
       },
+      orderBy: {
+        username: "asc", // 'asc' for ascending order, 'desc' for descending order
+      },
     });
     return user;
   } catch (e) {
@@ -58,5 +61,51 @@ export const getUser = async (username: string) => {
     return user;
   } catch (e) {
     throw new Error(e);
+  }
+};
+
+export const addGroupToUser = async (group: number, id: string) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { id },
+    });
+    if (!user) throw new Error("user not found");
+    const updatedAssignedGroups = [...user.assigned_group, group];
+
+    let updatedUser = await db.user.update({
+      where: {
+        id,
+      },
+      data: {
+        assigned_group: updatedAssignedGroups,
+      },
+    });
+    return updatedUser;
+  } catch (e) {
+    throw new Error("cannot add group" + e);
+  }
+};
+
+export const removeGroupFromUser = async (group: number, id: string) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { id },
+    });
+    if (!user) throw new Error("user not found");
+    const updatedAssignedGroups = user.assigned_group.filter(
+      (number) => number !== group
+    );
+
+    let updatedUser = await db.user.update({
+      where: {
+        id,
+      },
+      data: {
+        assigned_group: updatedAssignedGroups,
+      },
+    });
+    return updatedUser;
+  } catch (e) {
+    throw new Error("cannot add group" + e);
   }
 };

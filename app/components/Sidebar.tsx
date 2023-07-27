@@ -27,6 +27,19 @@ function Sidebar({ user, online }: sidebarProps) {
               x
             </div>
           </div>
+          {user.role === "ADMIN" && (
+            <Link
+              to={`/admin?session=${user?.username}`}
+              style={{
+                textDecoration: "none",
+                color: "white",
+                background: "gray",
+                padding: 10,
+              }}
+            >
+              Admin
+            </Link>
+          )}
           <div>
             <span className="info">User :</span> {user?.username}
           </div>

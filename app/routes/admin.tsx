@@ -5,7 +5,7 @@ import {
   LoaderFunction,
   redirect,
 } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { LinkDescriptor } from "@remix-run/react/dist/links";
 import { getUnAsignedGroups } from "~/model/text";
 import {
@@ -56,6 +56,17 @@ function admin() {
   let { user, userlist, unasigned_groups } = useLoaderData();
   return (
     <div>
+      <Link
+        to={`/?session=${user.username}`}
+        style={{
+          textDecoration: "none",
+          color: "white",
+          background: "gray",
+          padding: 10,
+        }}
+      >
+        Home
+      </Link>
       <h1>welcome Admin : {user.username}</h1>
       <div>Users:</div>
       {userlist.length > 0 && (

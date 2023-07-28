@@ -5,6 +5,7 @@ body {
 
 table {
   width: 100%;
+
   border-collapse: collapse;
 }
 
@@ -12,12 +13,20 @@ th,
 td {
   padding: 8px;
   border: 1px solid #ccc;
+  flex: 1;
 }
-
+th:last-child,
+td:last-child {
+  flex: 2;
+  display: flex;
+  flex-wrap: wrap;
+}
 th {
   background-color: #f2f2f2;
 }
-
+tr {
+  display: flex;
+}
 tr:nth-child(even) {
   background-color: #f2f2f2;
 }

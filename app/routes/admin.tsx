@@ -5,8 +5,7 @@ import {
   LoaderFunction,
   redirect,
 } from "@remix-run/node";
-import { Fetcher, Link, useFetcher, useLoaderData } from "@remix-run/react";
-import { LinkDescriptor } from "@remix-run/react/dist/links";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { getAprovedGroup, getTextInfo, getUnAsignedGroups } from "~/model/text";
 import {
@@ -224,7 +223,7 @@ function Users({
     <tr>
       <td>{user.username}</td>
       <td>{user.role}</td>
-      <td style={{ display: "flex" }}>
+      <td>
         <div>
           {user.assigned_group.map((data) => (
             <button
@@ -278,6 +277,7 @@ function TextDashboard({ info }) {
         <div style={menuStyle}>Accepted text: {accepted}</div>
         <div style={menuStyle}>Rejected text: {rejected}</div>
         <div style={menuStyle}>Pending text: {pending}</div>
+        <div style={menuStyle}>1 Group = 10 Text</div>
       </div>
     </>
   );

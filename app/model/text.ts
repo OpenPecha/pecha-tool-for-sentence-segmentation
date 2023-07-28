@@ -28,7 +28,6 @@ export async function getTextToDisplay(userId: string, history: any) {
     throw new Error("User not found");
   }
   const asignedGroup = user?.assigned_group;
-  console.log(asignedGroup);
   const ignoredIds = user?.ignored_list.map((item: any) => item.id);
   const rejectedIds = user?.rejected_list.map((item: any) => item.id);
   const text = await db.text.findFirst({

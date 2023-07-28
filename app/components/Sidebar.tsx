@@ -70,7 +70,7 @@ function Sidebar({ user, online }: sidebarProps) {
                     content={text?.original_text}
                     user={user}
                     id={text.id}
-                    key={text.id}
+                    key={text.id + "-rejected"}
                     onClick={() => setOpenMenu(false)}
                     icon={<Cross />}
                   />
@@ -83,7 +83,7 @@ function Sidebar({ user, online }: sidebarProps) {
                   content={text?.modified_text}
                   user={user}
                   id={text?.id}
-                  key={text.id}
+                  key={text.id + "-accepted"}
                   onClick={() => setOpenMenu(false)}
                   icon={<Tick />}
                 />

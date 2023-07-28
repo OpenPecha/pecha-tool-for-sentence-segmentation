@@ -215,7 +215,11 @@ function Users({
         }
       );
   };
-  let self = fetcher.formData?.get("id") === user.id;
+  let adding =
+    fetcher.formData?.get("id") === user.id && fetcher.formMethod === "POST";
+  let removing =
+    fetcher.formData?.get("id") === user.id && fetcher.formMethod === "DELETE";
+
   return (
     <tr>
       <td>{user.username}</td>
@@ -249,8 +253,9 @@ function Users({
           disabled={fetcher.state !== "idle"}
           style={{ padding: 5, border: "1px solid black", cursor: "pointer" }}
         >
-          {!self ? "+" : "adding"}
+          {adding ? "adding" : "add"}
         </button>
+        {removing && <span>removed</span>}
       </td>
     </tr>
   );

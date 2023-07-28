@@ -5,7 +5,7 @@ import {
   LoaderFunction,
   redirect,
 } from "@remix-run/node";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { Fetcher, Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { LinkDescriptor } from "@remix-run/react/dist/links";
 import { useState } from "react";
 import { getAprovedGroup, getTextInfo, getUnAsignedGroups } from "~/model/text";
@@ -65,6 +65,8 @@ function admin() {
   let [search, setSearch] = useState("");
   let list = userlist.filter((data) => data.username.includes(search));
   let fetcher = useFetcher();
+  let userFetcher = useFetcher();
+
   let reset = () => {
     let checkrejected = false;
     for (const key in groups) {
@@ -163,7 +165,12 @@ function admin() {
             <th>Assigned Jobs</th>
           </tr>
           {list.map((user: User) => (
-            <Users user={user} key={user.id} select={unasigned_groups} />
+            <Users
+              user={user}
+              key={user.id}
+              select={unasigned_groups}
+              fetcher={userFetcher}
+            />
           ))}
         </table>
       )}
@@ -171,9 +178,16 @@ function admin() {
   );
 }
 
-function Users({ user, select }: { user: User; select: [] }) {
+function Users({
+  user,
+  select,
+  fetcher,
+}: {
+  user: User;
+  select: [];
+  fetcher: any;
+}) {
   let { groups } = useLoaderData();
-  let fetcher = useFetcher();
   let addGroup = (e) => {
     let nextGroup = select[0];
     if (typeof nextGroup === "undefined") alert("no more group to assign");
@@ -201,6 +215,7 @@ function Users({ user, select }: { user: User; select: [] }) {
         }
       );
   };
+  let self = fetcher.formData?.get("id") === user.id;
   return (
     <tr>
       <td>{user.username}</td>
@@ -231,9 +246,10 @@ function Users({ user, select }: { user: User; select: [] }) {
         </div>
         <button
           onClick={addGroup}
+          disabled={fetcher.state !== "idle"}
           style={{ padding: 5, border: "1px solid black", cursor: "pointer" }}
         >
-          +
+          {!self ? "+" : "adding"}
         </button>
       </td>
     </tr>

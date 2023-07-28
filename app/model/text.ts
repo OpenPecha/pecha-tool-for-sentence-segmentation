@@ -19,8 +19,8 @@ export async function getTextToDisplay(userId: string, history: any) {
   const user = await db.user.findUnique({
     where: { id: userId },
     include: {
-      ignored_list: true,
-      rejected_list: true,
+      ignored_list: { orderBy: { id: "asc" } },
+      rejected_list: { orderBy: { id: "asc" } },
     },
   });
 
@@ -28,6 +28,7 @@ export async function getTextToDisplay(userId: string, history: any) {
     throw new Error("User not found");
   }
   const asignedGroup = user?.assigned_group;
+  console.log(asignedGroup);
   const ignoredIds = user?.ignored_list.map((item: any) => item.id);
   const rejectedIds = user?.rejected_list.map((item: any) => item.id);
   const text = await db.text.findFirst({
@@ -90,41 +91,16 @@ export async function rejectText(id: number, userId: string) {
   return text;
 }
 
-export async function removeRejectText(
-  id: number,
-  userId: string,
-  status: Status
-) {
-  let text = db.text.update({
-    where: {
-      id,
-    },
-    data: {
-      status,
-      rejected_by: { disconnect: { id: userId } },
-    },
-  });
-  let user = db.user.update({
-    where: {
-      id: userId,
-    },
-    data: {
-      text: {
-        connect: { id },
-      },
-    },
-  });
-  return text;
-}
-
 export async function ignoreText(id: number, userId: string) {
   return db.text.update({
     where: {
       id,
     },
     data: {
+      modified_text: null,
       ignored_by: { connect: { id: userId } },
       modified_by: { disconnect: { id: userId } },
+      rejected_by: { disconnect: { id: userId } },
       status: "PENDING",
     },
   });
@@ -139,6 +115,7 @@ export function saveText(id: number, text: string, userId: string) {
       modified_by_id: userId,
       status: "APPROVED",
       rejected_by: { disconnect: { id: userId } },
+      ignored_by: { disconnect: { id: userId } },
     },
   });
 }
@@ -208,11 +185,22 @@ export async function getAprovedGroup() {
       select: {
         id: true,
         status: true,
+        ignored_by: true,
       },
     });
     let approved = text.every((item) => item.status === "APPROVED");
     let rejected = text.some((item) => item.status === "REJECTED");
-    result[item] = { approved, rejected };
+    const ignored = text.reduce((acc, t) => {
+      const ignoredUsersWithNonNullUsername = t.ignored_by.filter(
+        (user) => user.username !== null
+      );
+      const ignoredUsernames = ignoredUsersWithNonNullUsername.map(
+        (user) => user.username
+      );
+      return acc.concat(ignoredUsernames);
+    }, []);
+
+    result[item] = { approved, rejected, ignored };
   }
 
   return result;

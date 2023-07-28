@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import truncateText from "~/lib/truncate";
-import { Cross, Hamburger, Tick } from "./SVGS";
+import { Cancel, Cross, Hamburger, Tick } from "./SVGS";
 import { Text, User } from "@prisma/client";
 
 interface sidebarProps {
@@ -63,18 +63,6 @@ function Sidebar({ user, online }: sidebarProps) {
         <div className="sidebar_menu " style={{ flex: 1 }}>
           <div className="sidebar-section-title">History</div>
           <div className="history-container">
-            {user?.text.map((text: Text) => {
-              return (
-                <History
-                  content={text?.modified_text}
-                  user={user}
-                  id={text?.id}
-                  key={text.id}
-                  onClick={() => setOpenMenu(false)}
-                  icon={<Tick />}
-                />
-              );
-            })}
             {user?.rejected_list?.length > 0 &&
               user?.rejected_list.map((text: Text) => {
                 return (
@@ -88,6 +76,19 @@ function Sidebar({ user, online }: sidebarProps) {
                   />
                 );
               })}
+
+            {user?.text.map((text: Text) => {
+              return (
+                <History
+                  content={text?.modified_text}
+                  user={user}
+                  id={text?.id}
+                  key={text.id}
+                  onClick={() => setOpenMenu(false)}
+                  icon={<Tick />}
+                />
+              );
+            })}
           </div>
         </div>
       </div>

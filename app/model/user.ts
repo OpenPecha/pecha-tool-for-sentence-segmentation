@@ -6,9 +6,9 @@ export const createUserIfNotExists = async (username: string) => {
       username: username,
     },
     include: {
-      text: true,
-      ignored_list: true,
-      rejected_list: true,
+      text: { orderBy: { id: "asc" } },
+      ignored_list: { orderBy: { id: "asc" } },
+      rejected_list: { orderBy: { id: "asc" } },
     },
   });
 

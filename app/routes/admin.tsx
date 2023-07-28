@@ -61,35 +61,77 @@ export const links: LinksFunction = () => {
   ];
 };
 function admin() {
-  let { user, userlist, unasigned_groups, textInfo } = useLoaderData();
+  let { user, userlist, unasigned_groups, textInfo, groups } = useLoaderData();
   let [search, setSearch] = useState("");
   let list = userlist.filter((data) => data.username.includes(search));
   let fetcher = useFetcher();
   let reset = () => {
-    let c = confirm("Are you sure you want to reset all users group?");
-    if (c)
-      fetcher.submit(
-        {
-          action: "reset",
-        },
-        {
-          method: "DELETE",
+    let checkrejected = false;
+    for (const key in groups) {
+      if (groups.hasOwnProperty(key)) {
+        if (groups[key].rejected === true) {
+          checkrejected = true; // Found data with rejected=true
         }
+      }
+    }
+    // let checkrejected = groups.filter((data) => data.rejected === true);
+    // console.log(checkrejected);
+    if (checkrejected) {
+      alert(
+        "some group contain rejected data, contact the annotator to either ignore or accept!"
       );
+    } else {
+      let c = confirm("Are you sure you want to reset all users group?");
+      if (c)
+        fetcher.submit(
+          {
+            action: "reset",
+          },
+          {
+            method: "DELETE",
+          }
+        );
+    }
   };
+  let colorScheme = [
+    { color: "lightgreen", text: "all accepted" },
+    { color: "pink", text: "some rejected" },
+    { color: "yellow", text: "some Ignored" },
+  ];
   return (
     <div>
-      <Link
-        to={`/?session=${user.username}`}
-        style={{
-          textDecoration: "none",
-          color: "white",
-          background: "gray",
-          padding: 10,
-        }}
-      >
-        Home
-      </Link>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <Link
+          to={`/?session=${user.username}`}
+          style={{
+            textDecoration: "none",
+            color: "white",
+            background: "gray",
+            padding: 10,
+          }}
+        >
+          Home
+        </Link>
+        <div style={{ display: "flex", alignItems: "center", marginRight: 10 }}>
+          {colorScheme?.map((data) => {
+            return (
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 20,
+                    height: 20,
+                    marginInline: 10,
+                    backgroundColor: data.color,
+                    border: "1px solid black",
+                  }}
+                ></span>
+                {data.text}
+              </div>
+            );
+          })}
+        </div>
+      </div>
       <h1>welcome Admin : {user.username}</h1>
       <TextDashboard info={textInfo} />
       <div
@@ -134,7 +176,7 @@ function Users({ user, select }: { user: User; select: [] }) {
   let fetcher = useFetcher();
   let addGroup = (e) => {
     let nextGroup = select[0];
-    if (!nextGroup) alert("no more group to assign");
+    if (typeof nextGroup === "undefined") alert("no more group to assign");
     if (nextGroup > -1)
       fetcher.submit(
         { group: nextGroup, id: user.id },
@@ -167,17 +209,19 @@ function Users({ user, select }: { user: User; select: [] }) {
         <div>
           {user.assigned_group.map((data) => (
             <button
+              key={data + "btn"}
               style={{
                 marginRight: 5,
                 border: "1px solid gray",
                 padding: 3,
                 cursor: "pointer",
-                background:
-                  groups[data].approved === true
-                    ? "lightgreen"
-                    : groups[data].rejected === true
-                    ? "pink"
-                    : "white",
+                background: groups[data].ignored.includes(user.username)
+                  ? "yellow"
+                  : groups[data].approved
+                  ? "lightgreen"
+                  : groups[data].rejected
+                  ? "pink"
+                  : "white",
               }}
               key={data}
               onClick={() => removeGroup(data)}

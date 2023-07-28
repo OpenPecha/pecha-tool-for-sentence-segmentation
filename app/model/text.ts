@@ -82,7 +82,7 @@ export async function rejectText(id: number, userId: string) {
       id,
     },
     data: {
-      status: "PENDING",
+      status: "REJECTED",
       modified_by: { disconnect: { id: userId } },
       rejected_by: { connect: { id: userId } },
     },
@@ -187,4 +187,33 @@ export async function getTextInfo() {
   } catch (e) {
     throw new Error(e);
   }
+}
+
+export async function getAprovedGroup() {
+  let data = await db.text.findMany({
+    select: {
+      group: true,
+    },
+  });
+  const uniqueGroups = new Set();
+  const result = {};
+  data.forEach((item) => {
+    uniqueGroups.add(item.group);
+  });
+  for (const item of uniqueGroups) {
+    let text = await db.text.findMany({
+      where: {
+        group: item,
+      },
+      select: {
+        id: true,
+        status: true,
+      },
+    });
+    let approved = text.every((item) => item.status === "APPROVED");
+    let rejected = text.some((item) => item.status === "REJECTED");
+    result[item] = { approved, rejected };
+  }
+
+  return result;
 }

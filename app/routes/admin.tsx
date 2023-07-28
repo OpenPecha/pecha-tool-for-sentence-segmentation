@@ -8,7 +8,7 @@ import {
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { LinkDescriptor } from "@remix-run/react/dist/links";
 import { useState } from "react";
-import { getTextInfo, getUnAsignedGroups } from "~/model/text";
+import { getAprovedGroup, getTextInfo, getUnAsignedGroups } from "~/model/text";
 import {
   addGroupToUser,
   getUser,
@@ -27,7 +27,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   let userlist = await getUsers();
   let unasigned_groups = await getUnAsignedGroups();
   let textInfo = await getTextInfo();
-  return { user, userlist, unasigned_groups, textInfo };
+  let groups = await getAprovedGroup();
+  return { user, userlist, unasigned_groups, textInfo, groups };
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -129,17 +130,26 @@ function admin() {
 }
 
 function Users({ user, select }: { user: User; select: [] }) {
+  let { groups } = useLoaderData();
   let fetcher = useFetcher();
   let addGroup = (e) => {
-    if (select[0] > -1)
+    let nextGroup = select[0];
+    if (!nextGroup) alert("no more group to assign");
+    if (nextGroup > -1)
       fetcher.submit(
-        { group: select[0], id: user.id },
+        { group: nextGroup, id: user.id },
         {
           method: "POST",
         }
       );
   };
   let removeGroup = (e) => {
+    if (groups[e].rejected) {
+      alert(
+        "group contain rejected data, contact the annotator to either ignore or accept!"
+      );
+      return null;
+    }
     let c = confirm("Are you sure you want to remove this group from user?");
     if (c)
       fetcher.submit(
@@ -149,7 +159,6 @@ function Users({ user, select }: { user: User; select: [] }) {
         }
       );
   };
-
   return (
     <tr>
       <td>{user.username}</td>
@@ -157,18 +166,24 @@ function Users({ user, select }: { user: User; select: [] }) {
       <td style={{ display: "flex" }}>
         <div>
           {user.assigned_group.map((data) => (
-            <span
+            <button
               style={{
                 marginRight: 5,
                 border: "1px solid gray",
                 padding: 3,
                 cursor: "pointer",
+                background:
+                  groups[data].approved === true
+                    ? "lightgreen"
+                    : groups[data].rejected === true
+                    ? "pink"
+                    : "white",
               }}
               key={data}
               onClick={() => removeGroup(data)}
             >
               {data}
-            </span>
+            </button>
           ))}
         </div>
         <button

@@ -19,6 +19,9 @@ group=0
 
 def upload_data_to_postgres(txt_file, database, user, password, host, port, table_name):
     global group
+    TEXT_PER_GROUP=10
+    LINES_PER_TEXT=5
+
     try:
         # Establish a connection to the PostgreSQL database
         connection = psycopg2.connect(
@@ -36,13 +39,13 @@ def upload_data_to_postgres(txt_file, database, user, password, host, port, tabl
             batch = os.path.basename(txt_file)
             line_count=0
 
-            for idx in range(0, len(lines), 5):
-                original_text = " ".join([clean_text(line) for line in lines[idx:idx+5]])
+            for idx in range(0, len(lines), LINES_PER_TEXT):
+                original_text = " ".join([clean_text(line) for line in lines[idx:idx+LINES_PER_TEXT]])
                 print(original_text)
                 createdAt = datetime.now()
                 updatedAt = datetime.now()
                 line_count+=1
-                if(line_count%30==0):
+                if(line_count%TEXT_PER_GROUP==0):
                     group+=1
                 insert_query = f'INSERT INTO {table_name} (original_text, "createdAt", "updatedAt", "batch", "group") VALUES (%s, %s, %s, %s, %s);'
                 data_to_insert = (original_text, createdAt, updatedAt, batch, group)

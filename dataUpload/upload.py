@@ -36,8 +36,8 @@ def upload_data_to_postgres(txt_file, database, user, password, host, port, tabl
             batch = os.path.basename(txt_file)
             line_count=0
 
-            for idx in range(0, len(lines), 3):
-                original_text = " ".join([clean_text(line) for line in lines[idx:idx+3]])
+            for idx in range(0, len(lines), 5):
+                original_text = " ".join([clean_text(line) for line in lines[idx:idx+5]])
                 createdAt = datetime.now()
                 updatedAt = datetime.now()
                 line_count+=1

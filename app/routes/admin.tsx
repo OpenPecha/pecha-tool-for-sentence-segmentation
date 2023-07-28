@@ -7,15 +7,16 @@ import {
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { LinkDescriptor } from "@remix-run/react/dist/links";
-import { getUnAsignedGroups } from "~/model/text";
+import { useState } from "react";
+import { getTextInfo, getUnAsignedGroups } from "~/model/text";
 import {
   addGroupToUser,
   getUser,
   getUsers,
+  removeAllGroupFromUser,
   removeGroupFromUser,
 } from "~/model/user";
 import adminStyle from "~/styles/admin.css";
-import { useState } from "react";
 
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
@@ -25,8 +26,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (user?.role !== "ADMIN") return redirect("/error");
   let userlist = await getUsers();
   let unasigned_groups = await getUnAsignedGroups();
-
-  return { user, userlist, unasigned_groups };
+  let textInfo = await getTextInfo();
+  return { user, userlist, unasigned_groups, textInfo };
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -40,8 +41,14 @@ export const action: ActionFunction = async ({ request }) => {
   if (request.method === "DELETE") {
     let group = formdata.get("group") as string;
     let userId = formdata.get("id") as string;
-    let removed = await removeGroupFromUser(parseInt(group), userId);
-    return removed;
+    let action = formdata.get("action") as string;
+    if (action === "reset") {
+      let reset = await removeAllGroupFromUser();
+      return reset;
+    } else {
+      let removed = await removeGroupFromUser(parseInt(group), userId);
+      return removed;
+    }
   }
 };
 export const links: LinksFunction = () => {
@@ -53,7 +60,22 @@ export const links: LinksFunction = () => {
   ];
 };
 function admin() {
-  let { user, userlist, unasigned_groups } = useLoaderData();
+  let { user, userlist, unasigned_groups, textInfo } = useLoaderData();
+  let [search, setSearch] = useState("");
+  let list = userlist.filter((data) => data.username.includes(search));
+  let fetcher = useFetcher();
+  let reset = () => {
+    let c = confirm("Are you sure you want to reset all users group?");
+    if (c)
+      fetcher.submit(
+        {
+          action: "reset",
+        },
+        {
+          method: "DELETE",
+        }
+      );
+  };
   return (
     <div>
       <Link
@@ -68,7 +90,28 @@ function admin() {
         Home
       </Link>
       <h1>welcome Admin : {user.username}</h1>
-      <div>Users:</div>
+      <TextDashboard info={textInfo} />
+      <div
+        style={{
+          marginBottom: 20,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div>
+          <h2>Users:</h2>
+          <input
+            style={{ marginLeft: 10 }}
+            placeholder="search"
+            onChange={(e) => setSearch(e.target.value)}
+          ></input>
+        </div>
+        <button onClick={reset} style={{ marginRight: 20 }}>
+          Reset
+        </button>
+      </div>
+
       {userlist.length > 0 && (
         <table>
           <tr>
@@ -76,7 +119,7 @@ function admin() {
             <th>Role</th>
             <th>Assigned Jobs</th>
           </tr>
-          {userlist.map((user: User) => (
+          {list.map((user: User) => (
             <Users user={user} key={user.id} select={unasigned_groups} />
           ))}
         </table>
@@ -139,4 +182,25 @@ function Users({ user, select }: { user: User; select: [] }) {
   );
 }
 
+function TextDashboard({ info }) {
+  let { total, accepted, rejected, pending } = info;
+  let menuStyle = {
+    border: "1px solid gray",
+    padding: 10,
+    width: 200,
+  };
+  return (
+    <>
+      <h2>Text Dashboard</h2>
+      <div
+        style={{ display: "flex", flexWrap: "wrap", gap: 20, marginBottom: 20 }}
+      >
+        <div style={menuStyle}>Total text: {total}</div>
+        <div style={menuStyle}>Accepted text: {accepted}</div>
+        <div style={menuStyle}>Rejected text: {rejected}</div>
+        <div style={menuStyle}>Pending text: {pending}</div>
+      </div>
+    </>
+  );
+}
 export default admin;

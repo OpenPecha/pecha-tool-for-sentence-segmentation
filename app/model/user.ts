@@ -109,3 +109,15 @@ export const removeGroupFromUser = async (group: number, id: string) => {
     throw new Error("cannot add group" + e);
   }
 };
+export const removeAllGroupFromUser = async () => {
+  try {
+    const updatedUser = await db.user.updateMany({
+      data: {
+        assigned_group: [],
+      },
+    });
+    return updatedUser;
+  } catch (e) {
+    throw new Error("cannot add group" + e);
+  }
+};

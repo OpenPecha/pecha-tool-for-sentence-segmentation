@@ -169,3 +169,22 @@ export async function getUnAsignedGroups() {
 
   return unassignedNumbers;
 }
+
+export async function getTextInfo() {
+  try {
+    let text = await db.text.findMany({
+      select: {
+        id: true,
+        status: true,
+      },
+    });
+    let total = text.length;
+    let accepted = text.filter((item) => item.status === "APPROVED").length;
+    let rejected = text.filter((item) => item.status === "REJECTED").length;
+    let pending = text.filter((item) => item.status === "PENDING").length;
+
+    return { total, accepted, rejected, pending };
+  } catch (e) {
+    throw new Error(e);
+  }
+}

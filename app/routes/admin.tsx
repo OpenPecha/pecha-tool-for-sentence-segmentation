@@ -215,15 +215,14 @@ function Users({ user, select }: { user: User; select: [] }) {
                 border: "1px solid gray",
                 padding: 3,
                 cursor: "pointer",
-                background: groups[data].ignored.includes(user.username)
-                  ? "yellow"
-                  : groups[data].approved
+                background: groups[data].approved
                   ? "lightgreen"
+                  : groups[data].ignored.includes(user.username)
+                  ? "yellow"
                   : groups[data].rejected
                   ? "pink"
                   : "white",
               }}
-              key={data}
               onClick={() => removeGroup(data)}
             >
               {data}

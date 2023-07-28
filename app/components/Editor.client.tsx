@@ -12,6 +12,9 @@ interface CustomMouseEvent extends MouseEvent {
 let select = 0;
 let selectsentence = 0;
 function EditorContainer({ editor }: { editor: Editor }) {
+  if (!editor) {
+    window.location.reload();
+  }
   let content = useMemo(() => editor.getText(), [editor.getText()]);
 
   function handleMouse(event: MouseEvent, action: "over" | "leave") {

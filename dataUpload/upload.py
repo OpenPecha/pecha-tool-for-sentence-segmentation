@@ -38,6 +38,7 @@ def upload_data_to_postgres(txt_file, database, user, password, host, port, tabl
 
             for idx in range(0, len(lines), 5):
                 original_text = " ".join([clean_text(line) for line in lines[idx:idx+5]])
+                print(original_text)
                 createdAt = datetime.now()
                 updatedAt = datetime.now()
                 line_count+=1
@@ -47,9 +48,7 @@ def upload_data_to_postgres(txt_file, database, user, password, host, port, tabl
                 data_to_insert = (original_text, createdAt, updatedAt, batch, group)
                 cursor.execute(insert_query, data_to_insert)
                 print(f'Group {group}: Lines merged and inserted')
-                  
-                if idx % 30 == 0:
-                    connection.commit()  # Commit after every 30 groups
+                connection.commit()  # Commit after every 30 groups
 
 
     except (Exception, Error) as e:

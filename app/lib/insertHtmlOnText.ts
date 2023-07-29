@@ -1,36 +1,39 @@
 import { DIVIDER, NEW_LINER } from "~/constant";
 import { replaceNewlinewithTag } from "./utils";
 
-function insertHTMLonText(content: string) {
+function insertHTMLonText(content: string): string {
   if (!content) return "";
-  const regex = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  let text = content;
-  let split = splitText(text);
-  let length = 0;
-  let s_count = 1;
-  let textHTML = `<Sn class='sen st-${s_count}'>`;
-  split.forEach((word, index) => {
-    word = word.replace(regex, "");
-    if (word.includes(" ")) {
-      textHTML += `<Ch class='seg s-${length}'>${word}</Ch>`;
-      s_count += 1;
-      textHTML += `</Sn><Sn class='sen st-${s_count}'>`;
-      length += word.length;
-    } else if (word === DIVIDER) {
+
+  const regex = new RegExp(NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const words = splitText(content);
+  let sentenceCount = 1;
+  let charCount = 0;
+
+  let textHTML = `<Sn class='sen st-${sentenceCount}'>`;
+
+  words.forEach((word) => {
+    const cleanedWord = word.replace(regex, "");
+
+    if (cleanedWord.includes(" ")) {
+      textHTML += `<Ch class='seg s-${charCount}'>${cleanedWord}</Ch>`;
+      sentenceCount += 1;
+      textHTML += `</Sn><Sn class='sen st-${sentenceCount}'>`;
+      charCount += cleanedWord.length;
+    } else if (cleanedWord === DIVIDER) {
       textHTML += `</Sn>`;
-      textHTML += replaceNewlinewithTag(word, length);
-      s_count += 1;
-      length += 3;
-      textHTML += `<Sn class='sen st-${s_count}'>`;
+      textHTML += replaceNewlinewithTag(cleanedWord, charCount);
+      sentenceCount += 1;
+      charCount += 3;
+      textHTML += `<Sn class='sen st-${sentenceCount}'>`;
     } else {
-      textHTML += `<Ch class='seg s-${length}'>${word}</Ch>`;
-      length += word.length;
+      textHTML += `<Ch class='seg s-${charCount}'>${cleanedWord}</Ch>`;
+      charCount += cleanedWord.length;
     }
   });
+
   textHTML += "</Sn>";
   return textHTML;
 }
-
 function splitText(text: string) {
   let splitText = text.match(/[^\n་།]+|[་།]|[\n]/g);
   var mergedArray: any = [];

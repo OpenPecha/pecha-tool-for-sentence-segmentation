@@ -1,18 +1,48 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import truncateText from "~/lib/truncate";
-import { Cancel, Cross, Hamburger, Tick } from "./SVGS";
-import { Text, User } from "@prisma/client";
+import { Cross, Hamburger, Tick } from "./SVGS";
+import { Text } from "@prisma/client";
 
-interface sidebarProps {
+interface HistoryItemProps {
+  content: string;
+  id: number;
+  user: any;
+  onClick: () => void;
+  icon: JSX.Element;
+}
+
+function HistoryItem({ content, id, user, onClick, icon }: HistoryItemProps) {
+  return (
+    <Link
+      to={`/?session=${user.username}&history=${id}`}
+      className="history-item"
+      onClick={onClick}
+    >
+      {truncateText(content, 40)} {icon}
+    </Link>
+  );
+}
+
+interface SidebarProps {
   user: any;
   online: any[];
 }
 
-function Sidebar({ user, online }: sidebarProps) {
-  let data = useLoaderData();
-  let text = data.text;
-  let [openMenu, setOpenMenu] = useState(false);
+function Sidebar({ user, online }: SidebarProps) {
+  const data = useLoaderData();
+  const text = data.text;
+  const [openMenu, setOpenMenu] = useState(false);
+
+  const SidebarHeader = () => (
+    <div className="sidebar-Header">
+      <div className="title">Sentence segmentation</div>
+      <div className="close" onClick={() => setOpenMenu(false)}>
+        x
+      </div>
+    </div>
+  );
+
   return (
     <div className="header">
       <div className="sidebar_title" onClick={() => setOpenMenu(true)}>
@@ -20,13 +50,8 @@ function Sidebar({ user, online }: sidebarProps) {
         Sentence segmentation
       </div>
       <div className={`sidebar ${openMenu ? "open" : ""}`}>
-        <div className={`sidebar_menu`}>
-          <div className="sidebar-Header">
-            <div className="title">Sentence segmentation</div>
-            <div className="close" onClick={() => setOpenMenu(false)}>
-              x
-            </div>
-          </div>
+        <div className="sidebar_menu">
+          <SidebarHeader />
           {user.role === "ADMIN" && (
             <Link
               to={`/admin?session=${user?.username}`}
@@ -60,35 +85,31 @@ function Sidebar({ user, online }: sidebarProps) {
             <span className="info">online User :</span> {online?.length}
           </div>
         </div>
-        <div className="sidebar_menu " style={{ flex: 1 }}>
+        <div className="sidebar_menu" style={{ flex: 1 }}>
           <div className="sidebar-section-title">History</div>
           <div className="history-container">
             {user?.rejected_list?.length > 0 &&
-              user?.rejected_list.map((text: Text) => {
-                return (
-                  <History
-                    content={text?.original_text}
-                    user={user}
-                    id={text.id}
-                    key={text.id + "-rejected"}
-                    onClick={() => setOpenMenu(false)}
-                    icon={<Cross />}
-                  />
-                );
-              })}
-
-            {user?.text.map((text: Text) => {
-              return (
-                <History
-                  content={text?.modified_text}
+              user?.rejected_list.map((text: Text) => (
+                <HistoryItem
+                  content={text?.original_text}
                   user={user}
-                  id={text?.id}
-                  key={text.id + "-accepted"}
+                  id={text.id}
+                  key={text.id + "-rejected"}
                   onClick={() => setOpenMenu(false)}
-                  icon={<Tick />}
+                  icon={<Cross />}
                 />
-              );
-            })}
+              ))}
+
+            {user?.text.map((text: Text) => (
+              <HistoryItem
+                content={text?.modified_text!}
+                user={user}
+                id={text?.id}
+                key={text.id + "-accepted"}
+                onClick={() => setOpenMenu(false)}
+                icon={<Tick />}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -97,15 +118,3 @@ function Sidebar({ user, online }: sidebarProps) {
 }
 
 export default Sidebar;
-
-function History({ content, id, user, onClick, icon }: any) {
-  return (
-    <Link
-      to={`/?session=${user.username}&history=${id}`}
-      className="history-item"
-      onClick={onClick}
-    >
-      {truncateText(content, 40)} {icon}
-    </Link>
-  );
-}

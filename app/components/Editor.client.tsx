@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef } from "react";
-import { EditorContent, BubbleMenu, Editor } from "@tiptap/react";
+import { useEffect, useMemo } from "react";
+import { EditorContent, Editor } from "@tiptap/react";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import selectText from "~/lib/selectRange";
-import { DIVIDER, NEW_LINER } from "~/constant";
+import { DIVIDER } from "~/constant";
 
-let emoteclickable = false;
 interface CustomMouseEvent extends MouseEvent {
   target: HTMLElement;
 }
@@ -17,13 +16,40 @@ function EditorContainer({ editor }: { editor: Editor }) {
   }
   let content = useMemo(() => editor.getText(), [editor.getText()]);
 
+  function getSTcount() {
+    const elements = document.querySelectorAll("*");
+
+    // Initialize an empty Set to store unique st- classes
+    const stClassesSet = new Set();
+
+    // Loop through each element and extract its class names
+    elements.forEach((element) => {
+      const classAttribute = element.getAttribute("class");
+      if (classAttribute) {
+        // Use a regular expression to find all class names starting with "st-"
+        const pattern = /\bst-\d+/g;
+        const stClasses = classAttribute.match(pattern);
+        if (stClasses) {
+          stClasses.forEach((stClass) => {
+            // Add the st- class to the Set (this ensures only unique classes are stored)
+            stClassesSet.add(stClass);
+          });
+        }
+      }
+    });
+    return stClassesSet.size;
+  }
   function handleMouse(event: MouseEvent, action: "over" | "leave") {
     let sen_count = event.target?.classList[1]?.replace("st-", "");
     if (!sen_count) return;
     let select = document.querySelectorAll(".st-" + sen_count);
+    let lastst = getSTcount();
     select.forEach((element) => {
       if (action === "over") {
         element.classList.add("hover");
+        if (sen_count == lastst) {
+          //checked if its the last sentence
+        }
       } else {
         element.classList.remove("hover");
       }
@@ -38,8 +64,8 @@ function EditorContainer({ editor }: { editor: Editor }) {
     const handleWordClick = (event: CustomMouseEvent) => {
       let parent = event.target.parentElement;
       let modifiedContent = content;
-      const selection = parent.innerText;
-      const locationText = parent.classList;
+      const selection = parent?.innerText;
+      const locationText = parent?.classList;
       const spaceToAddLocation =
         parseInt(locationText[1].replace("s-", "")) + selection.length;
       clickCount++;
@@ -63,7 +89,6 @@ function EditorContainer({ editor }: { editor: Editor }) {
               modifiedContent.slice(0, location) +
               DIVIDER +
               modifiedContent.slice(location);
-            console.log(modifiedContent);
             const newText = insertHTMLonText(modifiedContent);
             editor?.commands.setContent(newText);
           }
@@ -185,41 +210,10 @@ function EditorContainer({ editor }: { editor: Editor }) {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [editor, content]);
-  const handleClick = () => {
-    let { from, to } = editor?.state.selection;
-    let content = editor?.getText();
-    if (!content) return;
-    let modifiedContent =
-      content.substring(0, from - 1) + DIVIDER + content.substring(to - 1);
-    let newText = insertHTMLonText(modifiedContent);
-    editor?.commands.setContent(newText);
-  };
 
   return (
     <div className="editor-container">
       <EditorContent editor={editor} />
-      {editor && (
-        <BubbleMenu
-          editor={editor}
-          tippyOptions={{ duration: 100 }}
-          shouldShow={(editor) => {
-            let { from } = editor;
-            let textLength = editor?.editor.getText().length;
-            let textContent = editor.state.doc.textBetween(from - 1, from, "");
-            if (from === 1 || from - 1 === textLength || textContent === " ")
-              return false;
-            if (editor.state.selection.from === editor.state.selection.to)
-              return true;
-            return false;
-          }}
-        >
-          <button
-            onClick={handleClick}
-            id="spaceButton"
-            style={{ display: "none" }}
-          ></button>
-        </BubbleMenu>
-      )}
     </div>
   );
 }

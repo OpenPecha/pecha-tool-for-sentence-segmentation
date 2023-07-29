@@ -1,0 +1,22 @@
+.btn-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+.btn {
+  background-color: var(--normal-btn);
+  width: 100px;
+  height: 100px;
+}
+.btn > svg {
+  width: 80%;
+  height: 80%;
+}
+.confirm {
+  background: var(--success-btn);
+}
+
+.reject {
+  background: var(--cancel-btn);
+}

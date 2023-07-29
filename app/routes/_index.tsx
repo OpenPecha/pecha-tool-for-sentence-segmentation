@@ -12,6 +12,8 @@ import Editor from "~/components/Editor.client";
 import Sidebar from "~/components/Sidebar";
 import { getTextToDisplay, getTextToDisplayByUser } from "~/model/text";
 import globalStyle from "~/styles/global.css";
+import controlStyle from "~/styles/control_btn.css";
+import sidebarStyle from "~/styles/sidebar.css";
 import { Divider } from "~/tiptapProps/extension/divider";
 import { Character } from "~/tiptapProps/extension/character";
 import { editorProps } from "~/tiptapProps/events";
@@ -33,7 +35,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect("/error");
   } else {
     let user = await createUserIfNotExists(session);
-    let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
+    // let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
     let text = await getTextToDisplay(user?.id, history);
     let textFromUser = await getTextToDisplayByUser(user?.id);
     return { text, textFromUser, user, KEY, CLUSTER, NODE_ENV };
@@ -47,11 +49,16 @@ export const meta: V2_MetaFunction = () => {
   ];
 };
 export const links: LinksFunction = () => {
-  return [{ rel: "stylesheet", href: globalStyle }];
+  return [
+    { rel: "stylesheet", href: globalStyle },
+    { rel: "stylesheet", href: controlStyle },
+    { rel: "stylesheet", href: sidebarStyle },
+  ];
 };
 export default function Index() {
   let fetcher = useFetcher();
   const data = useLoaderData();
+
   let text = data?.text?.original_text?.trim();
 
   const { textOnline } = usePusherPresence(
@@ -81,11 +88,10 @@ export default function Index() {
     [newText]
   );
   let saveText = async () => {
-    let text = editor!.getText();
+    let text = editor?.getText();
     const escapedSymbol = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(escapedSymbol, "g");
-    let modified_text = text.replace(regex, "");
-
+    let modified_text = text?.replace(regex, "")!;
     let id = data.text.id;
     fetcher.submit(
       { id, modified_text, userId: user.id },
@@ -141,28 +147,28 @@ export default function Index() {
               <Button
                 disabled={isButtonDisabled}
                 handleClick={saveText}
-                value="CONFIRM"
+                type="CONFIRM"
                 title="CONFIRM (a)"
                 shortCut="a"
               />
               <Button
                 disabled={isButtonDisabled}
                 handleClick={rejectTask}
-                value="REJECT"
+                type="REJECT"
                 title="REJECT (x)"
                 shortCut="x"
               />
               <Button
                 disabled={isButtonDisabled}
                 handleClick={ignoreTask}
-                value="IGNORE"
+                type="IGNORE"
                 title="IGNORE (i)"
                 shortCut="i"
               />
               <Button
                 disabled={isButtonDisabled}
                 handleClick={undoTask}
-                value="UNDO"
+                type="UNDO"
                 title="UNDO (backspace)"
                 shortCut="Backspace"
               />

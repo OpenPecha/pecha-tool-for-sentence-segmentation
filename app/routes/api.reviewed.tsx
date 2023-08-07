@@ -1,5 +1,11 @@
 import { ActionFunction, redirect } from "@remix-run/node";
-import { ignoreText, rejectText, resetText, saveText } from "~/model/text";
+import {
+  ignoreText,
+  rejectText,
+  resetText,
+  saveReviewedText,
+  saveText,
+} from "~/model/text";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -10,10 +16,12 @@ export const action: ActionFunction = async ({ request }) => {
   let text = null;
 
   if (request.method === "POST") {
-    const modified_text = formData.get("modified_text") as string;
+    const reviewed_text = formData.get("reviewed_text") as string;
     const userId = formData.get("userId") as string;
-    const id = formData.get("id") as string;
-    text = await saveText(id, modified_text, userId);
+    const ga_id = formData.get("ga_id") as string;
+    const gb_id = formData.get("gb_id") as string;
+
+    text = await saveReviewedText(ga_id, gb_id, reviewed_text, userId);
   }
 
   if (request.method === "DELETE") {

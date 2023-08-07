@@ -1,18 +1,18 @@
 import { DIVIDER, NEW_LINER } from "~/constant";
 import { replaceNewlinewithTag } from "./utils";
+import segmentTibetanText from "./textSegmentor";
 
 function insertHTMLonText(content: string): string {
   if (!content) return "";
 
   const regex = new RegExp(NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const words = splitText(content);
+  const data = splitText(content);
   let sentenceCount = 1;
-  let charCount = 0;
+  let charCount = 1;
 
   let textHTML = `<Sn class='sen st-${sentenceCount}'>`;
-
-  words.forEach((word) => {
-    const cleanedWord = word.replace(regex, "");
+  data.forEach(({ char, start }) => {
+    const cleanedWord = char.replace(regex, "");
 
     if (cleanedWord.includes(" ")) {
       textHTML += `<Ch class='seg s-${charCount}'>${cleanedWord}</Ch>`;
@@ -35,42 +35,84 @@ function insertHTMLonText(content: string): string {
   return textHTML;
 }
 function splitText(text: string) {
-  let splitText = text.match(/[^\n་།]+|[་།]|[\n]/g);
-  var mergedArray: any = [];
-  if (splitText)
-    for (var i = 0; i < splitText.length; i++) {
-      let current = splitText[i];
-
-      if (/[་།]|[ ]/.test(current)) {
-        if (mergedArray.length > 0) {
-          if (current.includes(" ") && current?.length > 1) {
-            let temp = current.split(" ");
-            if (temp.includes("།")) {
-              temp = [temp[0], " "];
-            } else {
-              temp = [temp[0] + " ", temp[1]];
-            }
-            mergedArray = [...mergedArray, ...temp];
-          } else {
-            mergedArray[mergedArray.length - 1] += current;
-          }
-        } else {
-          mergedArray.push(current);
-        }
+  let segment = segmentTibetanText(text);
+  let data = segment.map((item) => item.text);
+  let finalItem = [];
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].startsWith("\n")) {
+      let temp = data[i].split("\n");
+      finalItem.push("\n");
+      finalItem.push(temp[1]);
+    } else if (data[i + 1] === "་") {
+      if (data[i + 2] === "།" && data[i + 3] === " " && data[i + 4] === "།") {
+        let temp =
+          data[i] + data[i + 1] + data[i + 2] + data[i + 3] + data[i + 4];
+        finalItem.push(temp);
+        i = i + 4;
+      } else if (
+        data[i + 2] === "།" &&
+        data[i + 3] === " " &&
+        data[i + 4] !== "།"
+      ) {
+        let temp = data[i] + data[i + 1] + data[i + 2] + data[i + 3];
+        finalItem.push(temp);
+        i = i + 3;
       } else {
-        if (current.includes(" ")) {
-          let temp = current.split(" ");
-          temp = [temp[0], " ", temp[1]];
-          mergedArray = [...mergedArray, ...temp];
-        } else {
-          mergedArray.push(current);
-        }
+        finalItem.push(data[i] + "་");
+        i++;
+      }
+    } else if (data[i + 1] === "་ ") {
+      if (data[i + 2] === "།" && data[i + 3] === " " && data[i + 4] === "།") {
+        let temp =
+          data[i] + data[i + 1] + data[i + 2] + data[i + 3] + data[i + 4];
+        finalItem.push(temp);
+        i = i + 4;
+      } else if (
+        data[i + 2] === "།" &&
+        data[i + 3] === " " &&
+        data[i + 4] !== "།"
+      ) {
+        let temp = data[i] + data[i + 1] + data[i + 2] + data[i + 3];
+        finalItem.push(temp);
+        i = i + 3;
+      } else {
+        finalItem.push(data[i] + data[i + 1]);
+        i++;
+      }
+    } else if (data[i + 1] === "།") {
+      if (data[i + 2] === " " && data[i + 3] === "།") {
+        let temp = data[i] + data[i + 1] + data[i + 2] + data[i + 3];
+        finalItem.push(temp);
+        i = i + 3;
+      } else if (data[i + 2] === " " && data[i + 3] !== "།") {
+        let temp = data[i] + data[i + 1] + " ";
+        finalItem.push(temp);
+        i = i + 2;
+      }
+    } else {
+      if (data[i].endsWith("།") && data[i + 1] === " " && data[i + 2] === "།") {
+        let temp = data[i] + data[i + 1] + data[i + 2];
+        finalItem.push(temp);
+        i = i + 2;
+      } else if (
+        data[i].endsWith("།") &&
+        data[i + 1] === " " &&
+        data[i + 2] !== "།"
+      ) {
+        let temp = data[i] + data[i + 1];
+        finalItem.push(temp);
+        i = i + 1;
+      } else {
+        finalItem.push(data[i]);
       }
     }
-  if (mergedArray[mergedArray.length - 1] === "undefined་") {
-    mergedArray.pop();
   }
-  return mergedArray;
+  let count = 0;
+  return finalItem.map((item) => {
+    let data = { char: item, start: count };
+    count += item.length;
+    return data;
+  });
 }
 
 export default insertHTMLonText;

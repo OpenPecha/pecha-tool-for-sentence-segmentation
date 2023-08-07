@@ -35,8 +35,11 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect("/error");
   } else {
     let user = await createUserIfNotExists(session);
+    if (user.role === "reviewer") {
+      return redirect("/reviewer?session=" + session);
+    }
     // let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
-    let text = await getTextToDisplay(user?.id, history);
+    let text = await getTextToDisplay(user, history);
     let textFromUser = await getTextToDisplayByUser(user?.id);
     return { text, textFromUser, user, KEY, CLUSTER, NODE_ENV };
   }
@@ -120,7 +123,7 @@ export default function Index() {
   if (data.error) return <div>{data.error}</div>;
   return (
     <div className="main">
-      <Sidebar user={data.user} online={textOnline} />
+      <Sidebar user={data.user} online={textOnline} reviewer={false} />
       <div
         style={{
           flex: 1,

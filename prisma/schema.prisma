@@ -15,15 +15,24 @@ model User {
   username      String   @unique
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  text          Text[]   @relation("UserModifiedText")
+  approved_text Text[]   @relation("UserModifiedText")
   rejected_list Text[]   @relation("UserRejectedText")
   ignored_list  Text[]   @relation("UserIgnoredText")
-  assigned_group Int[]    @default([])
-  role          Role     @default(USER)
+  reviewed_list  Text[]   @relation("UserReviewedText")
+  assigned_batch String[]    
+  assigned_batch_for_review String[]    
+  role          Role     @default(annotator)
+}
+
+enum Role {
+  owner
+  admin
+  annotator
+  reviewer
 }
 
 model Text {
-  id             Int      @id @default(autoincrement())
+  id             String      @id 
   original_text  String
   modified_text  String?
   status         Status?
@@ -31,10 +40,13 @@ model Text {
   modified_by_id String?
   rejected_by    User[]   @relation("UserRejectedText")
   ignored_by     User[]   @relation("UserIgnoredText")
+  order          Int?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  group          Int?     @default(0)
-  batch          String?  @default("")
+  batch         String?
+  reviewed_text       String? 
+  reviewer       User?    @relation("UserReviewedText", fields: [reviewer_id], references: [id])
+  reviewer_id    String?
 }
 
 enum Status {
@@ -43,7 +55,3 @@ enum Status {
   REJECTED
 }
 
-enum Role {
-  USER
-  ADMIN
-}

@@ -16,7 +16,7 @@
   max-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-  font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
   border-right: none;
   display: flex;
   flex-direction: column;

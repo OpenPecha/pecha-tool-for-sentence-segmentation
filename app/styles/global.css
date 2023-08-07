@@ -1,9 +1,4 @@
-@font-face {
-  font-family: "Monlam";
-  src: url("/font/monlam_bodyig.woff") format("woff");
-  font-style: normal;
-  font-display: swap;
-}
+@import url("https://fonts.googleapis.com/css2?family=Lato,wght@1,300&family=Roboto+Condensed&display=swap");
 
 /* For WebKit-based browsers (Chrome, Safari, etc.) */
 ::-webkit-scrollbar {
@@ -17,6 +12,7 @@
 
 * {
   scrollbar-width: thin;
+  font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
 }
 :root {
   --purple: #583fcf;
@@ -127,4 +123,31 @@ button:disabled {
   .editor-container *::selection {
     background-color: transparent;
   }
+  .groupText {
+    position: fixed;
+    top: 0;
+    padding-block: 50px;
+  }
+}
+
+.text-del::after {
+  content: " - ";
+  width: 4px;
+  height: auto;
+  background-color: #f74c4a;
+}
+.text-add::after {
+  content: " + ";
+  width: 4px;
+  height: auto;
+  background-color: #85e495;
+}
+.content {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 1px 1px 5px #ddd;
+  width: 100%;
+}
+.content > div {
+  max-width: 800px;
 }

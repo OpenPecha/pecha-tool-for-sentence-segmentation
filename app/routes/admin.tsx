@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { Group, User } from "@prisma/client";
 import {
   ActionFunction,
   LinksFunction,
@@ -7,12 +7,21 @@ import {
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
-import { getAprovedGroup, getTextInfo, getUnAsignedGroups } from "~/model/text";
+import {
+  getAprovedbatch,
+  getReviewedBatch,
+  getTextInfo,
+  getBatchs,
+  getUnReviewedList,
+} from "~/model/text";
 import {
   addGroupToUser,
+  assignReview,
+  changeUserGroup,
   getUser,
   getUsers,
   removeAllGroupFromUser,
+  removeAsignedReview,
   removeGroupFromUser,
 } from "~/model/user";
 import adminStyle from "~/styles/admin.css";
@@ -22,12 +31,22 @@ export const loader: LoaderFunction = async ({ request }) => {
   let session = url.searchParams.get("session");
   if (!session) return redirect("/error");
   let user: User | null = await getUser(session);
-  if (user?.role !== "ADMIN") return redirect("/error");
+  if (user?.role !== "admin") return redirect("/error");
   let userlist = await getUsers();
-  let unasigned_groups = await getUnAsignedGroups();
+  let { unassigned: unasigned_groups } = await getBatchs();
+  let unreviewed_groups = await getUnReviewedList();
   let textInfo = await getTextInfo();
-  let groups = await getAprovedGroup();
-  return { user, userlist, unasigned_groups, textInfo, groups };
+  let groups = await getAprovedbatch();
+  let reviewedBatch = await getReviewedBatch();
+  return {
+    user,
+    userlist,
+    unasigned_groups,
+    textInfo,
+    groups,
+    unreviewed_groups,
+    reviewedBatch,
+  };
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -35,20 +54,37 @@ export const action: ActionFunction = async ({ request }) => {
   if (request.method === "POST") {
     let group = formdata.get("group") as string;
     let userId = formdata.get("id") as string;
-    let added = await addGroupToUser(parseInt(group), userId);
+    let reviewer = formdata.get("reviewer") as string;
+    if (reviewer) {
+      let added = await assignReview(group, userId);
+      return added;
+    }
+    let added = await addGroupToUser(group, userId);
     return added;
   }
   if (request.method === "DELETE") {
     let group = formdata.get("group") as string;
     let userId = formdata.get("id") as string;
     let action = formdata.get("action") as string;
+    let review = formdata.get("review") as string;
+    if (review) {
+      let removed = await removeAsignedReview(group, userId);
+      return removed;
+    }
+
     if (action === "reset") {
       let reset = await removeAllGroupFromUser();
       return reset;
     } else {
-      let removed = await removeGroupFromUser(parseInt(group), userId);
+      let removed = await removeGroupFromUser(group, userId);
       return removed;
     }
+  }
+  if (request.method === "PATCH") {
+    let group = formdata.get("group") as Group;
+    let userId = formdata.get("id") as string;
+    let user = await changeUserGroup(group, userId);
+    return user;
   }
 };
 export const links: LinksFunction = () => {
@@ -59,13 +95,17 @@ export const links: LinksFunction = () => {
     },
   ];
 };
+let groups_list = ["ga", "gb", "reviewer"];
+
 function admin() {
+  let groups_list = ["all", "ga", "gb", "reviewer"];
+
   let { user, userlist, unasigned_groups, textInfo, groups } = useLoaderData();
   let [search, setSearch] = useState("");
   let list = userlist.filter((data) => data.username.includes(search));
   let fetcher = useFetcher();
   let userFetcher = useFetcher();
-
+  let [group, setGroup] = useState("all");
   let reset = () => {
     let checkrejected = false;
     for (const key in groups) {
@@ -116,7 +156,10 @@ function admin() {
         <div style={{ display: "flex", alignItems: "center", marginRight: 10 }}>
           {colorScheme?.map((data) => {
             return (
-              <div style={{ display: "flex", alignItems: "center" }}>
+              <div
+                style={{ display: "flex", alignItems: "center" }}
+                key={data.color + "unique"}
+              >
                 <span
                   style={{
                     display: "inline-block",
@@ -134,6 +177,15 @@ function admin() {
         </div>
       </div>
       <h1>welcome Admin : {user.username}</h1>
+      <select onChange={(e) => setGroup(e.target.value)}>
+        {groups_list.map((data) => {
+          return (
+            <option value={data} key={data + "option-dashboard"}>
+              {data}
+            </option>
+          );
+        })}
+      </select>
       <TextDashboard info={textInfo} />
       <div
         style={{
@@ -161,16 +213,22 @@ function admin() {
           <tr>
             <th>User</th>
             <th>Role</th>
+            <th>Group</th>
             <th>Assigned Jobs</th>
           </tr>
-          {list.map((user: User) => (
-            <Users
-              user={user}
-              key={user.id}
-              select={unasigned_groups}
-              fetcher={userFetcher}
-            />
-          ))}
+          {list
+            .filter((g) => {
+              if (group === "all") return g;
+              return g.group === group;
+            })
+            .map((user: User) => (
+              <Users
+                user={user}
+                key={user.id}
+                select={unasigned_groups}
+                fetcher={userFetcher}
+              />
+            ))}
         </table>
       )}
     </div>
@@ -183,20 +241,32 @@ function Users({
   fetcher,
 }: {
   user: User;
-  select: [];
+  select: string[];
   fetcher: any;
 }) {
-  let { groups } = useLoaderData();
-  let addGroup = (e) => {
-    let nextGroup = select[0];
-    if (typeof nextGroup === "undefined") alert("no more group to assign");
-    if (nextGroup > -1)
-      fetcher.submit(
-        { group: nextGroup, id: user.id },
-        {
-          method: "POST",
-        }
+  let { groups, unreviewed_groups, reviewedBatch } = useLoaderData();
+  let addGroup = () => {
+    if (user.group === "reviewer") {
+      if (typeof unreviewed_groups[0] !== "undefined")
+        fetcher.submit(
+          { group: unreviewed_groups[0], id: user?.id, reviewer: true },
+          {
+            method: "POST",
+          }
+        );
+    } else {
+      let nextGroup = select.find((element: string) =>
+        element.startsWith(user.group + "_")
       );
+      if (typeof nextGroup === "undefined") alert("no more group to assign");
+      if (nextGroup)
+        fetcher.submit(
+          { group: nextGroup, id: user.id },
+          {
+            method: "POST",
+          }
+        );
+    }
   };
   let removeGroup = (e) => {
     if (groups[e].rejected) {
@@ -214,18 +284,62 @@ function Users({
         }
       );
   };
+  let removeReviewAsign = (e) => {
+    let c = confirm("Are you sure you want to remove this group from user?");
+    if (c)
+      fetcher.submit(
+        { group: e, id: user.id, review: true },
+        {
+          method: "DELETE",
+        }
+      );
+  };
   let adding =
     fetcher.formData?.get("id") === user.id && fetcher.formMethod === "POST";
   let removing =
     fetcher.formData?.get("id") === user.id && fetcher.formMethod === "DELETE";
-
+  const handleGroupChange = (group: Group) => {
+    if (user.assigned_batch.length === 0) {
+      fetcher.submit(
+        {
+          group,
+          id: user.id,
+        },
+        {
+          method: "PATCH",
+        }
+      );
+    } else {
+      alert("complete the asigned task or remove the task to change group");
+    }
+  };
   return (
     <tr>
       <td>{user.username}</td>
       <td>{user.role}</td>
+      <td
+        style={{
+          display: "flex",
+          gap: 10,
+          cursor: "pointer",
+        }}
+      >
+        {groups_list.map((data) => (
+          <div
+            style={{
+              background: data === user.group ? "lightgreen" : "white",
+              paddingInline: 5,
+            }}
+            onClick={() => handleGroupChange(data)}
+            key={data}
+          >
+            {data}
+          </div>
+        ))}
+      </td>
       <td>
         <div>
-          {user.assigned_group.map((data) => (
+          {user.assigned_batch.map((data, index) => (
             <button
               key={data + "btn"}
               style={{
@@ -233,11 +347,11 @@ function Users({
                 border: "1px solid gray",
                 padding: 3,
                 cursor: "pointer",
-                background: groups[data].approved
+                background: groups[data]?.approved
                   ? "lightgreen"
-                  : groups[data].ignored.includes(user.username)
+                  : groups[data]?.ignored.includes(user.username)
                   ? "yellow"
-                  : groups[data].rejected
+                  : groups[data]?.rejected
                   ? "pink"
                   : "white",
               }}
@@ -246,6 +360,23 @@ function Users({
               {data}
             </button>
           ))}
+          {user.assigned_batch_for_review.map((data, index) => {
+            return (
+              <button
+                key={data + "btn"}
+                style={{
+                  marginRight: 5,
+                  border: "1px solid gray",
+                  padding: 3,
+                  cursor: "pointer",
+                  background: reviewedBatch[data] ? "lightgreen" : "white",
+                }}
+                onClick={() => removeReviewAsign(data)}
+              >
+                {data}
+              </button>
+            );
+          })}
         </div>
         <button
           onClick={addGroup}

@@ -86,9 +86,9 @@ function EditorContainer({ editor }: { editor: Editor }) {
             //   modifiedContent.slice(location + 3);
           } else {
             modifiedContent =
-              modifiedContent.slice(0, location) +
+              modifiedContent.slice(0, location + 1) +
               DIVIDER +
-              modifiedContent.slice(location);
+              modifiedContent.slice(location - 1);
             const newText = insertHTMLonText(modifiedContent);
             editor?.commands.setContent(newText);
           }
@@ -100,7 +100,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
             //   modifiedContent.slice(spaceToAddLocation + 3);
           } else {
             modifiedContent =
-              modifiedContent.slice(0, spaceToAddLocation) +
+              modifiedContent.slice(0, spaceToAddLocation + 1) +
               DIVIDER +
               modifiedContent.slice(spaceToAddLocation);
             const newText = insertHTMLonText(modifiedContent);
@@ -116,8 +116,8 @@ function EditorContainer({ editor }: { editor: Editor }) {
     const handleDividerClick = (e: CustomMouseEvent) => {
       let location = parseInt(e.target.classList[0].replace("d-", ""));
       let modifiedContent = content;
-      let first = modifiedContent.slice(0, location + 1);
-      let second = modifiedContent.slice(location + 4);
+      let first = modifiedContent.slice(0, location);
+      let second = modifiedContent.slice(location + 3);
       modifiedContent = first + second;
       const newText = insertHTMLonText(modifiedContent);
       editor?.commands.setContent(newText);

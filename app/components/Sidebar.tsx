@@ -6,20 +6,30 @@ import { Text } from "@prisma/client";
 
 interface HistoryItemProps {
   content: string;
-  id: number;
+  id: string;
   user: any;
   onClick: () => void;
   icon: JSX.Element;
+  reviewer: boolean;
 }
 
-function HistoryItem({ content, id, user, onClick, icon }: HistoryItemProps) {
+function HistoryItem({
+  content,
+  id,
+  user,
+  onClick,
+  icon,
+  reviewer,
+}: HistoryItemProps) {
   return (
     <Link
-      to={`/?session=${user.username}&history=${id}`}
+      to={`/${reviewer ? "reviewer" : ""}?session=${
+        user.username
+      }&history=${id}`}
       className="history-item"
       onClick={onClick}
     >
-      {truncateText(content, 40)} {icon}
+      {truncateText(id, 40)} {icon}
     </Link>
   );
 }
@@ -27,9 +37,10 @@ function HistoryItem({ content, id, user, onClick, icon }: HistoryItemProps) {
 interface SidebarProps {
   user: any;
   online: any[];
+  reviewer: boolean;
 }
 
-function Sidebar({ user, online }: SidebarProps) {
+function Sidebar({ user, online, reviewer }: SidebarProps) {
   const data = useLoaderData();
   const text = data.text;
   const [openMenu, setOpenMenu] = useState(false);
@@ -72,6 +83,9 @@ function Sidebar({ user, online }: SidebarProps) {
             <span className="info">text id :</span> {text?.id}
           </div>
           <div>
+            <span className="info">batch id :</span> {text?.batch}
+          </div>
+          <div>
             <span className="info">Approved :</span> {user?.text?.length}
           </div>
           <div>
@@ -88,28 +102,21 @@ function Sidebar({ user, online }: SidebarProps) {
         <div className="sidebar_menu" style={{ flex: 1 }}>
           <div className="sidebar-section-title">History</div>
           <div className="history-container">
-            {user?.rejected_list?.length > 0 &&
-              user?.rejected_list.map((text: Text) => (
-                <HistoryItem
-                  content={text?.original_text}
-                  user={user}
-                  id={text.id}
-                  key={text.id + "-rejected"}
-                  onClick={() => setOpenMenu(false)}
-                  icon={<Cross />}
-                />
-              ))}
-
-            {user?.text.map((text: Text) => (
-              <HistoryItem
-                content={text?.modified_text!}
-                user={user}
-                id={text?.id}
-                key={text.id + "-accepted"}
-                onClick={() => setOpenMenu(false)}
-                icon={<Tick />}
-              />
-            ))}
+            {user &&
+              (user.rejected_list || user.approved_text) &&
+              [...(user?.rejected_list || []), ...(user?.approved_text || [])]
+                .sort(sortUpdate)
+                .map((text: Text) => (
+                  <HistoryItem
+                    content={text?.modified_text! || text?.original_text}
+                    user={user}
+                    id={text?.id}
+                    key={text.id + "-accepted"}
+                    onClick={() => setOpenMenu(false)}
+                    icon={text?.modified_text ? <Tick /> : <Cross />}
+                    reviewer={reviewer}
+                  />
+                ))}
           </div>
         </div>
       </div>
@@ -118,3 +125,9 @@ function Sidebar({ user, online }: SidebarProps) {
 }
 
 export default Sidebar;
+
+function sortUpdate(a: Text, b: Text) {
+  const parsedDate1 = new Date(a.updatedAt);
+  const parsedDate2 = new Date(b.updatedAt);
+  return parsedDate2 - parsedDate1;
+}

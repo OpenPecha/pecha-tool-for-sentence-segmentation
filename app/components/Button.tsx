@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { Ignore, Right, Undo, Wrong } from "./SVGS";
+import classNames from "classnames";
 
 interface ButtonProps {
   handleClick: () => void;
@@ -47,10 +48,12 @@ function Button({ handleClick, type, disabled, title, shortCut }: ButtonProps) {
 
   return (
     <button
-      style={{ border: "none", cursor: "pointer" }}
       disabled={disabled}
       title={title}
-      className={classbtn}
+      className={classNames(
+        classbtn,
+        "cursor-pointer border-none flex justify-center items-center"
+      )}
       onClick={handleClick}
       ref={btnRef}
     >

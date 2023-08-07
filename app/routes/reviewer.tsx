@@ -1,16 +1,8 @@
-import { LinksFunction, LoaderFunction, redirect } from "@remix-run/node";
+import { LoaderFunction, redirect } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import Sidebar from "~/components/Sidebar";
-import {
-  checkAndAssignBatch,
-  getAsignedReviewText,
-  getUnReviewedList,
-} from "~/model/text";
+import { getAsignedReviewText } from "~/model/text";
 import { getUser } from "~/model/user";
-import globalStyle from "~/styles/global.css";
-import controlStyle from "~/styles/control_btn.css";
-import sidebarStyle from "~/styles/sidebar.css";
-import tabStyle from "react-tabs/style/react-tabs.css";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { getDiff } from "~/lib/dmp";
 import { useEffect, useState } from "react";
@@ -41,14 +33,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   let review = data?.review;
   let text = data?.text;
   return { ga, gb, review, text, user };
-};
-export const links: LinksFunction = () => {
-  return [
-    { rel: "stylesheet", href: globalStyle },
-    { rel: "stylesheet", href: controlStyle },
-    { rel: "stylesheet", href: sidebarStyle },
-    { rel: "stylesheet", href: tabStyle },
-  ];
 };
 function review() {
   let { user, ga, gb, text, review } = useLoaderData();
@@ -133,19 +117,13 @@ function review() {
   return (
     <div className="main">
       <Sidebar user={user} online={[]} reviewer={true}></Sidebar>
-      <div
-        style={{
-          margin: "0 auto",
-          width: "80%",
-        }}
-        className="groupText"
-      >
+      <div className="groupText relative max-w-[100vw] max-h-[100dvh] md:max-w-[80vw] mx-auto pt-[50px]">
         {review && (
           <Tabs
             style={{
               padding: 10,
               maxWidth: 800,
-              marginTop: 50,
+              marginInline: "auto",
               marginBottom: 20,
             }}
             selectedIndex={tabIndex}
@@ -155,10 +133,10 @@ function review() {
               <Tab>A</Tab>
               <Tab>B</Tab>
             </TabList>
-            <TabPanel>
+            <TabPanel style={{ maxHeight: "30vh", overflowY: "scroll" }}>
               <EachPanel textA={ga?.original_text} textB={ga?.modified_text} />
             </TabPanel>
-            <TabPanel>
+            <TabPanel style={{ maxHeight: "30vh", overflowY: "scroll" }}>
               <EachPanel textA={gb?.original_text} textB={gb?.modified_text} />
             </TabPanel>
           </Tabs>
@@ -167,7 +145,7 @@ function review() {
         <ClientOnly fallback={null}>
           {() =>
             editor && (
-              <div className="content">
+              <div className="shadow-lg max-h-[30vh] overflow-y-scroll text-xl max-w-3xl mx-2 md:mx-auto ">
                 <EditorContainer editor={editor!} />
               </div>
             )
@@ -176,7 +154,7 @@ function review() {
 
         <ClientOnly fallback={null}>
           {() => (
-            <div className="btn-container">
+            <div className="flex gap-3 fixed md:absolute bottom-0 justify-center mx-auto w-full">
               <Button
                 disabled={isButtonDisabled}
                 handleClick={saveText}

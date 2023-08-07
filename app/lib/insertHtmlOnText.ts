@@ -89,6 +89,15 @@ function splitText(text: string) {
         finalItem.push(temp);
         i = i + 2;
       }
+    } else if (data[i + 1] === " ") {
+      if (data[i + 2] === "།") {
+        let temp = data[i] + data[i + 1] + data[i + 2];
+        finalItem.push(temp);
+        i = i + 2;
+      } else {
+        finalItem.push(data[i] + data[i + 1]);
+        i++;
+      }
     } else {
       if (data[i].endsWith("།") && data[i + 1] === " " && data[i + 2] === "།") {
         let temp = data[i] + data[i + 1] + data[i + 2];

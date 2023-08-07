@@ -352,14 +352,17 @@ export async function saveReviewedText(
 ) {
   let update_ga = await db.text.updateMany({
     where: {
-      OR: [
-        {
-          id: ga_id,
-        },
-        {
-          id: gb_id,
-        },
-      ],
+      id: ga_id,
+    },
+    data: {
+      reviewed_text: JSON.stringify(text.split("\n")),
+      status: "APPROVED",
+      reviewer_id: userId,
+    },
+  });
+  let update_gb = await db.text.updateMany({
+    where: {
+      id: gb_id,
     },
     data: {
       reviewed_text: JSON.stringify(text.split("\n")),
@@ -368,7 +371,7 @@ export async function saveReviewedText(
     },
   });
 
-  return update_ga;
+  return { update_ga, update_gb };
 }
 
 export async function getBatchs() {

@@ -11,9 +11,7 @@ import Button from "~/components/Button";
 import Editor from "~/components/Editor.client";
 import Sidebar from "~/components/Sidebar";
 import { getTextToDisplay, getTextToDisplayByUser } from "~/model/text";
-import globalStyle from "~/styles/global.css";
-import controlStyle from "~/styles/control_btn.css";
-import sidebarStyle from "~/styles/sidebar.css";
+
 import { Divider } from "~/tiptapProps/extension/divider";
 import { Character } from "~/tiptapProps/extension/character";
 import { editorProps } from "~/tiptapProps/events";
@@ -51,13 +49,7 @@ export const meta: V2_MetaFunction = () => {
     { name: "description", content: "Sentence segmentation" },
   ];
 };
-export const links: LinksFunction = () => {
-  return [
-    { rel: "stylesheet", href: globalStyle },
-    { rel: "stylesheet", href: controlStyle },
-    { rel: "stylesheet", href: sidebarStyle },
-  ];
-};
+
 export default function Index() {
   let fetcher = useFetcher();
   const data = useLoaderData();
@@ -137,9 +129,13 @@ export default function Index() {
           <div>Thank you . your work is complete ! 😊😊😊</div>
         ) : (
           <div className="container">
-            <div className="label">transcript</div>
+            <div className="label mb-2">transcript</div>
             <ClientOnly fallback={null}>
-              {() => <Editor editor={editor!} />}
+              {() => (
+                <div className="shadow-lg max-h-[50vh] overflow-y-scroll text-xl max-w-full mx-auto">
+                  <Editor editor={editor!} />
+                </div>
+              )}
             </ClientOnly>
             {!editor && <div>loading...</div>}
           </div>

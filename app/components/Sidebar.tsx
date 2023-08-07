@@ -44,6 +44,7 @@ function Sidebar({ user, online, reviewer }: SidebarProps) {
   const data = useLoaderData();
   const text = data.text;
   const [openMenu, setOpenMenu] = useState(false);
+  let ga = data.ga;
 
   const SidebarHeader = () => (
     <div className="sidebar-Header">
@@ -80,7 +81,8 @@ function Sidebar({ user, online, reviewer }: SidebarProps) {
             <span className="info">User :</span> {user?.username}
           </div>
           <div>
-            <span className="info">text id :</span> {text?.id}
+            <span className="info">text id :</span>{" "}
+            {ga ? ga.id.replace("a_", "") : text?.id}
           </div>
           <div>
             <span className="info">batch id :</span> {text?.batch}

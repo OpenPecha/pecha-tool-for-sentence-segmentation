@@ -13,7 +13,8 @@ export const action: ActionFunction = async ({ request }) => {
     const modified_text = formData.get("modified_text") as string;
     const userId = formData.get("userId") as string;
     const id = formData.get("id") as string;
-    text = await saveText(id, modified_text, userId);
+    const reviewer = formData.get("reviewer") as string;
+    text = await saveText(id, modified_text, userId, !!reviewer);
   }
 
   if (request.method === "DELETE") {

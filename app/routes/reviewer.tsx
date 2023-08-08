@@ -27,6 +27,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (!user) return redirect("/error");
   if (user.role !== "reviewer") return redirect("/?session=" + session);
   let data = await getAsignedReviewText(user, history);
+  if (!data) return { ga: null, gb: null, review: null, text: null, user };
   let ga = data?.ga;
   let gb = data?.gb;
   let review = data?.review;
@@ -36,6 +37,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 function review() {
   let { user, ga, gb, text, review } = useLoaderData();
   let data = useLoaderData();
+  console.log(data);
   const [tabIndex, setTabIndex] = useState(0);
   const [selectedText, setSelectedText] = useState("");
 
@@ -90,7 +92,7 @@ function review() {
       let modified_text = text?.replace(regex, "")!;
       let id = data.text.id;
       fetcher.submit(
-        { id, modified_text, userId: user.id },
+        { id, modified_text, userId: user.id, reviewer: true },
         { method: "POST", action: "/api/text" }
       );
     }
@@ -116,7 +118,7 @@ function review() {
   return (
     <div className="main">
       <Sidebar
-        batch={ga?.batch?.slice(0, -1) + "c"}
+        batch={ga?.batch && ga?.batch?.slice(0, -1) + "c"}
         user={user}
         online={[]}
         reviewer={true}
@@ -145,16 +147,19 @@ function review() {
             </TabPanel>
           </Tabs>
         )}
-
-        <ClientOnly fallback={null}>
-          {() =>
-            editor && (
-              <div className="shadow-lg max-h-[30vh] overflow-y-scroll text-xl max-w-3xl mx-2 md:mx-auto ">
-                <EditorContainer editor={editor!} />
-              </div>
-            )
-          }
-        </ClientOnly>
+        {!data.text && !data.ga ? (
+          <div>Thank you . your work is complete ! 😊😊😊</div>
+        ) : (
+          <ClientOnly fallback={null}>
+            {() =>
+              editor && (
+                <div className="shadow-lg max-h-[30vh] overflow-y-scroll text-xl max-w-3xl mx-2 md:mx-auto ">
+                  <EditorContainer editor={editor!} />
+                </div>
+              )
+            }
+          </ClientOnly>
+        )}
 
         <ClientOnly fallback={null}>
           {() => (

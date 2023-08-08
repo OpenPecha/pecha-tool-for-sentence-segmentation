@@ -7,13 +7,7 @@ import {
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
-import {
-  getAprovedbatch,
-  getReviewedBatch,
-  getTextInfo,
-  getBatchs,
-  getUnReviewedList,
-} from "~/model/text";
+import { getAprovedbatch, getTextInfo } from "~/model/text";
 import {
   addGroupToUser,
   assignReview,
@@ -33,19 +27,19 @@ export const loader: LoaderFunction = async ({ request }) => {
   let user: User | null = await getUser(session);
   if (user?.role !== "admin") return redirect("/error");
   let userlist = await getUsers();
-  let { unassigned: unasigned_groups } = await getBatchs();
-  let unreviewed_groups = await getUnReviewedList();
+  // let { unassigned: unasigned_groups } = await getBatchs();
+  // let unreviewed_groups = await getUnReviewedList();
   let textInfo = await getTextInfo();
   let groups = await getAprovedbatch();
-  let reviewedBatch = await getReviewedBatch();
+  // let reviewedBatch = await getReviewedBatch();
   return {
     user,
     userlist,
-    unasigned_groups,
+    // unasigned_groups,
     textInfo,
     groups,
-    unreviewed_groups,
-    reviewedBatch,
+    // unreviewed_groups,
+    // reviewedBatch,
   };
 };
 
@@ -87,6 +81,7 @@ export const action: ActionFunction = async ({ request }) => {
     return user;
   }
 };
+
 export const links: LinksFunction = () => {
   return [
     {

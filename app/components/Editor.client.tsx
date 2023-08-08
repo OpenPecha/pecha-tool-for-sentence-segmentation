@@ -67,7 +67,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
       const selection = parent?.innerText;
       const locationText = parent?.classList;
       const spaceToAddLocation =
-        parseInt(locationText[1].replace("s-", "")) + selection.length - 1;
+        parseInt(locationText[1].replace("s-", "")) + selection.length;
       clickCount++;
       setTimeout(() => {
         if (clickCount === 1) {
@@ -80,21 +80,32 @@ function EditorContainer({ editor }: { editor: Editor }) {
             parseInt(
               lastElement?.parentElement?.classList[1].replace("s-", "")
             ) + lastElement.innerText.length;
-          modifiedContent =
-            modifiedContent.slice(0, location + 1) +
-            DIVIDER +
-            modifiedContent.slice(location - 1);
-          const newText = insertHTMLonText(modifiedContent);
-          editor?.commands.setContent(newText);
+          if (content[location + 2] === DIVIDER) {
+            // modifiedContent =
+            //   modifiedContent.slice(0, location) +
+            //   modifiedContent.slice(location + 3);
+          } else {
+            modifiedContent =
+              modifiedContent.slice(0, location + 1) +
+              DIVIDER +
+              modifiedContent.slice(location);
+            const newText = insertHTMLonText(modifiedContent);
+            editor?.commands.setContent(newText);
+          }
         } else if (clickCount === 2) {
           // Double click
-
-          modifiedContent =
-            modifiedContent.slice(0, spaceToAddLocation + 1) +
-            DIVIDER +
-            modifiedContent.slice(spaceToAddLocation);
-          const newText = insertHTMLonText(modifiedContent);
-          editor?.commands.setContent(newText);
+          if (content[spaceToAddLocation + 2] === DIVIDER) {
+            // modifiedContent =
+            //   modifiedContent.slice(0, spaceToAddLocation) +
+            //   modifiedContent.slice(spaceToAddLocation + 3);
+          } else {
+            modifiedContent =
+              modifiedContent.slice(0, spaceToAddLocation + 1) +
+              DIVIDER +
+              modifiedContent.slice(spaceToAddLocation);
+            const newText = insertHTMLonText(modifiedContent);
+            editor?.commands.setContent(newText);
+          }
         }
 
         setTimeout(() => {
@@ -200,7 +211,11 @@ function EditorContainer({ editor }: { editor: Editor }) {
     };
   }, [editor, content]);
 
-  return <EditorContent editor={editor} />;
+  return (
+    <div className="editor-container">
+      <EditorContent editor={editor} />
+    </div>
+  );
 }
 
 export default EditorContainer;

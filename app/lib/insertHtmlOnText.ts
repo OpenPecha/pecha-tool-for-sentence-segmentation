@@ -8,7 +8,7 @@ function insertHTMLonText(content: string): string {
   const regex = new RegExp(NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   const data = splitText(content);
   let sentenceCount = 1;
-  let charCount = 1;
+  let charCount = 0;
 
   let textHTML = `<Sn class='sen st-${sentenceCount}'>`;
   data.forEach(({ char, start }) => {

@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { editorProps } from "~/tiptapProps/events";
-
 import { Divider } from "~/tiptapProps/extension/divider";
 import { Character } from "~/tiptapProps/extension/character";
 import { Sentence } from "~/tiptapProps/extension/sentence";
@@ -46,19 +45,19 @@ function review() {
   const setter = () => {};
   const charClick = () => {};
   useEffect(() => {
-    if (ga && gb) {
+    if (review) {
       let text = "";
       if (tabIndex === 0) {
-        text = JSON.parse(ga.modified_text).join("\n");
+        text = JSON.parse(ga?.modified_text)?.join("\n");
       }
       if (tabIndex === 1) {
-        text = JSON.parse(gb.modified_text).join("\n");
+        text = JSON.parse(gb?.modified_text)?.join("\n");
       }
       let insertHTML = insertHTMLonText(text);
       let newText = checkUnknown(insertHTML);
       setSelectedText(newText);
     }
-  }, [tabIndex, ga, gb]);
+  }, [tabIndex, review]);
   const editor = useEditor(
     {
       extensions: [
@@ -116,7 +115,12 @@ function review() {
   };
   return (
     <div className="main">
-      <Sidebar user={user} online={[]} reviewer={true}></Sidebar>
+      <Sidebar
+        batch={ga?.batch?.slice(0, -1) + "c"}
+        user={user}
+        online={[]}
+        reviewer={true}
+      ></Sidebar>
       <div className="groupText relative max-w-[100vw] max-h-[100dvh] md:max-w-[80vw] mx-auto pt-[50px]">
         {review && (
           <Tabs
@@ -130,8 +134,8 @@ function review() {
             onSelect={(index) => setTabIndex(index)}
           >
             <TabList>
-              <Tab>A</Tab>
-              <Tab>B</Tab>
+              <Tab>A( {ga?.modified_by?.username} )</Tab>
+              <Tab>B( {gb?.modified_by?.username} )</Tab>
             </TabList>
             <TabPanel style={{ maxHeight: "30vh", overflowY: "scroll" }}>
               <EachPanel textA={ga?.original_text} textB={ga?.modified_text} />

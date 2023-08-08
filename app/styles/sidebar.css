@@ -54,10 +54,6 @@
   color: white;
   text-decoration: none;
 }
-.history-item::before {
-  counter-increment: section;
-  content: counter(section) ": ";
-}
 .history-item:hover {
   border: 1px solid var(--purple);
   cursor: pointer;

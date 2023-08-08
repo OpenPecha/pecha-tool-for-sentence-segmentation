@@ -21,15 +21,17 @@ function HistoryItem({
   icon,
   reviewer,
 }: HistoryItemProps) {
+  let split = id.split("_");
+  let historyName = split[0] + "_" + split[1] + "_" + split[split.length - 1];
   return (
     <Link
       to={`/${reviewer ? "reviewer" : ""}?session=${
         user.username
       }&history=${id}`}
-      className="history-item"
+      className="flex justify-between"
       onClick={onClick}
     >
-      {truncateText(id, 40)} {icon}
+      {historyName} {icon}
     </Link>
   );
 }
@@ -38,9 +40,11 @@ interface SidebarProps {
   user: any;
   online: any[];
   reviewer: boolean;
+  batch?: string;
+  history?: any;
 }
 
-function Sidebar({ user, online, reviewer }: SidebarProps) {
+function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
   const data = useLoaderData();
   const text = data.text;
   const [openMenu, setOpenMenu] = useState(false);
@@ -85,7 +89,8 @@ function Sidebar({ user, online, reviewer }: SidebarProps) {
             {ga ? ga.id.replace("a_", "") : text?.id}
           </div>
           <div>
-            <span className="info">batch id :</span> {text?.batch}
+            <span className="info">batch id :</span>{" "}
+            {!text?.batch ? batch : text?.batch}
           </div>
           <div>
             <span className="info">Approved :</span> {user?.text?.length}
@@ -105,6 +110,7 @@ function Sidebar({ user, online, reviewer }: SidebarProps) {
           <div className="sidebar-section-title">History</div>
           <div className="history-container">
             {user &&
+              !history &&
               (user.rejected_list || user.approved_text) &&
               [...(user?.rejected_list || []), ...(user?.approved_text || [])]
                 .sort(sortUpdate)
@@ -119,6 +125,7 @@ function Sidebar({ user, online, reviewer }: SidebarProps) {
                     reviewer={reviewer}
                   />
                 ))}
+            {history && console.log(history)}
           </div>
         </div>
       </div>

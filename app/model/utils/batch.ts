@@ -66,11 +66,14 @@ export async function get_all_batch() {
 
 export async function get_not_asigned_batch(batch?: string[]) {
   let { unassigned } = await get_all_batch();
+  let batchFromReviewer = await getListasignedBatchreviewer();
   let batchFormat = batch?.map((p) => p.slice(0, -1));
+  let batchFormat2 = batchFromReviewer?.map((p) => p.slice(0, -1));
+
   if (batch?.length) {
     unassigned = unassigned.filter((item: string) => {
       let data = item.slice(0, -1);
-      return !batchFormat?.includes(data);
+      return !batchFormat?.includes(data) && !batchFormat2?.includes(data);
     });
   }
   return unassigned[0] || "";
@@ -135,22 +138,23 @@ export async function get_available_batch_to_review() {
   const assignedBatchesForReviewUnique = await get_batch_assigned_to_review();
   let availableBatches = [];
 
+  const texts = await db.text.findMany({
+    where: {
+      batch: { in: Array.from(uniqueBatches) },
+      reviewer_id: null, // Only consider texts that have not been reviewed yet
+    },
+  });
   for (const batch of uniqueBatches) {
     // Find all text entries with the current batch identifier
     if (assignedBatchesForReviewUnique.has(batch)) continue;
-    const texts = await db.text.findMany({
-      where: {
-        batch: batch,
-        reviewer_id: null, // Only consider texts that have not been reviewed yet
-      },
-    });
-
+    texts.filter((item) => item.batch === batch);
     // Check if all texts have modified_text not null
     if (texts.every((text) => text.modified_text !== null)) {
       availableBatches.push(batch);
     }
   }
   const filteredBatches = await check_a_b(availableBatches);
+  console.log(filteredBatches);
   return filteredBatches[0];
 }
 
@@ -279,4 +283,17 @@ export async function getCountOfbatchforreview(batch: string[]) {
     console.log(e);
     return 0;
   }
+}
+
+export async function getListasignedBatchreviewer() {
+  const data = await db.user.findMany({
+    where: {
+      role: "reviewer",
+    },
+    select: {
+      assigned_batch: true,
+    },
+  });
+  let result = data.map((item) => item.assigned_batch).flat();
+  return result;
 }

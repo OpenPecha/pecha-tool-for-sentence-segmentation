@@ -2,7 +2,6 @@ import { User } from "@prisma/client";
 import { db } from "~/service/db.server";
 import {
   batch_text_count,
-  getCountOfbatchforreview,
   get_available_batch_to_review,
   get_not_asigned_batch,
 } from "./utils/batch";
@@ -105,13 +104,16 @@ export async function checkAndAssignBatchforReview(userSession: User) {
 
   // Check if there are unreviewed texts in assigned review batches
   if (batchToReview.length > 0) {
-    for (let batch of batchToReview) {
-      batch = batch.slice(0, -1) + "a";
+    let batchlist = batchToReview.map((batch) => batch.slice(0, -1) + "a");
+    let returnBatch = null;
+    for (let batch of batchlist) {
       const unreviewedTexts = await db.text.findFirst({
         where: { batch, reviewed_text: null },
       });
-      if (unreviewedTexts) return batch.slice(0, -1) + "c";
+      if (unreviewedTexts) returnBatch = batch.slice(0, -1) + "c";
     }
+    if (!returnBatch) returnBatch = await assignNewReviewBatch();
+    return returnBatch;
   }
 
   // If no unreviewed texts are found, assign new review batch if needed
@@ -391,27 +393,36 @@ export async function ignoreText(id: string, userId: string) {
   });
 }
 
-export function saveText(
+export async function saveText(
   id: string,
   text: string,
   userId: string,
   reviewer: boolean
 ) {
   if (reviewer) {
-    return db.text.update({
-      where: {
-        id,
-      },
-      data: {
-        modified_text: JSON.stringify(text.split("\n")),
-        reviewed_text: JSON.stringify(text.split("\n")),
-        status: "APPROVED",
-        modified_by_id: userId,
-        reviewer_id: userId,
-        rejected_by: { set: [] },
-        ignored_by: { set: [] },
-      },
-    });
+    let secondId = id.startsWith("a_")
+      ? id.replace("a_", "b_")
+      : id.replace("b_", "a_");
+    const idsToUpdate = [id, secondId];
+    const responses = [];
+
+    for (const targetId of idsToUpdate) {
+      const response = await db.text.update({
+        where: { id: targetId },
+        data: {
+          modified_text: JSON.stringify(text.split("\n")),
+          reviewed_text: JSON.stringify(text.split("\n")),
+          status: "APPROVED",
+          modified_by_id: userId,
+          reviewer_id: userId,
+          rejected_by: { set: [] },
+          ignored_by: { set: [] },
+        },
+      });
+      responses.push(response);
+    }
+
+    return responses;
   }
 
   return db.text.update({

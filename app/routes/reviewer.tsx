@@ -18,11 +18,11 @@ import checkUnknown from "~/lib/checkUnknown";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import Button from "~/components/Button";
 import { NEW_LINER } from "~/constant";
+import { getListasignedBatchreviewer } from "~/model/utils/batch";
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
   let session = url.searchParams.get("session") as string;
   let history = url.searchParams.get("history") || null;
-
   let user = await getUser(session);
   if (!user) return redirect("/error");
   if (user.role !== "reviewer") return redirect("/?session=" + session);
@@ -37,7 +37,6 @@ export const loader: LoaderFunction = async ({ request }) => {
 function review() {
   let { user, ga, gb, text, review } = useLoaderData();
   let data = useLoaderData();
-  console.log(data);
   const [tabIndex, setTabIndex] = useState(0);
   const [selectedText, setSelectedText] = useState("");
 

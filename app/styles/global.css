@@ -65,7 +65,6 @@ body {
   font-size: 20px;
   word-wrap: break-word;
   white-space: pre-wrap;
-  overflow-y: scroll;
 }
 .editor-container *::selection {
   background-color: var(--word);

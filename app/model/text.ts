@@ -66,18 +66,22 @@ export async function checkAndAssignBatch(userSession: User) {
 }
 export async function checkAndAssignBatchforReview(userSession: User) {
   async function assignNewReviewBatch() {
-    let batch = await get_available_batch_to_review();
-    if (batch) {
+    let batch = await get_available_batch_to_review(userSession);
+    if (batch[0]) {
       await db.user.update({
         where: { username: userSession.username },
         data: {
           assigned_batch_for_review: { push: batch },
         },
       });
+      let text = await db.text.findMany({
+        where: { batch: { in: batch } },
+      });
+      let res = text.find((text) => text.modified_text === null);
+      return res;
     }
-    return batch;
+    return null;
   }
-
   async function assignBatchtoAnnotate() {
     let batch = await get_not_asigned_batch();
     if (batch) {
@@ -87,8 +91,8 @@ export async function checkAndAssignBatchforReview(userSession: User) {
           assigned_batch: { push: batch },
         },
       });
+      return batch;
     }
-    return batch;
   }
 
   let user = await db.user.findUnique({
@@ -98,49 +102,54 @@ export async function checkAndAssignBatchforReview(userSession: User) {
       assigned_batch_for_review: true,
     },
   });
-
   let batchToAnnotate: string[] = user?.assigned_batch ?? [];
   let batchToReview: string[] = user?.assigned_batch_for_review ?? [];
-
-  // Check if there are unreviewed texts in assigned review batches
-  if (batchToReview.length > 0) {
-    let batchlist = batchToReview.map((batch) => batch.slice(0, -1) + "a");
-    let returnBatch = null;
-    for (let batch of batchlist) {
-      const unreviewedTexts = await db.text.findFirst({
-        where: { batch, reviewed_text: null },
-      });
-      if (unreviewedTexts) returnBatch = batch.slice(0, -1) + "c";
-    }
-    if (!returnBatch) returnBatch = await assignNewReviewBatch();
-    return returnBatch;
-  }
-
   // If no unreviewed texts are found, assign new review batch if needed
   if (batchToReview.length === 0) {
     let res = await assignNewReviewBatch();
     if (res) return res;
   }
 
-  // Check if there are unmodified texts in assigned annotation batches
-  if (batchToAnnotate.length > 0) {
-    let unmodifiedTexts;
-    for (let batch of batchToAnnotate) {
-      unmodifiedTexts = await db.text.findFirst({
-        where: { batch, modified_by: null },
-      });
-      if (unmodifiedTexts) return batch;
+  // Check if there are unreviewed texts in assigned review batches
+  if (batchToReview.length > 0) {
+    let batchlist = batchToReview.map((batch) => batch.slice(0, -1) + "a");
+    let returnBatch = null;
+    const unreviewedTexts = await db.text.findMany({
+      where: { batch: { in: batchlist }, reviewed_text: null },
+    });
+    for (let batch of batchlist) {
+      let data = unreviewedTexts.find((text) => text.batch === batch);
+      if (data) {
+        returnBatch = batch.slice(0, -1) + "c";
+        return returnBatch;
+      }
     }
-    if (!unmodifiedTexts) {
-      let batch = await assignBatchtoAnnotate();
-      return batch;
+    if (!returnBatch || returnBatch.length === 0) {
+      returnBatch = await assignNewReviewBatch();
+      if (returnBatch) {
+        return returnBatch;
+      }
     }
   }
-
   // If no unmodified texts are found, assign new annotation batch if needed
   if (batchToAnnotate.length === 0) {
     let res = await assignBatchtoAnnotate();
     if (res) return res;
+  }
+  // Check if there are unmodified texts in assigned annotation batches
+  if (batchToAnnotate.length > 0) {
+    let unmodifiedTexts;
+    unmodifiedTexts = await db.text.findMany({
+      where: { batch: { in: batchToAnnotate }, reviewed_text: null },
+    });
+    for (let batch of batchToAnnotate) {
+      let data = unmodifiedTexts.find((text) => text.batch === batch);
+      if (data) return batch;
+    }
+    if (!unmodifiedTexts || unmodifiedTexts.length === 0) {
+      let batch = await assignBatchtoAnnotate();
+      if (batch) return batch;
+    }
   }
 
   return null; // No batch found or needed
@@ -290,6 +299,7 @@ export async function getAsignedReviewText(user: User, history: string | null) {
   //loop through asigned batchs and  get the text list from batch that has both a and b modified;
   //as well not reviewed;
   let batch: string = await checkAndAssignBatchforReview(user!);
+  console.log(batch);
   if (!batch) return null;
   if (batch.endsWith("c")) {
     //if the asignedbatch is review batch
@@ -443,7 +453,9 @@ export async function saveReviewedText(
   ga_id: string,
   gb_id: string,
   text: string,
-  userId: string
+  userId: string,
+  a_error_count: string,
+  b_error_count: string
 ) {
   let update_ga = await db.text.updateMany({
     where: {
@@ -453,6 +465,7 @@ export async function saveReviewedText(
       reviewed_text: JSON.stringify(text.split("\n")),
       status: "APPROVED",
       reviewer_id: userId,
+      error_count: a_error_count,
     },
   });
   let update_gb = await db.text.updateMany({
@@ -463,6 +476,7 @@ export async function saveReviewedText(
       reviewed_text: JSON.stringify(text.split("\n")),
       status: "APPROVED",
       reviewer_id: userId,
+      error_count: b_error_count,
     },
   });
 

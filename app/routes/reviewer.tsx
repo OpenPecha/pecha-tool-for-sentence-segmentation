@@ -4,7 +4,7 @@ import Sidebar from "~/components/Sidebar";
 import { getAsignedReviewText } from "~/model/text";
 import { getUser } from "~/model/user";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { getDiff } from "~/lib/dmp";
+import { getDiff, getErrorCount } from "~/lib/dmp";
 import { useEffect, useState } from "react";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -19,6 +19,7 @@ import insertHTMLonText from "~/lib/insertHtmlOnText";
 import Button from "~/components/Button";
 import { NEW_LINER } from "~/constant";
 import { getListasignedBatchreviewer } from "~/model/utils/batch";
+import classNames from "classnames";
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
   let session = url.searchParams.get("session") as string;
@@ -45,6 +46,7 @@ function review() {
   let newText = review ? selectedText.trim() : checkUnknown(insertHTML);
   const setter = () => {};
   const charClick = () => {};
+
   useEffect(() => {
     if (review) {
       let text = "";
@@ -58,7 +60,7 @@ function review() {
       let newText = checkUnknown(insertHTML);
       setSelectedText(newText);
     }
-  }, [tabIndex, review]);
+  }, [tabIndex, review, ga?.modified_text]);
   const editor = useEditor(
     {
       extensions: [
@@ -73,18 +75,35 @@ function review() {
     },
     [newText]
   );
-  let isButtonDisabled = false;
   let fetcher = useFetcher();
+  let isButtonDisabled = fetcher.state !== "idle";
   let saveText = async () => {
     let text = editor?.getText();
     const escapedSymbol = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(escapedSymbol, "g");
     if (review) {
+      let a_error_count = getErrorCount(
+        JSON.parse(ga.modified_text).join("\n"),
+        text!
+      );
+      let b_error_count = getErrorCount(
+        JSON.parse(gb.modified_text).join("\n"),
+        text!
+      );
+
       let reviewed_text = text?.replace(regex, "")!;
       let ga_id = ga.id;
       let gb_id = gb.id;
+
       fetcher.submit(
-        { ga_id, gb_id, reviewed_text, userId: user.id },
+        {
+          ga_id,
+          gb_id,
+          reviewed_text,
+          userId: user.id,
+          a_error_count,
+          b_error_count,
+        },
         { method: "POST", action: "/api/reviewed" }
       );
     } else {
@@ -152,7 +171,12 @@ function review() {
           <ClientOnly fallback={null}>
             {() =>
               editor && (
-                <div className="shadow-lg max-h-[30vh] overflow-y-scroll text-xl max-w-3xl mx-2 md:mx-auto ">
+                <div
+                  className={classNames(
+                    "shadow-lg  overflow-y-scroll text-xl max-w-3xl mx-2 md:mx-auto ",
+                    review ? "max-h-[30vh]" : "max-h-[60vh]"
+                  )}
+                >
                   <EditorContainer editor={editor!} />
                 </div>
               )
@@ -177,13 +201,13 @@ function review() {
                 title="REJECT (x)"
                 shortCut="x"
               />
-              <Button
+              {/* <Button
                 disabled={isButtonDisabled}
                 handleClick={ignoreTask}
                 type="IGNORE"
                 title="IGNORE (i)"
                 shortCut="i"
-              />
+              /> */}
               <Button
                 disabled={isButtonDisabled}
                 handleClick={undoTask}

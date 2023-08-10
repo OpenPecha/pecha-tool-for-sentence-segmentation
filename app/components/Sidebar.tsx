@@ -2,7 +2,7 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import truncateText from "~/lib/truncate";
 import { Cross, Hamburger, Tick } from "./SVGS";
-import { Text } from "@prisma/client";
+import { Role, Text } from "@prisma/client";
 
 interface HistoryItemProps {
   content: string;
@@ -23,6 +23,9 @@ function HistoryItem({
 }: HistoryItemProps) {
   let split = id.split("_");
   let historyName = split[0] + "_" + split[1] + "_" + split[split.length - 1];
+  if (id.startsWith("c_")) {
+    id = id.replace("c_", "a_");
+  }
   return (
     <Link
       to={`/${reviewer ? "reviewer" : ""}?session=${
@@ -47,6 +50,7 @@ interface SidebarProps {
 function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
   const data = useLoaderData();
   const text = data.text;
+  const role: Role = user.role;
   const [openMenu, setOpenMenu] = useState(false);
   let ga = data.ga;
 
@@ -59,6 +63,31 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
     </div>
   );
 
+  const originalArray = [
+    ...(user?.rejected_list || []),
+    ...(user?.approved_text || []),
+  ];
+
+  const mergedArray = [];
+  const seen = new Set();
+
+  originalArray.forEach((item, index) => {
+    if (item.id.startsWith("a_") || item.id.startsWith("b_")) {
+      const matchingItem = originalArray.find(
+        (x, innerIndex) =>
+          innerIndex !== index && x.id.substring(2) === item.id.substring(2)
+      );
+      if (matchingItem && !seen.has(item.id.substring(2))) {
+        mergedArray.push({
+          ...item,
+          id: "c_" + item.id.substring(2),
+        });
+        seen.add(item.id.substring(2));
+      }
+    } else {
+      mergedArray.push(item);
+    }
+  });
   return (
     <div className="header">
       <div className="sidebar_title" onClick={() => setOpenMenu(true)}>
@@ -93,7 +122,8 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
             {!text?.batch ? batch : text?.batch}
           </div>
           <div>
-            <span className="info">Approved :</span> {user?.text?.length}
+            <span className="info">Approved :</span>{" "}
+            {user?.approved_text?.length}
           </div>
           <div>
             <span className="info">Rejected :</span>{" "}
@@ -110,9 +140,10 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
           <div className="sidebar-section-title">History</div>
           <div className="history-container">
             {user &&
+              role === "annotator" &&
               !history &&
               (user.rejected_list || user.approved_text) &&
-              [...(user?.rejected_list || []), ...(user?.approved_text || [])]
+              originalArray
                 .sort(sortUpdate)
                 .map((text: Text) => (
                   <HistoryItem
@@ -125,7 +156,20 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
                     reviewer={reviewer}
                   />
                 ))}
-            {history && console.log(history)}
+            {role === "reviewer" &&
+              mergedArray
+                ?.sort(sortUpdate)
+                .map((text: Text) => (
+                  <HistoryItem
+                    content={text?.modified_text! || text?.original_text}
+                    user={user}
+                    id={text?.id}
+                    key={text.id + "-accepted"}
+                    onClick={() => setOpenMenu(false)}
+                    icon={text?.modified_text ? <Tick /> : <Cross />}
+                    reviewer={reviewer}
+                  />
+                ))}
           </div>
         </div>
       </div>

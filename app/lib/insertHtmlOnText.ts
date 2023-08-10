@@ -84,6 +84,10 @@ function splitText(text: string) {
         let temp = data[i] + data[i + 1] + data[i + 2] + data[i + 3];
         finalItem.push(temp);
         i = i + 3;
+      } else if (data[i + 2] === " " && data[i + 3] === "\n") {
+        let temp = data[i] + data[i + 1] + " " + "\n";
+        finalItem.push(temp);
+        i = i + 3;
       } else if (data[i + 2] === " " && data[i + 3] !== "།") {
         let temp = data[i] + data[i + 1] + " ";
         finalItem.push(temp);

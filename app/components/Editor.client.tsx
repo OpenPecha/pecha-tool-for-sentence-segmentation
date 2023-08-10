@@ -86,7 +86,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
             //   modifiedContent.slice(location + 3);
           } else {
             modifiedContent =
-              modifiedContent.slice(0, location + 1) +
+              modifiedContent.slice(0, location) +
               DIVIDER +
               modifiedContent.slice(location);
             const newText = insertHTMLonText(modifiedContent);
@@ -117,6 +117,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
       let location = parseInt(e.target.classList[0].replace("d-", ""));
       let modifiedContent = content;
       let first = modifiedContent.slice(0, location);
+
       let second = modifiedContent.slice(location + 3);
       modifiedContent = first + second;
       const newText = insertHTMLonText(modifiedContent);
@@ -213,7 +214,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
 
   return (
     <div className="editor-container">
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} style={{ maxWidth: "100%" }} />
     </div>
   );
 }

@@ -21,7 +21,17 @@ export const action: ActionFunction = async ({ request }) => {
     const ga_id = formData.get("ga_id") as string;
     const gb_id = formData.get("gb_id") as string;
 
-    text = await saveReviewedText(ga_id, gb_id, reviewed_text, userId);
+    const a_error_count = formData.get("a_error_count") as string;
+    const b_error_count = formData.get("b_error_count") as string;
+
+    text = await saveReviewedText(
+      ga_id,
+      gb_id,
+      reviewed_text,
+      userId,
+      a_error_count,
+      b_error_count
+    );
   }
 
   if (request.method === "DELETE") {

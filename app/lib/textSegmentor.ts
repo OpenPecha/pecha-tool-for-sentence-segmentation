@@ -7,8 +7,9 @@ function makeSegment(text, start) {
 }
 
 export default function segmentTibetanText(text) {
-  const breaks = "༄༅།\n";
+  const breaks = "༄༅།";
   const spaces = " ་";
+  const newline = "\n";
 
   let segments = [];
   let currentSegment = "";
@@ -16,20 +17,28 @@ export default function segmentTibetanText(text) {
   let inBreak = false;
   let inSpace = false;
   let count = 0;
+
+  function processCurrentSegment() {
+    if (count > 0) {
+      const newSegment = makeSegment(currentSegment, currentStart);
+      segments.push(newSegment);
+      currentSegment = "";
+      inBreak = false;
+      inSpace = false;
+    }
+  }
+
   for (let char of text) {
-    if (char === "\n") {
-      currentSegment = "\n";
+    if (char === newline) {
+      processCurrentSegment();
+      currentSegment = char;
+      currentStart = count + 1; // Move to the next character after the newline
     } else if (breaks.includes(char)) {
       if (inBreak) {
         currentSegment += char;
       } else {
-        if (count > 0) {
-          const newSegment = makeSegment(currentSegment, currentStart);
-          segments.push(newSegment);
-        }
-
+        processCurrentSegment();
         inBreak = true;
-        inSpace = false;
         currentSegment = char;
         currentStart = count;
       }
@@ -37,25 +46,14 @@ export default function segmentTibetanText(text) {
       if (inSpace) {
         currentSegment += char;
       } else {
-        if (count > 0) {
-          const newSegment = makeSegment(currentSegment, currentStart);
-          segments.push(newSegment);
-        }
-
-        inBreak = false;
+        processCurrentSegment();
         inSpace = true;
         currentSegment = char;
         currentStart = count;
       }
     } else {
       if (inSpace || inBreak) {
-        if (count > 0) {
-          const newSegment = makeSegment(currentSegment, currentStart);
-          segments.push(newSegment);
-        }
-
-        inBreak = false;
-        inSpace = false;
+        processCurrentSegment();
         currentSegment = char;
         currentStart = count;
       } else {

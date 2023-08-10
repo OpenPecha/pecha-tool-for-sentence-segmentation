@@ -47,6 +47,7 @@ model Text {
   reviewed_text       String? 
   reviewer       User?    @relation("UserReviewedText", fields: [reviewer_id], references: [id])
   reviewer_id    String?
+  error_count    String? @default("0")
 }
 
 enum Status {

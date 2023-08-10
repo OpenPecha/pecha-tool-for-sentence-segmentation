@@ -39,6 +39,7 @@ export const getUsers = async () => {
         approved_text: true,
         rejected_list: true,
         ignored_list: true,
+        reviewed_list: true,
       },
       orderBy: {
         username: "asc", // 'asc' for ascending order, 'desc' for descending order

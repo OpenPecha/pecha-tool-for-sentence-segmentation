@@ -111,7 +111,11 @@ export default function Index() {
       { method: "PATCH", action: "/api/text" }
     );
   };
-  let isButtonDisabled = !editor || !data.text;
+  let isButtonDisabled =
+    !editor ||
+    !data.text ||
+    fetcher.state !== "idle" ||
+    data.text.reviewed_text !== null;
   if (data.error) return <div>{data.error}</div>;
   return (
     <div className="main">
@@ -157,13 +161,13 @@ export default function Index() {
                 title="REJECT (x)"
                 shortCut="x"
               />
-              <Button
+              {/* <Button
                 disabled={isButtonDisabled}
                 handleClick={ignoreTask}
                 type="IGNORE"
                 title="IGNORE (i)"
                 shortCut="i"
-              />
+              /> */}
               <Button
                 disabled={isButtonDisabled}
                 handleClick={undoTask}

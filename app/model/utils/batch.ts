@@ -1,3 +1,4 @@
+import { User } from "@prisma/client";
 import { db } from "~/service/db.server";
 
 //sort by category list
@@ -29,7 +30,7 @@ export async function unique_batch_list() {
     select: { batch: true },
   });
   const uniqueBatches = new Set(allBatches.map((item) => item.batch));
-  return uniqueBatches;
+  return Array.from(uniqueBatches).sort(batchSort);
 }
 export async function get_all_batch() {
   const data = await db.text.findMany({
@@ -87,7 +88,7 @@ export async function get_batch_assigned_to_review() {
   const assignedBatchesForReviewUnique = new Set(
     assignedBatchesForReview.flatMap((item) => item.assigned_batch_for_review)
   );
-  return assignedBatchesForReviewUnique;
+  return Array.from(assignedBatchesForReviewUnique);
 }
 async function check_a_b(unassignedBatches: string[]) {
   let validBatches = [];
@@ -132,30 +133,35 @@ async function check_a_b(unassignedBatches: string[]) {
   );
   return resultBatches;
 }
-export async function get_available_batch_to_review() {
+export async function get_available_batch_to_review(userSession: User) {
   // Get a unique list of all batch identifiers
+  let user = await db.user.findUnique({
+    where: { username: userSession.username },
+    select: { assigned_batch: true },
+  });
+  let asignedbatch = user?.assigned_batch?.map((l) => l?.slice(0, -1) + "c");
   const uniqueBatches = await unique_batch_list();
   const assignedBatchesForReviewUnique = await get_batch_assigned_to_review();
   let availableBatches = [];
-
   const texts = await db.text.findMany({
     where: {
-      batch: { in: Array.from(uniqueBatches) },
+      batch: {
+        notIn: assignedBatchesForReviewUnique
+          .map((item) => [item.slice(0, -1) + "a", item.slice(0, -1) + "b"])
+          .flat(),
+      },
       reviewer_id: null, // Only consider texts that have not been reviewed yet
     },
   });
   for (const batch of uniqueBatches) {
-    // Find all text entries with the current batch identifier
-    if (assignedBatchesForReviewUnique.has(batch)) continue;
-    texts.filter((item) => item.batch === batch);
-    // Check if all texts have modified_text not null
-    if (texts.every((text) => text.modified_text !== null)) {
+    let d = texts.filter((item) => item.batch === batch);
+    if (d.every((text) => text.modified_text !== null)) {
       availableBatches.push(batch);
     }
   }
   const filteredBatches = await check_a_b(availableBatches);
-  console.log(filteredBatches);
-  return filteredBatches[0];
+  let res = filteredBatches.filter((item) => !asignedbatch.includes(item));
+  return res;
 }
 
 export async function get_batchList_not_reviewed() {

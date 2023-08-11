@@ -61,6 +61,7 @@ export const getUser = async (username: string) => {
         approved_text: true,
         rejected_list: true,
         ignored_list: true,
+        reviewed_list: true,
       },
     });
     return user;

@@ -1,6 +1,6 @@
 import React from "react";
 
-function Table({ user }) {
+function Table({ users }) {
   return (
     <div className="overflow-x-auto">
       <table className="table table-md">
@@ -9,14 +9,14 @@ function Table({ user }) {
             <th></th>
             <th>Name</th>
             <th>Role</th>
-            <th>Approved/Reviewed</th>
+            <th>Approved</th>
             <th>Rejected</th>
             <th>Error</th>
             <th>Payment</th>
           </tr>
         </thead>
         <tbody>
-          {user.map((user, index) => (
+          {users.map((user, index) => (
             <Row key={index + "_count"} user={user} index={index} />
           ))}
         </tbody>
@@ -38,12 +38,6 @@ function Table({ user }) {
 
 function Row({ user, index }) {
   let approved = user.approved_text.length;
-  if (user.role === "reviewer") {
-    let approve_count = user.approved_text.length / 2;
-    let reviewed_count = user.reviewed_list.length / 2;
-    approved = `${approve_count}
-       / ${reviewed_count - approve_count}`;
-  }
 
   const totalErrorCount = user?.approved_text.reduce(
     (acc, obj) => acc + parseInt(obj.error_count),

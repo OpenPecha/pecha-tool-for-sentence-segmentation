@@ -18,7 +18,6 @@ import checkUnknown from "~/lib/checkUnknown";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import Button from "~/components/Button";
 import { NEW_LINER } from "~/constant";
-import { getListasignedBatchreviewer } from "~/model/utils/batch";
 import classNames from "classnames";
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);

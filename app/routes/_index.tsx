@@ -37,7 +37,9 @@ export const loader: LoaderFunction = async ({ request }) => {
       return redirect("/reviewer?session=" + session);
     }
     // let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
-    let text = await getTextToDisplay(user, history);
+
+    let text = null;
+    if (user.allow_annotation) text = await getTextToDisplay(user, history);
     let textFromUser = await getTextToDisplayByUser(user?.id);
     return { text, textFromUser, user, KEY, CLUSTER, NODE_ENV };
   }
@@ -97,10 +99,10 @@ export default function Index() {
     let text = checkUnknown(insertHTMLonText(data?.text?.original_text));
     editor?.commands.setContent(text);
   };
-  let ignoreTask = async () => {
+  let rejectTask = async () => {
     let id = data.text.id;
     fetcher.submit(
-      { id, userId: user.id, _action: "ignore" },
+      { id, userId: user.id, _action: "reject" },
       { method: "PATCH", action: "/api/text" }
     );
   };
@@ -115,7 +117,10 @@ export default function Index() {
       <Sidebar user={data.user} online={textOnline} reviewer={false} />
       <div className="flex flex-1 justify-around items-center flex-col">
         {!data.text ? (
-          <div>Thank you . your work is complete ! 😊😊😊</div>
+          <div>
+            Thank you . your work is complete ! 😊😊😊 Check if there is any
+            rejected text in history
+          </div>
         ) : (
           <div className="container">
             <div className="label mb-2">transcript</div>
@@ -139,20 +144,20 @@ export default function Index() {
                 title="CONFIRM (a)"
                 shortCut="a"
               />
-              {/* <Button
+              <Button
                 disabled={isButtonDisabled}
                 handleClick={rejectTask}
                 type="REJECT"
                 title="REJECT (x)"
                 shortCut="x"
-              /> */}
-              <Button
+              />
+              {/* <Button
                 disabled={isButtonDisabled}
                 handleClick={ignoreTask}
                 type="IGNORE"
                 title="IGNORE (i)"
                 shortCut="i"
-              />
+              /> */}
               <Button
                 disabled={isButtonDisabled}
                 handleClick={undoTask}

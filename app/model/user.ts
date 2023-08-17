@@ -188,3 +188,34 @@ export const changeUserGroup = async (group: Group, id: string) => {
     throw new Error("cannot change user group" + e);
   }
 };
+
+export const updateUserNickname = async (id: string, name: string) => {
+  try {
+    let user = await db.user.update({
+      where: {
+        id,
+      },
+      data: {
+        nickname: name,
+      },
+    });
+    return user;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+export const updateUserAssign = async (id: string, allow: boolean) => {
+  try {
+    let user = await db.user.update({
+      where: {
+        id,
+      },
+      data: {
+        allow_annotation: allow,
+      },
+    });
+    return user;
+  } catch (e) {
+    throw new Error(e);
+  }
+};

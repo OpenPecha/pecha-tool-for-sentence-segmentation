@@ -115,23 +115,10 @@ function review() {
     }
   };
   let undoTask = async () => {
-    // let text = checkUnknown(insertHTMLonText(data?.text?.original_text));
-    // editor?.commands.setContent(text);
+    let text = newText;
+    editor?.commands.setContent(text);
   };
-  let ignoreTask = async () => {
-    // let id = data.text.id;
-    // fetcher.submit(
-    //   { id, userId: user.id, _action: "ignore" },
-    //   { method: "PATCH", action: "/api/text" }
-    // );
-  };
-  let rejectTask = async () => {
-    // let id = data.text.id;
-    // fetcher.submit(
-    //   { id, userId: user.id, _action: "reject" },
-    //   { method: "PATCH", action: "/api/text" }
-    // );
-  };
+
   return (
     <div className="main">
       <Sidebar
@@ -143,12 +130,7 @@ function review() {
       <div className="groupText relative max-w-[100vw] max-h-[100dvh] md:max-w-[80vw] mx-auto pt-[50px]">
         {review && (
           <Tabs
-            style={{
-              padding: 10,
-              maxWidth: 800,
-              marginInline: "auto",
-              marginBottom: 20,
-            }}
+            className="p-3 max-w-[800px] mx-auto mb-5"
             selectedIndex={tabIndex}
             onSelect={(index) => setTabIndex(index)}
           >
@@ -156,12 +138,12 @@ function review() {
               <Tab>A( {ga?.modified_by?.username} )</Tab>
               <Tab>B( {gb?.modified_by?.username} )</Tab>
             </TabList>
-            <TabPanel style={{ maxHeight: "30vh", overflowY: "scroll" }}>
+            {/* <TabPanel className="max-h-[30vh] overflow-scroll">
               <EachPanel textA={ga?.original_text} textB={ga?.modified_text} />
             </TabPanel>
-            <TabPanel style={{ maxHeight: "30vh", overflowY: "scroll" }}>
+            <TabPanel className="max-h-[30vh] overflow-scroll">
               <EachPanel textA={gb?.original_text} textB={gb?.modified_text} />
-            </TabPanel>
+            </TabPanel> */}
           </Tabs>
         )}
         {!data.text && !data.ga ? (
@@ -173,7 +155,7 @@ function review() {
                 <div
                   className={classNames(
                     "shadow-lg  overflow-y-scroll text-xl max-w-3xl mx-2 md:mx-auto ",
-                    review ? "max-h-[30vh]" : "max-h-[60vh]"
+                    review ? "max-h-[50vh]" : "max-h-[60vh]"
                   )}
                 >
                   <EditorContainer editor={editor!} />
@@ -195,20 +177,6 @@ function review() {
               />
               <Button
                 disabled={isButtonDisabled}
-                handleClick={rejectTask}
-                type="REJECT"
-                title="REJECT (x)"
-                shortCut="x"
-              />
-              {/* <Button
-                disabled={isButtonDisabled}
-                handleClick={ignoreTask}
-                type="IGNORE"
-                title="IGNORE (i)"
-                shortCut="i"
-              /> */}
-              <Button
-                disabled={isButtonDisabled}
                 handleClick={undoTask}
                 type="UNDO"
                 title="UNDO (backspace)"
@@ -225,17 +193,10 @@ function review() {
 export default review;
 
 function EachPanel({ textA, textB }) {
-  let [newText, setNewText] = useState("");
-
   let a = textA || "";
   let b = "";
   if (textB) b = JSON.parse(textB).join("\n");
 
-  var oldStr = "",
-    newStr = "";
-  useEffect(() => {
-    setNewText(newStr);
-  }, [a, b]);
   let { html } = getDiff(a, b);
   return (
     <div className="px-5 py-0">

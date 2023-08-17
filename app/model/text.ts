@@ -24,21 +24,27 @@ export async function checkAndAssignBatch(userSession: User) {
     if (!user) return null;
 
     let asignedbatch = user?.assigned_batch;
-    let ignoredids = user?.ignored_list.map((item) => item?.id);
-    if (ignoredids.length) ignoredids = [...new Set(ignoredids)];
     //check if there is any text in asigned batches
     if (asignedbatch) {
       // if user is a reviewer, check if there is a batch to review
       // Check if work complete
 
-      let available_batch = await db.text.findMany({
+      let available_batch = await db.text.findFirst({
         where: {
-          id: { notIn: ignoredids },
           batch: { in: asignedbatch },
           modified_text: null,
         },
       });
-      if (available_batch.length > 0) return available_batch[0].batch;
+      let not_approved = await db.text.findFirst({
+        where: {
+          batch: { in: asignedbatch },
+          modified_text: null,
+          status: { not: "APPROVED" },
+        },
+      });
+      if (available_batch) return available_batch.batch;
+      if (not_approved) return null;
+
       let batch = await get_not_asigned_batch(user?.assigned_batch, false);
       await db.user.update({
         where: { username: userSession.username },
@@ -318,8 +324,8 @@ export async function getAsignedReviewText(user: User, history: string | null) {
     };
   }
 
-  let batch: string | null = await checkAndAssignBatchforReview(user!);
-  if (!batch) return null;
+  let batch = await checkAndAssignBatchforReview(user!);
+  if (!batch && typeof batch !== "string") return null;
   if (batch.endsWith("c")) {
     let ga_batch = batch.slice(0, -1) + "a";
 
@@ -400,6 +406,7 @@ export async function rejectText(id: string, userId: string) {
     },
     data: {
       status: "REJECTED",
+      modified_text: null,
       modified_by: { disconnect: { id: userId } },
       rejected_by: { connect: { id: userId } },
     },

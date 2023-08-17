@@ -1,11 +1,11 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
-import truncateText from "~/lib/truncate";
 import { Cross, Hamburger, Tick } from "./SVGS";
 import { Role, Text } from "@prisma/client";
+import { error_and_pay } from "~/lib/payCalc";
+import TextInfo from "./TextInfo";
 
 interface HistoryItemProps {
-  content: string;
   id: string;
   user: any;
   onClick: () => void;
@@ -13,14 +13,7 @@ interface HistoryItemProps {
   reviewer: boolean;
 }
 
-function HistoryItem({
-  content,
-  id,
-  user,
-  onClick,
-  icon,
-  reviewer,
-}: HistoryItemProps) {
+function HistoryItem({ id, user, onClick, icon, reviewer }: HistoryItemProps) {
   let split = id.split("_");
   let historyName = split[0] + "_" + split[1] + "_" + split[split.length - 1];
   if (id.startsWith("c_")) {
@@ -31,7 +24,7 @@ function HistoryItem({
       to={`/${reviewer ? "reviewer" : ""}?session=${
         user.username
       }&history=${id}`}
-      className="flex justify-between"
+      className="flex justify-between px-2"
       onClick={onClick}
     >
       {historyName} {icon}
@@ -50,10 +43,9 @@ interface SidebarProps {
 function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
   const data = useLoaderData();
   const text = data.text;
-  const role: Role = user.role;
   const [openMenu, setOpenMenu] = useState(false);
   let ga = data.ga;
-
+  let role = user.role;
   const SidebarHeader = () => (
     <div className="sidebar-Header">
       <div className="title">Sentence segmentation</div>
@@ -66,11 +58,12 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
   const originalArray = [
     ...(user?.rejected_list || []),
     ...(user?.approved_text || []),
+    ...(user?.reviewed_list || []),
   ];
 
   const mergedArray = [];
   const seen = new Set();
-
+  let { finalErrorCount, pay } = error_and_pay(user);
   originalArray.forEach((item, index) => {
     if (item.id.startsWith("a_") || item.id.startsWith("b_")) {
       const matchingItem = originalArray.find(
@@ -88,14 +81,22 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
       mergedArray.push(item);
     }
   });
+
   return (
-    <div className="header">
-      <div className="sidebar_title" onClick={() => setOpenMenu(true)}>
+    <div className="flex flex-col">
+      <div
+        className="flex px-2 py-3 text-white bg-gray-600 text-lg font-semibold items-center  gap-2"
+        onClick={() => setOpenMenu(true)}
+      >
         <Hamburger />
         Sentence segmentation
       </div>
-      <div className={`sidebar ${openMenu ? "open" : ""}`}>
-        <div className="sidebar_menu">
+      <div
+        className={`flex flex-col text-white bg-[#54606e] overflow-y-auto overflow-x-hidden max-h-[100vh] transition-all -translate-x-full z-30 ${
+          openMenu ? "block translate-x-0" : ""
+        } min-h-[100vh] w-[260px] md:translate-x-0`}
+      >
+        <div className="px-2 flex gap-2 flex-col border-b-2 border-b-[#384451] mb-3 pb-2 mt-2 ">
           <SidebarHeader />
           {user.role === "admin" && (
             <Link
@@ -113,44 +114,24 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
               Dashboard
             </Link>
           )}
-          <div>
-            <span className="info">User :</span> {user?.username}
-          </div>
-          <div>
-            <span className="info">text id :</span>{" "}
-            {ga ? ga.id.replace("a_", "") : text?.id}
-          </div>
-          <div>
-            <span className="info">batch id :</span>{" "}
-            {!text?.batch ? batch : text?.batch}
-          </div>
-          <div>
-            <span className="info">Approved :</span>{" "}
-            {user?.approved_text?.length}
-          </div>
-          <div>
-            <span className="info">Rejected :</span>{" "}
-            {user?.rejected_list?.length}
-          </div>
-          <div>
-            <span className="info">Ignored :</span> {user?.ignored_list?.length}
-          </div>
-          <div>
-            <span className="info">online User :</span> {online?.length}
-          </div>
+          <TextInfo>User : {user?.username}</TextInfo>
+          <TextInfo>
+            text id :{ga ? ga.id.replace("a_", "") : text?.id}
+          </TextInfo>
+          <TextInfo>batch id :{!text?.batch ? batch : text?.batch}</TextInfo>
+          <TextInfo>Approved :{user?.approved_text?.length}</TextInfo>
+          <TextInfo>Rejected :{user?.rejected_list?.length}</TextInfo>
+          <TextInfo>error : {finalErrorCount} %</TextInfo>
+          <TextInfo>earn : Rs {pay}</TextInfo>
         </div>
-        <div className="sidebar_menu" style={{ flex: 1 }}>
-          <div className="sidebar-section-title">History</div>
-          <div className="history-container">
-            {user &&
-              role === "annotator" &&
-              !history &&
-              (user.rejected_list || user.approved_text) &&
-              originalArray
+        <div className="flex-1">
+          <div className="text-sm mb-2 font-bold">History</div>
+          <div className="flex flex-col gap-2 max-h-[30vh] overflow-y-auto">
+            {role === "annotator" &&
+              ([...user?.rejected_list] || [])
                 .sort(sortUpdate)
                 .map((text: Text) => (
                   <HistoryItem
-                    content={text?.modified_text! || text?.original_text}
                     user={user}
                     id={text?.id}
                     key={text.id + "-accepted"}
@@ -159,12 +140,25 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
                     reviewer={reviewer}
                   />
                 ))}
+            {role === "annotator" &&
+              ([...user?.approved_text] || [])
+                .sort(sortUpdate)
+                .map((text: Text) => (
+                  <HistoryItem
+                    user={user}
+                    id={text?.id}
+                    key={text.id + "-accepted"}
+                    onClick={() => setOpenMenu(false)}
+                    icon={text?.modified_text ? <Tick /> : <Cross />}
+                    reviewer={reviewer}
+                  />
+                ))}
+
             {role === "reviewer" &&
               mergedArray
                 ?.sort(sortUpdate)
                 .map((text: Text) => (
                   <HistoryItem
-                    content={text?.modified_text! || text?.original_text}
                     user={user}
                     id={text?.id}
                     key={text.id + "-accepted"}

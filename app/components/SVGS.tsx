@@ -2,6 +2,7 @@ export function Hamburger() {
   return (
     <svg
       aria-hidden="true"
+      className="md:hidden"
       fill="gray"
       width="20"
       height="20"
@@ -15,7 +16,7 @@ export function Tick() {
   return (
     <svg
       aria-hidden="true"
-      className="tickSVG"
+      className="fill-current text-green-500"
       width="18"
       height="18"
       viewBox="0 0 24 24"
@@ -28,7 +29,7 @@ export function Cross() {
   return (
     <svg
       aria-hidden="true"
-      className="crossSVG"
+      className="fill-current text-red-500"
       width="18"
       height="18"
       viewBox="0 0 24 24"

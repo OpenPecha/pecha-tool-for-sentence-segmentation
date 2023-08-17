@@ -38,7 +38,7 @@
 body {
   counter-reset: section;
   overflow: hidden;
-  font-family: "Monlam";
+  font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
 }
 .container {
   border: 1px solid #ddd;
@@ -56,13 +56,12 @@ body {
 .editor-container {
   text-align: left;
   color: #444;
-  margin: 40px;
   height: 80%;
   display: flex;
   background: #fff;
-  font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
   border-radius: 0;
   font-size: 20px;
+  padding: 10px;
   word-wrap: break-word;
   white-space: pre-wrap;
 }

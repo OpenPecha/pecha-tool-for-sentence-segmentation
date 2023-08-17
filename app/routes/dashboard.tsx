@@ -24,7 +24,7 @@ function dashboard() {
         to={"/?session=" + user.username}
         className="w-full bg-yellow-300 p-2"
       >
-        back
+        {"<-"} back
       </Link>
       <ReviewerDetail user={user} />
       <Table users={annotators} />;

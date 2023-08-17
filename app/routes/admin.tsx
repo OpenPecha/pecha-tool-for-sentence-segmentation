@@ -87,50 +87,34 @@ export const links: LinksFunction = () => {
 };
 
 function admin() {
-  let groups_list = ["annotator", "reviewer"];
-
   let { user, userlist, unasigned_groups, textInfo, groups } = useLoaderData();
   let [search, setSearch] = useState("");
   let list = userlist.filter((data) => data.username.includes(search));
   let fetcher = useFetcher();
   let userFetcher = useFetcher();
-  let [group, setGroup] = useState("all");
 
   let colorScheme = [
-    { color: "lightgreen", text: "all accepted" },
-    { color: "pink", text: "some rejected" },
-    { color: "yellow", text: "some Ignored" },
+    { color: "bg-green-500", text: "all accepted" },
+    { color: "bg-red-500", text: "some rejected" },
   ];
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <>
+      <div className="flex justify-between">
         <Link
           to={`/?session=${user.username}`}
-          style={{
-            textDecoration: "none",
-            color: "white",
-            background: "gray",
-            padding: 10,
-          }}
+          className="text-white bg-gray-500 p-2"
         >
           Home
         </Link>
-        <div style={{ display: "flex", alignItems: "center", marginRight: 10 }}>
+        <div className="flex  mr-2 flex-col">
           {colorScheme?.map((data) => {
             return (
               <div
-                style={{ display: "flex", alignItems: "center" }}
+                className="flex items-center gap-2"
                 key={data.color + "unique"}
               >
                 <span
-                  style={{
-                    display: "inline-block",
-                    width: 20,
-                    height: 20,
-                    marginInline: 10,
-                    backgroundColor: data.color,
-                    border: "1px solid black",
-                  }}
+                  className={`inline-block w-[20px] h-[20px] border-2 border-black ${data.color}`}
                 ></span>
                 {data.text}
               </div>
@@ -138,47 +122,28 @@ function admin() {
           })}
         </div>
       </div>
-      <h1>welcome Admin : {user.username}</h1>
-      <select onChange={(e) => setGroup(e.target.value)}>
-        {groups_list.map((data) => {
-          return (
-            <option value={data} key={data + "option-dashboard"}>
-              {data}
-            </option>
-          );
-        })}
-      </select>
+      <h1>Admin : {user.username}</h1>
+
       <TextDashboard info={textInfo} />
-      <div
-        style={{
-          marginBottom: 20,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div>
+      <div className="mb-5 flex justify-between items-center ">
+        <div className="flex gap-3  mx-auto">
           <h2>Users:</h2>
           <input
-            style={{ marginLeft: 10 }}
             placeholder="search"
             onChange={(e) => setSearch(e.target.value)}
+            className="input input-bordered input-sm w-full max-w-xs ml-2"
           ></input>
         </div>
       </div>
-
-      {userlist.length > 0 && (
-        <table>
-          <tr>
-            <th>User</th>
-            <th>Role</th>
-            <th>Assigned Jobs</th>
-          </tr>
-          {list
-            .filter((g) => {
-              return g.role === group;
-            })
-            .map((user: User) => (
+      <div className="overflow-x-auto max-h-[60vh] overflow-y-scroll">
+        {userlist.length > 0 && (
+          <table className="table table-xs border-collapse">
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Assigned Jobs</th>
+            </tr>
+            {list.map((user: User) => (
               <Users
                 user={user}
                 key={user.id}
@@ -186,9 +151,10 @@ function admin() {
                 fetcher={userFetcher}
               />
             ))}
-        </table>
-      )}
-    </div>
+          </table>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -233,7 +199,7 @@ function Users({
     fetcher.formData?.get("id") === user.id && fetcher.formMethod === "DELETE";
 
   return (
-    <tr>
+    <tr className="hover:bg-gray-300 border-b-gray-300 border-b-2">
       <td>{user.username}</td>
       <td>{user.role}</td>
       <td>
@@ -242,7 +208,7 @@ function Users({
             <button
               key={data + "btn"}
               className={classNames(
-                " border-2 px-2 border-gray-500 cursor-pointer ",
+                " border-2 px-1 border-gray-500 cursor-pointer ",
                 groups[data]?.approved
                   ? "bg-green-300"
                   : groups[data]?.ignored.includes(user.username)
@@ -253,7 +219,7 @@ function Users({
               )}
               onClick={() => removeGroup(data)}
             >
-              {data}
+              {data.split("_")[1]}
             </button>
           ))}
           {user.assigned_batch_for_review.map((data, index) => {
@@ -261,13 +227,13 @@ function Users({
               <button
                 key={data + "btn"}
                 className={classNames(
-                  "px-2 border-2 border-gray-500 cursor-pointer ",
+                  "px-1 border-2 border-gray-500 cursor-pointer ",
                   { "bg-yellow-500": !!reviewedBatch?.at(data) },
                   { "bg-white": !reviewedBatch?.at(data) }
                 )}
                 onClick={() => removeReviewAsign(data)}
               >
-                {data}
+                {data.split("_")[1]}
               </button>
             );
           })}
@@ -281,11 +247,11 @@ function Users({
 
 function TextDashboard({ info }) {
   let { total, accepted, rejected, pending } = info;
-  let classname = "border-2 border-gray-500 p-3 w-48";
+  let classname = " p-3 w-48 shadow-md";
   return (
     <>
-      <h2>Text Dashboard</h2>
-      <div className="flex flex-wrap gap-4 mb-4">
+      <h2 className="text-lg text-center underline">Text Dashboard</h2>
+      <div className="flex flex-wrap gap-4 mb-4 w-full justify-center">
         <div className={classname}>Total text: {total}</div>
         <div className={classname}>Accepted text: {accepted}</div>
         <div className={classname}>Rejected text: {rejected}</div>

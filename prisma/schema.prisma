@@ -13,6 +13,7 @@ datasource db {
 model User {
   id            String   @id @default(uuid())
   username      String   @unique
+  nickname         String?   @unique 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   approved_text Text[]   @relation("UserModifiedText")
@@ -22,6 +23,7 @@ model User {
   assigned_batch String[]    
   assigned_batch_for_review String[]    
   role          Role     @default(annotator)
+  allow_annotation Boolean @default(false)
 }
 
 enum Role {

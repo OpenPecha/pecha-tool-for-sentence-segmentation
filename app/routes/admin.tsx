@@ -6,6 +6,7 @@ import {
   redirect,
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import classNames from "classnames";
 import { useState } from "react";
 import { getAprovedbatch, getTextInfo } from "~/model/text";
 import {
@@ -27,19 +28,13 @@ export const loader: LoaderFunction = async ({ request }) => {
   let user: User | null = await getUser(session);
   if (user?.role !== "admin") return redirect("/error");
   let userlist = await getUsers();
-  // let { unassigned: unasigned_groups } = await getBatchs();
-  // let unreviewed_groups = await getUnReviewedList();
   let textInfo = await getTextInfo();
   let groups = await getAprovedbatch();
-  // let reviewedBatch = await getReviewedBatch();
   return {
     user,
     userlist,
-    // unasigned_groups,
     textInfo,
     groups,
-    // unreviewed_groups,
-    // reviewedBatch,
   };
 };
 
@@ -90,10 +85,9 @@ export const links: LinksFunction = () => {
     },
   ];
 };
-let groups_list = ["ga", "gb", "reviewer"];
 
 function admin() {
-  let groups_list = ["all", "ga", "gb", "reviewer"];
+  let groups_list = ["annotator", "reviewer"];
 
   let { user, userlist, unasigned_groups, textInfo, groups } = useLoaderData();
   let [search, setSearch] = useState("");
@@ -101,34 +95,7 @@ function admin() {
   let fetcher = useFetcher();
   let userFetcher = useFetcher();
   let [group, setGroup] = useState("all");
-  let reset = () => {
-    let checkrejected = false;
-    for (const key in groups) {
-      if (groups.hasOwnProperty(key)) {
-        if (groups[key].rejected === true) {
-          checkrejected = true; // Found data with rejected=true
-        }
-      }
-    }
-    // let checkrejected = groups.filter((data) => data.rejected === true);
-    // console.log(checkrejected);
-    if (checkrejected) {
-      alert(
-        "some group contain rejected data, contact the annotator to either ignore or accept!"
-      );
-    } else {
-      let c = confirm("Are you sure you want to reset all users group?");
-      if (c)
-        fetcher.submit(
-          {
-            action: "reset",
-          },
-          {
-            method: "DELETE",
-          }
-        );
-    }
-  };
+
   let colorScheme = [
     { color: "lightgreen", text: "all accepted" },
     { color: "pink", text: "some rejected" },
@@ -198,9 +165,6 @@ function admin() {
             onChange={(e) => setSearch(e.target.value)}
           ></input>
         </div>
-        <button onClick={reset} style={{ marginRight: 20 }}>
-          Reset
-        </button>
       </div>
 
       {userlist.length > 0 && (
@@ -208,13 +172,11 @@ function admin() {
           <tr>
             <th>User</th>
             <th>Role</th>
-            <th>Group</th>
             <th>Assigned Jobs</th>
           </tr>
           {list
             .filter((g) => {
-              if (group === "all") return g;
-              return g.group === group;
+              return g.role === group;
             })
             .map((user: User) => (
               <Users
@@ -239,30 +201,7 @@ function Users({
   select: string[];
   fetcher: any;
 }) {
-  let { groups, unreviewed_groups, reviewedBatch } = useLoaderData();
-  let addGroup = () => {
-    if (user.group === "reviewer") {
-      if (typeof unreviewed_groups[0] !== "undefined")
-        fetcher.submit(
-          { group: unreviewed_groups[0], id: user?.id, reviewer: true },
-          {
-            method: "POST",
-          }
-        );
-    } else {
-      let nextGroup = select.find((element: string) =>
-        element.startsWith(user.group + "_")
-      );
-      if (typeof nextGroup === "undefined") alert("no more group to assign");
-      if (nextGroup)
-        fetcher.submit(
-          { group: nextGroup, id: user.id },
-          {
-            method: "POST",
-          }
-        );
-    }
-  };
+  let { groups, reviewedBatch } = useLoaderData();
   let removeGroup = (e) => {
     if (groups[e].rejected) {
       alert(
@@ -289,67 +228,29 @@ function Users({
         }
       );
   };
-  let adding =
-    fetcher.formData?.get("id") === user.id && fetcher.formMethod === "POST";
+
   let removing =
     fetcher.formData?.get("id") === user.id && fetcher.formMethod === "DELETE";
-  const handleGroupChange = (group: Group) => {
-    if (user.assigned_batch.length === 0) {
-      fetcher.submit(
-        {
-          group,
-          id: user.id,
-        },
-        {
-          method: "PATCH",
-        }
-      );
-    } else {
-      alert("complete the asigned task or remove the task to change group");
-    }
-  };
+
   return (
     <tr>
       <td>{user.username}</td>
       <td>{user.role}</td>
-      <td
-        style={{
-          display: "flex",
-          gap: 10,
-          cursor: "pointer",
-        }}
-      >
-        {groups_list.map((data) => (
-          <div
-            style={{
-              background: data === user.group ? "lightgreen" : "white",
-              paddingInline: 5,
-            }}
-            onClick={() => handleGroupChange(data)}
-            key={data}
-          >
-            {data}
-          </div>
-        ))}
-      </td>
       <td>
-        <div>
+        <div className="flex gap-3">
           {user.assigned_batch.map((data, index) => (
             <button
               key={data + "btn"}
-              style={{
-                marginRight: 5,
-                border: "1px solid gray",
-                padding: 3,
-                cursor: "pointer",
-                background: groups[data]?.approved
-                  ? "lightgreen"
+              className={classNames(
+                " border-2 px-2 border-gray-500 cursor-pointer ",
+                groups[data]?.approved
+                  ? "bg-green-300"
                   : groups[data]?.ignored.includes(user.username)
-                  ? "yellow"
+                  ? "bg-yellow-500"
                   : groups[data]?.rejected
-                  ? "pink"
-                  : "white",
-              }}
+                  ? "bg-pink-500"
+                  : "bg-white"
+              )}
               onClick={() => removeGroup(data)}
             >
               {data}
@@ -359,13 +260,11 @@ function Users({
             return (
               <button
                 key={data + "btn"}
-                style={{
-                  marginRight: 5,
-                  border: "1px solid gray",
-                  padding: 3,
-                  cursor: "pointer",
-                  background: reviewedBatch[data] ? "lightgreen" : "white",
-                }}
+                className={classNames(
+                  "px-2 border-2 border-gray-500 cursor-pointer ",
+                  { "bg-yellow-500": !!reviewedBatch?.at(data) },
+                  { "bg-white": !reviewedBatch?.at(data) }
+                )}
                 onClick={() => removeReviewAsign(data)}
               >
                 {data}
@@ -373,13 +272,7 @@ function Users({
             );
           })}
         </div>
-        <button
-          onClick={addGroup}
-          disabled={fetcher.state !== "idle"}
-          style={{ padding: 5, border: "1px solid black", cursor: "pointer" }}
-        >
-          {adding ? "adding" : "add"}
-        </button>
+
         {removing && <span>removed</span>}
       </td>
     </tr>
@@ -388,22 +281,16 @@ function Users({
 
 function TextDashboard({ info }) {
   let { total, accepted, rejected, pending } = info;
-  let menuStyle = {
-    border: "1px solid gray",
-    padding: 10,
-    width: 200,
-  };
+  let classname = "border-2 border-gray-500 p-3 w-48";
   return (
     <>
       <h2>Text Dashboard</h2>
-      <div
-        style={{ display: "flex", flexWrap: "wrap", gap: 20, marginBottom: 20 }}
-      >
-        <div style={menuStyle}>Total text: {total}</div>
-        <div style={menuStyle}>Accepted text: {accepted}</div>
-        <div style={menuStyle}>Rejected text: {rejected}</div>
-        <div style={menuStyle}>Pending text: {pending}</div>
-        <div style={menuStyle}>1 Group = 10 Text</div>
+      <div className="flex flex-wrap gap-4 mb-4">
+        <div className={classname}>Total text: {total}</div>
+        <div className={classname}>Accepted text: {accepted}</div>
+        <div className={classname}>Rejected text: {rejected}</div>
+        <div className={classname}>Pending text: {pending}</div>
+        <div className={classname}>1 Group = 10 Text</div>
       </div>
     </>
   );

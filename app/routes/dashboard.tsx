@@ -1,5 +1,5 @@
 import { LoaderFunction, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import Table from "~/components/Table";
 import React from "react";
 import { getUser, getUsers } from "~/model/user";
@@ -20,6 +20,12 @@ function dashboard() {
   let annotators = users.filter((u) => u.role === "annotator");
   return (
     <>
+      <Link
+        to={"/?session=" + user.username}
+        className="w-full bg-yellow-300 p-2"
+      >
+        back
+      </Link>
       <ReviewerDetail user={user} />
       <Table users={annotators} />;
     </>

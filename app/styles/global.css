@@ -150,3 +150,10 @@ button:disabled {
 .content > div {
   max-width: 800px;
 }
+
+ins {
+  background-color: #4fd364 !important;
+}
+del {
+  background-color: transparent !important;
+}

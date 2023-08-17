@@ -100,7 +100,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
             //   modifiedContent.slice(spaceToAddLocation + 3);
           } else {
             modifiedContent =
-              modifiedContent.slice(0, spaceToAddLocation + 1) +
+              modifiedContent.slice(0, spaceToAddLocation) +
               DIVIDER +
               modifiedContent.slice(spaceToAddLocation);
             const newText = insertHTMLonText(modifiedContent);

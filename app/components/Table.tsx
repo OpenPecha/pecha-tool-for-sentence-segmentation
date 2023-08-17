@@ -10,7 +10,7 @@ function Table({ users }) {
             <th>Name</th>
             <th>Role</th>
             <th>Approved</th>
-            <th>Rejected</th>
+            <th>Reviewed</th>
             <th>Error</th>
             <th>Payment</th>
           </tr>
@@ -26,7 +26,7 @@ function Table({ users }) {
             <th>Name</th>
             <th>Role</th>
             <th>Approved</th>
-            <th>Rejected</th>
+            <th>Reviewed</th>
             <th>Error</th>
             <th>Payment</th>
           </tr>
@@ -38,7 +38,7 @@ function Table({ users }) {
 
 function Row({ user, index }) {
   let approved = user.approved_text.length;
-
+  let reviewed = user.approved_text.filter((item) => item.reviewed).length;
   const totalErrorCount = user?.approved_text.reduce(
     (acc, obj) => acc + parseInt(obj.error_count),
     0
@@ -53,7 +53,7 @@ function Row({ user, index }) {
       <td>{user.username}</td>
       <td>{user.role}</td>
       <td>{approved}</td>
-      <td>{user.rejected_list.length}</td>
+      <td>{reviewed}</td>
       <td>{finalErrorCount.toFixed(2)} %</td>
       <td>Rs {pay.toFixed(2)}</td>
     </tr>

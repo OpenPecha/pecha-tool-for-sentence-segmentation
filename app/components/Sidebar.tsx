@@ -97,17 +97,20 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
       <div className={`sidebar ${openMenu ? "open" : ""}`}>
         <div className="sidebar_menu">
           <SidebarHeader />
-          {user.role === "ADMIN" && (
+          {user.role === "admin" && (
             <Link
               to={`/admin?session=${user?.username}`}
-              style={{
-                textDecoration: "none",
-                color: "white",
-                background: "gray",
-                padding: 10,
-              }}
+              className="text-white bg-gray-500 p-3 decoration-inherit"
             >
               Admin
+            </Link>
+          )}
+          {user.role === "reviewer" && (
+            <Link
+              to={`/dashboard?session=${user?.username}`}
+              className="text-white bg-gray-500 p-3 decoration-inherit"
+            >
+              Dashboard
             </Link>
           )}
           <div>

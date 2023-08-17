@@ -4,12 +4,12 @@ export function getDiff(a, b) {
   const dmp = new DiffMatchPatch();
   const diff = dmp.diff_main(a, b);
   dmp.diff_cleanupEfficiency(diff);
-  return diff;
+  let html = dmp.diff_prettyHtml(diff);
+  return { diff, html };
 }
 
 export function getErrorCount(a: string, b: string) {
-  const diff = getDiff(a, b);
-  console.log(diff);
+  const { diff } = getDiff(a, b);
 
   // Define weights for the operation codes
   const weights = {

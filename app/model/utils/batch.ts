@@ -36,6 +36,7 @@ export async function get_all_batch() {
   const data = await db.text.findMany({
     select: {
       batch: true,
+      modified_text: true,
     },
   });
 
@@ -50,11 +51,18 @@ export async function get_all_batch() {
   const assignedNumbers = assignedBatches.flatMap(
     (user) => user.assigned_batch
   );
-
+  let data_asign = await db.text.findFirst({
+    where: {
+      batch: { in: assignedNumbers },
+      modified_text: null,
+    },
+  });
   // Separate unassigned numbers
-  const unassignedNumbers = sortedNumbers.filter(
+  let temp = sortedNumbers.filter(
     (number) => !assignedNumbers.includes(number)
   );
+
+  const unassignedNumbers = temp;
 
   // Return the two groups
   return {
@@ -65,7 +73,10 @@ export async function get_all_batch() {
 
 //for annotator
 
-export async function get_not_asigned_batch(batch?: string[]) {
+export async function get_not_asigned_batch(
+  batch?: string[],
+  reviewer: boolean
+) {
   let { unassigned } = await get_all_batch();
   let batchFromReviewer = await getListasignedBatchreviewer();
   let batchFormat = batch?.map((p) => p.slice(0, -1));
@@ -77,6 +88,16 @@ export async function get_not_asigned_batch(batch?: string[]) {
       return !batchFormat?.includes(data) && !batchFormat2?.includes(data);
     });
   }
+  if (reviewer) {
+    unassigned = unassigned.filter((propertyName) => {
+      let second = propertyName?.endsWith("a")
+        ? propertyName?.slice(0, -1) + "b"
+        : propertyName?.slice(0, -1) + "a";
+      //if propertyName and second both exist in array return it
+      return unassigned.includes(propertyName) && unassigned.includes(second);
+    });
+  }
+
   return unassigned[0] || "";
 }
 
@@ -90,78 +111,38 @@ export async function get_batch_assigned_to_review() {
   );
   return Array.from(assignedBatchesForReviewUnique);
 }
-async function check_a_b(unassignedBatches: string[]) {
-  let validBatches = [];
 
-  for (let i = 0; i < unassignedBatches.length; i += 2) {
-    if (i + 1 < unassignedBatches.length) {
-      const batchA = unassignedBatches[i];
-      const batchB = unassignedBatches[i + 1];
-
-      const [resultA, resultB] = await Promise.all([
-        db.text.findMany({
-          where: {
-            batch: batchA,
-            modified_text: { not: null },
-          },
-        }),
-        db.text.findMany({
-          where: {
-            batch: batchB,
-            modified_text: { not: null },
-          },
-        }),
-      ]);
-
-      // Only add the "c" batch if both "a" and "b" batches exist and have modified_text not null
-      if (resultA.length > 0 && resultB.length > 0) {
-        const batchC = batchA.slice(0, -1) + "c";
-        validBatches.push(batchC);
-      }
-    }
-  }
-  let allBatchesForReviewAssigned = await db.user.findMany({
-    select: { assigned_batch_for_review: true },
-  });
-  let allBatchesForReviewAssignedUnique = new Set(
-    allBatchesForReviewAssigned.flatMap(
-      (item) => item.assigned_batch_for_review
-    )
-  );
-  const resultBatches = validBatches.filter(
-    (batch) => !allBatchesForReviewAssignedUnique.has(batch)
-  );
-  return resultBatches;
-}
 export async function get_available_batch_to_review(userSession: User) {
-  // Get a unique list of all batch identifiers
-  let user = await db.user.findUnique({
-    where: { username: userSession.username },
-    select: { assigned_batch: true },
-  });
-  let asignedbatch = user?.assigned_batch?.map((l) => l?.slice(0, -1) + "c");
-  const uniqueBatches = await unique_batch_list();
-  const assignedBatchesForReviewUnique = await get_batch_assigned_to_review();
-  let availableBatches = [];
-  const texts = await db.text.findMany({
-    where: {
-      batch: {
-        notIn: assignedBatchesForReviewUnique
-          .map((item) => [item.slice(0, -1) + "a", item.slice(0, -1) + "b"])
-          .flat(),
+  try {
+    let text_1 = await db.text.findFirst({
+      where: {
+        id: { startsWith: "a_" },
+        modified_text: { not: null },
+        reviewed_text: null,
       },
-      reviewer_id: null, // Only consider texts that have not been reviewed yet
-    },
-  });
-  for (const batch of uniqueBatches) {
-    let d = texts.filter((item) => item.batch === batch);
-    if (d.every((text) => text.modified_text !== null)) {
-      availableBatches.push(batch);
+      orderBy: {
+        id: "asc",
+      },
+      select: { id: true, batch: true },
+    });
+    let text_2 = await db.text.findFirst({
+      where: {
+        id: text_1?.id.replace("a_", "b_"),
+        modified_text: { not: null },
+        reviewed_text: null,
+      },
+      select: { batch: true },
+    });
+    if (text_1 && text_2) {
+      return text_1.batch?.slice(0, -1) + "c";
     }
+  } catch (error) {
+    console.error(
+      "An error occurred while getting available batches to review:",
+      error
+    );
+    return [];
   }
-  const filteredBatches = await check_a_b(availableBatches);
-  let res = filteredBatches.filter((item) => !asignedbatch.includes(item));
-  return res;
 }
 
 export async function get_batchList_not_reviewed() {

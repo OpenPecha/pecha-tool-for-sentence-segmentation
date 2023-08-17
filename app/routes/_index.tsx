@@ -104,13 +104,6 @@ export default function Index() {
       { method: "PATCH", action: "/api/text" }
     );
   };
-  let rejectTask = async () => {
-    let id = data.text.id;
-    fetcher.submit(
-      { id, userId: user.id, _action: "reject" },
-      { method: "PATCH", action: "/api/text" }
-    );
-  };
   let isButtonDisabled =
     !editor ||
     !data.text ||
@@ -120,15 +113,7 @@ export default function Index() {
   return (
     <div className="main">
       <Sidebar user={data.user} online={textOnline} reviewer={false} />
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          justifyContent: "space-around",
-          alignItems: "center",
-          flexDirection: "column",
-        }}
-      >
+      <div className="flex flex-1 justify-around items-center flex-col">
         {!data.text ? (
           <div>Thank you . your work is complete ! 😊😊😊</div>
         ) : (
@@ -154,20 +139,20 @@ export default function Index() {
                 title="CONFIRM (a)"
                 shortCut="a"
               />
-              <Button
+              {/* <Button
                 disabled={isButtonDisabled}
                 handleClick={rejectTask}
                 type="REJECT"
                 title="REJECT (x)"
                 shortCut="x"
-              />
-              {/* <Button
+              /> */}
+              <Button
                 disabled={isButtonDisabled}
                 handleClick={ignoreTask}
                 type="IGNORE"
                 title="IGNORE (i)"
                 shortCut="i"
-              /> */}
+              />
               <Button
                 disabled={isButtonDisabled}
                 handleClick={undoTask}

@@ -19,6 +19,7 @@ import insertHTMLonText from "~/lib/insertHtmlOnText";
 import Button from "~/components/Button";
 import { NEW_LINER } from "~/constant";
 import classNames from "classnames";
+
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
   let session = url.searchParams.get("session") as string;
@@ -45,7 +46,6 @@ function review() {
   let newText = review ? selectedText.trim() : checkUnknown(insertHTML);
   const setter = () => {};
   const charClick = () => {};
-
   useEffect(() => {
     if (review) {
       let text = "";
@@ -234,24 +234,12 @@ function EachPanel({ textA, textB }) {
   var oldStr = "",
     newStr = "";
   useEffect(() => {
-    let d = getDiff(a, b);
-    for (var i = 0, j = d.length; i < j; i++) {
-      var arr = d[i];
-      if (arr[0] == 0) {
-        oldStr += arr[1];
-        newStr += arr[1];
-      } else if (arr[0] == -1) {
-        oldStr += "<span class='text-del'>" + arr[1] + "</span>";
-      } else {
-        newStr += "<span class='text-add'>" + arr[1] + "</span>";
-      }
-    }
-
     setNewText(newStr);
   }, [a, b]);
+  let { html } = getDiff(a, b);
   return (
-    <div>
-      <div dangerouslySetInnerHTML={{ __html: newText }}></div>
+    <div className="px-5 py-0">
+      <div dangerouslySetInnerHTML={{ __html: html }}></div>
     </div>
   );
 }

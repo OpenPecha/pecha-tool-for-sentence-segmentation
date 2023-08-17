@@ -1,7 +1,6 @@
 import { User } from "@prisma/client";
 import { db } from "~/service/db.server";
 import {
-  batch_text_count,
   get_available_batch_to_review,
   get_not_asigned_batch,
 } from "./utils/batch";
@@ -11,10 +10,11 @@ export async function checkAndAssignBatch(userSession: User) {
     const user = await db.user.findUnique({
       where: { username: userSession.username },
       select: {
+        id: true,
         assigned_batch: true,
         assigned_batch_for_review: true,
         approved_text: { select: { batch: true } },
-        ignored_list: { select: { batch: true } },
+        ignored_list: { select: { id: true, batch: true } },
         rejected_list: { select: { batch: true } },
         reviewed_list: { select: { batch: true } },
         role: true,
@@ -23,37 +23,39 @@ export async function checkAndAssignBatch(userSession: User) {
 
     if (!user) return null;
 
-    let asignedbatch = user?.assigned_batch[user?.assigned_batch.length - 1];
+    let asignedbatch = user?.assigned_batch;
+    let ignoredids = user?.ignored_list.map((item) => item?.id);
+    if (ignoredids.length) ignoredids = [...new Set(ignoredids)];
+    //check if there is any text in asigned batches
     if (asignedbatch) {
       // if user is a reviewer, check if there is a batch to review
       // Check if work complete
-      const workedBatch = [
-        ...(user?.approved_text || []),
-        ...(user?.rejected_list || []),
-        ...(user?.ignored_list || []),
-      ];
 
-      if (
-        workedBatch.length === (await batch_text_count(user?.assigned_batch))
-      ) {
-        let batch = await get_not_asigned_batch(user?.assigned_batch);
-        await db.user.update({
-          where: { username: userSession.username },
-          data: { assigned_batch: { push: batch } },
-        });
-        return batch;
-      }
-      return asignedbatch;
+      let available_batch = await db.text.findMany({
+        where: {
+          id: { notIn: ignoredids },
+          batch: { in: asignedbatch },
+          modified_text: null,
+        },
+      });
+      if (available_batch.length > 0) return available_batch[0].batch;
+      let batch = await get_not_asigned_batch(user?.assigned_batch, false);
+      await db.user.update({
+        where: { username: userSession.username },
+        data: { assigned_batch: { push: batch } },
+      });
+      return batch;
     }
     if (!asignedbatch) {
-      if (user.role === "annotator") {
-        // Get text not assigned to anyone
-        let batch = await get_not_asigned_batch();
-        // Assign a text to the annotator
+      // Get text not assigned to anyone
+      let batch = await get_not_asigned_batch([], false);
+
+      // Assign a text to the annotator
+      if (!user.assigned_batch.includes(batch)) {
         await db.user.update({
           where: { username: userSession.username },
           data: {
-            assigned_batch: { push: batch },
+            assigned_batch: { push: batch[0] },
           },
         });
         return batch;
@@ -65,28 +67,32 @@ export async function checkAndAssignBatch(userSession: User) {
   }
 }
 export async function checkAndAssignBatchforReview(userSession: User) {
+  let username = userSession.username;
   async function assignNewReviewBatch() {
     let batch = await get_available_batch_to_review(userSession);
-    if (batch[0]) {
-      await db.user.update({
-        where: { username: userSession.username },
-        data: {
-          assigned_batch_for_review: { push: batch },
-        },
+    if (batch) {
+      const currentUser = await db.user.findUnique({
+        where: { username },
       });
-      let text = await db.text.findMany({
-        where: { batch: { in: batch } },
-      });
-      let res = text.find((text) => text.modified_text === null);
-      return res;
+
+      if (!currentUser?.assigned_batch_for_review.includes(batch)) {
+        await db.user.update({
+          where: { username },
+          data: {
+            assigned_batch_for_review: { push: batch },
+          },
+        });
+      }
+      return batch;
     }
     return null;
   }
   async function assignBatchtoAnnotate() {
-    let batch = await get_not_asigned_batch();
+    let batch = await get_not_asigned_batch([], true);
+
     if (batch) {
       await db.user.update({
-        where: { username: userSession.username },
+        where: { username },
         data: {
           assigned_batch: { push: batch },
         },
@@ -100,10 +106,12 @@ export async function checkAndAssignBatchforReview(userSession: User) {
     select: {
       assigned_batch: true,
       assigned_batch_for_review: true,
+      ignored_list: true,
     },
   });
   let batchToAnnotate: string[] = user?.assigned_batch ?? [];
   let batchToReview: string[] = user?.assigned_batch_for_review ?? [];
+
   // If no unreviewed texts are found, assign new review batch if needed
   if (batchToReview.length === 0) {
     let res = await assignNewReviewBatch();
@@ -112,25 +120,37 @@ export async function checkAndAssignBatchforReview(userSession: User) {
 
   // Check if there are unreviewed texts in assigned review batches
   if (batchToReview.length > 0) {
-    let batchlist = batchToReview.map((batch) => batch.slice(0, -1) + "a");
+    let batchlist = batchToReview
+      .map((batch) => [batch.slice(0, -1) + "a", batch.slice(0, -1) + "b"])
+      .flat();
     let returnBatch = null;
+
+    let ignoredids = user?.ignored_list.map((item) => item?.id);
+    if (ignoredids?.length) ignoredids = [...new Set(ignoredids)];
     const unreviewedTexts = await db.text.findMany({
-      where: { batch: { in: batchlist }, reviewed_text: null },
+      where: {
+        batch: { in: batchlist },
+        reviewed_text: null,
+        NOT: { modified_text: null },
+      },
     });
     for (let batch of batchlist) {
-      let data = unreviewedTexts.find((text) => text.batch === batch);
+      let data = unreviewedTexts.find(
+        (text) => text.batch === batch && !ignoredids?.includes(text.id)
+      );
       if (data) {
         returnBatch = batch.slice(0, -1) + "c";
         return returnBatch;
       }
     }
-    if (!returnBatch || returnBatch.length === 0) {
+    if (!returnBatch) {
       returnBatch = await assignNewReviewBatch();
       if (returnBatch) {
         return returnBatch;
       }
     }
   }
+
   // If no unmodified texts are found, assign new annotation batch if needed
   if (batchToAnnotate.length === 0) {
     let res = await assignBatchtoAnnotate();
@@ -164,7 +184,7 @@ export async function getTextToDisplay(
       where: { id: history },
     });
     let show =
-      JSON.parse(text?.modified_text)?.join("\n") || text?.original_text;
+      JSON.parse(text?.modified_text!)?.join("\n") || text?.original_text;
     return {
       ...text,
       id: text?.id,
@@ -181,7 +201,6 @@ export async function getTextToDisplay(
     },
   });
   let batch = await checkAndAssignBatch(user!);
-
   if (!batch) return null;
   if (!user) {
     throw new Error("User not found");
@@ -250,17 +269,19 @@ export async function getAprovedbatch() {
   data.forEach((item) => {
     uniquebatchs.add(item.batch);
   });
+  let text_db = await db.text.findMany({
+    where: {
+      batch: { in: Array.from(uniquebatchs) },
+    },
+    select: {
+      id: true,
+      status: true,
+      ignored_by: true,
+      batch: true,
+    },
+  });
   for (const item of uniquebatchs) {
-    let text = await db.text.findMany({
-      where: {
-        batch: item,
-      },
-      select: {
-        id: true,
-        status: true,
-        ignored_by: true,
-      },
-    });
+    let text = text_db.filter((text) => text.batch === item);
     let approved = text.every((item) => item.status === "APPROVED");
     let rejected = text.some((item) => item.status === "REJECTED");
     const ignored = text.reduce((acc, t) => {
@@ -296,19 +317,16 @@ export async function getAsignedReviewText(user: User, history: string | null) {
       review: false,
     };
   }
-  //loop through asigned batchs and  get the text list from batch that has both a and b modified;
-  //as well not reviewed;
-  let batch: string = await checkAndAssignBatchforReview(user!);
-  console.log(batch);
+
+  let batch: string | null = await checkAndAssignBatchforReview(user!);
   if (!batch) return null;
   if (batch.endsWith("c")) {
-    //if the asignedbatch is review batch
     let ga_batch = batch.slice(0, -1) + "a";
-    let gb_batch = batch.slice(0, -1) + "b";
 
     let ga = await db.text.findFirst({
       where: {
         batch: ga_batch,
+        modified_text: { not: null },
         reviewed_text: null,
       },
       select: {
@@ -323,7 +341,8 @@ export async function getAsignedReviewText(user: User, history: string | null) {
     });
     let gb = await db.text.findFirst({
       where: {
-        batch: gb_batch,
+        id: ga?.id.replace("a_", "b_"),
+        modified_text: { not: null },
         reviewed_text: null,
       },
       select: {

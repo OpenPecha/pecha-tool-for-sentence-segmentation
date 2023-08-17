@@ -23,7 +23,6 @@ export const action: ActionFunction = async ({ request }) => {
 
     const a_error_count = formData.get("a_error_count") as string;
     const b_error_count = formData.get("b_error_count") as string;
-
     text = await saveReviewedText(
       ga_id,
       gb_id,

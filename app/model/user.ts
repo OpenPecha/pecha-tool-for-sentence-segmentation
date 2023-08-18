@@ -32,14 +32,19 @@ export const createUserIfNotExists = async (username: string) => {
   return user;
 };
 
-export const getUsers = async () => {
+export const getUsers = async (reviewer_id?: string) => {
+  let where = reviewer_id
+    ? { OR: [{ reviewer_id }, { reviewer_id: null }] }
+    : {};
   try {
     let user = db.user.findMany({
+      where,
       include: {
         approved_text: true,
         rejected_list: true,
         ignored_list: true,
         reviewed_list: true,
+        reviewer: true,
       },
       orderBy: {
         username: "asc", // 'asc' for ascending order, 'desc' for descending order
@@ -62,6 +67,7 @@ export const getUser = async (username: string) => {
         rejected_list: true,
         ignored_list: true,
         reviewed_list: true,
+        reviewer: true,
       },
     });
     return user;
@@ -219,3 +225,47 @@ export const updateUserAssign = async (id: string, allow: boolean) => {
     throw new Error(e);
   }
 };
+
+export const getReviewerList = async () => {
+  try {
+    let reviewers = await db.user.findMany({
+      where: {
+        role: "reviewer",
+      },
+      include: {
+        approved_text: true,
+        rejected_list: true,
+        ignored_list: true,
+        reviewed_list: true,
+        annotator_list: true,
+      },
+      orderBy: {
+        username: "asc", // 'asc' for ascending order, 'desc' for descending order
+      },
+    });
+    return reviewers;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
+export function updateUserReviewer(id: string, reviewerId: string) {
+  return db.user.update({
+    where: {
+      id,
+    },
+    data: {
+      reviewer_id: reviewerId,
+    },
+  });
+}
+
+export function updateUserCategory(id: string, categories: string) {
+  let data = JSON.parse(categories);
+  return db.user.update({
+    where: { id },
+    data: {
+      categories: data,
+    },
+  });
+}

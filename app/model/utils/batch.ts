@@ -67,7 +67,7 @@ export async function get_all_batch() {
   // Return the two groups
   return {
     unassigned: unassignedNumbers,
-    assigned: assignedNumbers,
+    assigned: assignedNumbers.sort(batchSort),
   };
 }
 
@@ -75,7 +75,8 @@ export async function get_all_batch() {
 
 export async function get_not_asigned_batch(
   batch?: string[],
-  reviewer: boolean
+  reviewer?: boolean,
+  categories?: string[]
 ) {
   let { unassigned } = await get_all_batch();
   let batchFromReviewer = await getListasignedBatchreviewer();
@@ -97,6 +98,11 @@ export async function get_not_asigned_batch(
       return unassigned.includes(propertyName) && unassigned.includes(second);
     });
   }
+  if (categories) {
+    unassigned = unassigned.filter((element1) => {
+      return categories.some((element2) => element1.startsWith(element2));
+    });
+  }
 
   return unassigned[0] || "";
 }
@@ -113,6 +119,7 @@ export async function get_batch_assigned_to_review() {
 }
 
 export async function get_available_batch_to_review(userSession: User) {
+  let reviewer_id = userSession.id;
   try {
     let text_1 = await db.text.findFirst({
       where: {
@@ -123,7 +130,7 @@ export async function get_available_batch_to_review(userSession: User) {
       orderBy: {
         id: "asc",
       },
-      select: { id: true, batch: true },
+      select: { id: true, batch: true, modified_by: true },
     });
     let text_2 = await db.text.findFirst({
       where: {
@@ -131,9 +138,14 @@ export async function get_available_batch_to_review(userSession: User) {
         modified_text: { not: null },
         reviewed_text: null,
       },
-      select: { batch: true },
+      select: { batch: true, modified_by: true },
     });
-    if (text_1 && text_2) {
+    if (
+      text_1 &&
+      text_2 &&
+      text_1?.modified_by?.reviewer_id === reviewer_id &&
+      text_2?.modified_by?.reviewer_id === reviewer_id
+    ) {
       return text_1.batch?.slice(0, -1) + "c";
     }
   } catch (error) {

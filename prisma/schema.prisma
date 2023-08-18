@@ -20,10 +20,14 @@ model User {
   rejected_list Text[]   @relation("UserRejectedText")
   ignored_list  Text[]   @relation("UserIgnoredText")
   reviewed_list  Text[]   @relation("UserReviewedText")
+  annotator_list User[]  @relation("UserReviewer")
   assigned_batch String[]    
   assigned_batch_for_review String[]    
   role          Role     @default(annotator)
   allow_annotation Boolean @default(false)
+  reviewer   User?   @relation("UserReviewer", fields: [reviewer_id], references: [id])
+  reviewer_id String? 
+  categories  String[] 
 }
 
 enum Role {

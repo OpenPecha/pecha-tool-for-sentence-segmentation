@@ -1,4 +1,4 @@
-import { Group, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import {
   ActionFunction,
   LinksFunction,
@@ -8,18 +8,21 @@ import {
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import classNames from "classnames";
 import { useState } from "react";
+import { FiEdit2 } from "react-icons/fi";
+import MultiSelect from "~/components/MultiSelect";
 import { getAprovedbatch, getTextInfo } from "~/model/text";
 import {
   addGroupToUser,
   assignReview,
   changeUserGroup,
+  getReviewerList,
   getUser,
   getUsers,
   removeAllGroupFromUser,
   removeAsignedReview,
   removeGroupFromUser,
 } from "~/model/user";
-import adminStyle from "~/styles/admin.css";
+import { getCategories } from "~/model/utils/category";
 
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
@@ -30,11 +33,15 @@ export const loader: LoaderFunction = async ({ request }) => {
   let userlist = await getUsers();
   let textInfo = await getTextInfo();
   let groups = await getAprovedbatch();
+  let categories = await getCategories();
+  let reviewers = await getReviewerList();
   return {
     user,
     userlist,
     textInfo,
     groups,
+    categories,
+    reviewers,
   };
 };
 
@@ -77,22 +84,13 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
-export const links: LinksFunction = () => {
-  return [
-    {
-      rel: "stylesheet",
-      href: adminStyle,
-    },
-  ];
-};
-
 function admin() {
-  let { user, userlist, unasigned_groups, textInfo, groups } = useLoaderData();
+  let { user, userlist, unasigned_groups, textInfo, reviewers } =
+    useLoaderData();
   let [search, setSearch] = useState("");
   let list = userlist.filter((data) => data.username.includes(search));
-  let fetcher = useFetcher();
   let userFetcher = useFetcher();
-
+  let [filter, setFilter] = useState("all");
   let colorScheme = [
     { color: "bg-green-500", text: "all accepted" },
     { color: "bg-red-500", text: "some rejected" },
@@ -134,6 +132,24 @@ function admin() {
             className="input input-bordered input-sm w-full max-w-xs ml-2"
           ></input>
         </div>
+        <div className="flex gap-3  mx-auto">
+          <label className="input-group">
+            <span>reviewer:</span>
+            <select
+              onChange={(e) => setFilter(e.target.value)}
+              className="select select-bordered select-sm w-full max-w-xs"
+            >
+              <option selected value="all">
+                All
+              </option>
+              {reviewers?.map((reviewer) => (
+                <option value={reviewer.username} key={reviewer + "-key"}>
+                  {reviewer.username}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
       <div className="overflow-x-auto max-h-[60vh] overflow-y-scroll">
         {userlist.length > 0 && (
@@ -141,16 +157,19 @@ function admin() {
             <tr>
               <th>User</th>
               <th>Role</th>
+              <th>category</th>
               <th>Assigned Jobs</th>
             </tr>
-            {list.map((user: User) => (
-              <Users
-                user={user}
-                key={user.id}
-                select={unasigned_groups}
-                fetcher={userFetcher}
-              />
-            ))}
+            {list
+              .filter((item) => {
+                if (filter === "all") return true;
+                return (
+                  item.username === filter || item.reviewer?.username === filter
+                );
+              })
+              .map((user: User) => (
+                <Users user={user} key={user.id} fetcher={userFetcher} />
+              ))}
           </table>
         )}
       </div>
@@ -158,16 +177,10 @@ function admin() {
   );
 }
 
-function Users({
-  user,
-  select,
-  fetcher,
-}: {
-  user: User;
-  select: string[];
-  fetcher: any;
-}) {
-  let { groups, reviewedBatch } = useLoaderData();
+function Users({ user, fetcher }: { user: User; fetcher: any }) {
+  let { groups, reviewedBatch, categories } = useLoaderData();
+  const [openEditCategory, setOpenEditCategory] = useState(false);
+
   let removeGroup = (e) => {
     if (groups[e].rejected) {
       alert(
@@ -197,49 +210,104 @@ function Users({
 
   let removing =
     fetcher.formData?.get("id") === user.id && fetcher.formMethod === "DELETE";
-
+  let fet = useFetcher();
+  function handleClick(category) {
+    let data = [...user.categories, category];
+    if (user.categories.includes(category)) {
+      data = user.categories.filter((c) => c !== category);
+    }
+    fet.submit(
+      {
+        id: user.id,
+        categories: JSON.stringify(data),
+        action: "change_categories",
+      },
+      {
+        method: "POST",
+        action: "/api/user",
+      }
+    );
+    setOpenEditCategory(false);
+  }
   return (
     <tr className="hover:bg-gray-300 border-b-gray-300 border-b-2">
       <td>{user.username}</td>
       <td>{user.role}</td>
       <td>
-        <div className="flex gap-3">
-          {user.assigned_batch.map((data, index) => (
-            <button
-              key={data + "btn"}
-              className={classNames(
-                " border-2 px-1 border-gray-500 cursor-pointer ",
-                groups[data]?.approved
-                  ? "bg-green-300"
-                  : groups[data]?.ignored.includes(user.username)
-                  ? "bg-yellow-500"
-                  : groups[data]?.rejected
-                  ? "bg-pink-500"
-                  : "bg-white"
-              )}
-              onClick={() => removeGroup(data)}
-            >
-              {data.split("_")[1]}
-            </button>
+        {!openEditCategory && user.categories.length > 0 && (
+          <>
+            {user.categories.map((c) => {
+              return <span className="badge bg-green-300">{c}</span>;
+            })}
+          </>
+        )}
+        {!openEditCategory && user.role === "reviewer" && (
+          <button
+            onClick={() => setOpenEditCategory(true)}
+            className="mx-1 -translate-y-2"
+          >
+            <FiEdit2 size={10} />
+          </button>
+        )}
+        {openEditCategory &&
+          categories.map((category) => (
+            <EachCategory
+              user={user}
+              category={category}
+              key={category + "_cat"}
+              handleClick={() => handleClick(category)}
+            />
           ))}
-          {user.assigned_batch_for_review.map((data, index) => {
-            return (
-              <button
-                key={data + "btn"}
-                className={classNames(
-                  "px-1 border-2 border-gray-500 cursor-pointer ",
-                  { "bg-yellow-500": !!reviewedBatch?.at(data) },
-                  { "bg-white": !reviewedBatch?.at(data) }
-                )}
-                onClick={() => removeReviewAsign(data)}
-              >
-                {data.split("_")[1]}
-              </button>
-            );
-          })}
-        </div>
-
-        {removing && <span>removed</span>}
+      </td>
+      <td>
+        <button
+          className="h-10 w-32"
+          onClick={() => window.my_modal_2.showModal()}
+        >
+          check
+        </button>
+        <dialog id="my_modal_2" className="modal">
+          <form method="dialog" className="modal-box">
+            <button className=" btn-sm btn-circle btn-ghost absolute right-2 top-2">
+              ✕
+            </button>
+            <div className="flex gap-3">
+              {user.assigned_batch.map((data, index) => (
+                <button
+                  key={data + "btn"}
+                  className={classNames(
+                    " border-2 px-1 border-gray-500 cursor-pointer ",
+                    groups[data]?.approved
+                      ? "bg-green-300"
+                      : groups[data]?.ignored.includes(user.username)
+                      ? "bg-yellow-500"
+                      : groups[data]?.rejected
+                      ? "bg-pink-500"
+                      : "bg-white"
+                  )}
+                  onClick={() => removeGroup(data)}
+                >
+                  {data.split("_")[1]}
+                </button>
+              ))}
+              {user.assigned_batch_for_review.map((data, index) => {
+                return (
+                  <button
+                    key={data + "btn"}
+                    className={classNames(
+                      "px-1 border-2 border-gray-500 cursor-pointer ",
+                      { "bg-yellow-500": !!reviewedBatch?.at(data) },
+                      { "bg-white": !reviewedBatch?.at(data) }
+                    )}
+                    onClick={() => removeReviewAsign(data)}
+                  >
+                    {data.split("_")[1]}
+                  </button>
+                );
+              })}
+            </div>
+          </form>
+        </dialog>
       </td>
     </tr>
   );
@@ -261,4 +329,18 @@ function TextDashboard({ info }) {
     </>
   );
 }
+
+function EachCategory({ user, category, handleClick }) {
+  return (
+    <span
+      className={`p-1 shadow-sm border-2 border-gray-200 cursor-pointer ${
+        user.categories.includes(category) ? "bg-green-300" : ""
+      }`}
+      onClick={handleClick}
+    >
+      {category}
+    </span>
+  );
+}
+
 export default admin;

@@ -4,33 +4,8 @@ import { Cross, Hamburger, Tick } from "./SVGS";
 import { Role, Text } from "@prisma/client";
 import { error_and_pay } from "~/lib/payCalc";
 import TextInfo from "./TextInfo";
-
-interface HistoryItemProps {
-  id: string;
-  user: any;
-  onClick: () => void;
-  icon: JSX.Element;
-  reviewer: boolean;
-}
-
-function HistoryItem({ id, user, onClick, icon, reviewer }: HistoryItemProps) {
-  let split = id.split("_");
-  let historyName = split[0] + "_" + split[1] + "_" + split[split.length - 1];
-  if (id.startsWith("c_")) {
-    id = id.replace("c_", "a_");
-  }
-  return (
-    <Link
-      to={`/${reviewer ? "reviewer" : ""}?session=${
-        user.username
-      }&history=${id}`}
-      className="flex justify-between px-2"
-      onClick={onClick}
-    >
-      {historyName} {icon}
-    </Link>
-  );
-}
+import { sortUpdate_reviewed } from "~/lib/sortReviewedUpdate";
+import HistoryItem from "./History";
 
 interface SidebarProps {
   user: any;
@@ -129,7 +104,7 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
           <div className="flex flex-col gap-2 max-h-[30vh] overflow-y-auto">
             {role === "annotator" &&
               ([...user?.rejected_list] || [])
-                .sort(sortUpdate)
+                .sort(sortUpdate_reviewed)
                 .map((text: Text) => (
                   <HistoryItem
                     user={user}
@@ -142,7 +117,7 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
                 ))}
             {role === "annotator" &&
               ([...user?.approved_text] || [])
-                .sort(sortUpdate)
+                .sort(sortUpdate_reviewed)
                 .map((text: Text) => (
                   <HistoryItem
                     user={user}
@@ -151,12 +126,13 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
                     onClick={() => setOpenMenu(false)}
                     icon={text?.modified_text ? <Tick /> : <Cross />}
                     reviewer={reviewer}
+                    disabled={!!text?.reviewed_text}
                   />
                 ))}
 
             {role === "reviewer" &&
               mergedArray
-                ?.sort(sortUpdate)
+                ?.sort(sortUpdate_reviewed)
                 .map((text: Text) => (
                   <HistoryItem
                     user={user}
@@ -165,6 +141,7 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
                     onClick={() => setOpenMenu(false)}
                     icon={text?.modified_text ? <Tick /> : <Cross />}
                     reviewer={reviewer}
+                    disabled={!!text?.reviewed_text}
                   />
                 ))}
           </div>
@@ -175,9 +152,3 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
 }
 
 export default Sidebar;
-
-function sortUpdate(a: Text, b: Text) {
-  const parsedDate1 = new Date(a.updatedAt);
-  const parsedDate2 = new Date(b.updatedAt);
-  return parsedDate2 - parsedDate1;
-}

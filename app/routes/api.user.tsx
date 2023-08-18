@@ -1,5 +1,11 @@
 import { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { getUsers, updateUserAssign, updateUserNickname } from "~/model/user";
+import {
+  getUsers,
+  updateUserAssign,
+  updateUserCategory,
+  updateUserNickname,
+  updateUserReviewer,
+} from "~/model/user";
 
 export const loader: LoaderFunction = async ({ request }) => {
   return { users: await getUsers() };
@@ -19,6 +25,15 @@ export const action: ActionFunction = async ({ request }) => {
     let updated = await updateUserAssign(id, allow === "true");
     return updated;
   }
-
+  if (action === "change_reviewer") {
+    let reviewerId = formdata.get("reviewer_id") as string;
+    let updated = await updateUserReviewer(id, reviewerId);
+    return updated;
+  }
+  if (action === "change_categories") {
+    let categories = formdata.get("categories") as string;
+    let updated = await updateUserCategory(id, categories);
+    return updated;
+  }
   return null;
 };

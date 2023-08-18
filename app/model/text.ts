@@ -18,6 +18,7 @@ export async function checkAndAssignBatch(userSession: User) {
         rejected_list: { select: { batch: true } },
         reviewed_list: { select: { batch: true } },
         role: true,
+        categories: true,
       },
     });
 
@@ -25,36 +26,9 @@ export async function checkAndAssignBatch(userSession: User) {
 
     let asignedbatch = user?.assigned_batch;
     //check if there is any text in asigned batches
-    if (asignedbatch) {
-      // if user is a reviewer, check if there is a batch to review
-      // Check if work complete
-
-      let available_batch = await db.text.findFirst({
-        where: {
-          batch: { in: asignedbatch },
-          modified_text: null,
-        },
-      });
-      let not_approved = await db.text.findFirst({
-        where: {
-          batch: { in: asignedbatch },
-          modified_text: null,
-          status: { not: "APPROVED" },
-        },
-      });
-      if (available_batch) return available_batch.batch;
-      if (not_approved) return null;
-
-      let batch = await get_not_asigned_batch(user?.assigned_batch, false);
-      await db.user.update({
-        where: { username: userSession.username },
-        data: { assigned_batch: { push: batch } },
-      });
-      return batch;
-    }
     if (!asignedbatch) {
       // Get text not assigned to anyone
-      let batch = await get_not_asigned_batch([], false);
+      let batch = await get_not_asigned_batch([], false, user.categories);
 
       // Assign a text to the annotator
       if (!user.assigned_batch.includes(batch)) {
@@ -67,6 +41,33 @@ export async function checkAndAssignBatch(userSession: User) {
         return batch;
       }
     }
+
+    let available_batch = await db.text.findFirst({
+      where: {
+        batch: { in: asignedbatch },
+        modified_text: null,
+      },
+    });
+    let not_approved = await db.text.findFirst({
+      where: {
+        batch: { in: asignedbatch },
+        modified_text: null,
+        status: { not: "APPROVED" },
+      },
+    });
+    if (available_batch) return available_batch.batch;
+    if (not_approved) return null;
+
+    let batch = await get_not_asigned_batch(
+      user?.assigned_batch,
+      false,
+      user.categories
+    );
+    await db.user.update({
+      where: { username: userSession.username },
+      data: { assigned_batch: { push: batch } },
+    });
+    return batch;
   } catch (e) {
     console.error("Error in checkAndAssignBatch:", e);
     throw new Error("Unable to assign batch.");
@@ -74,6 +75,7 @@ export async function checkAndAssignBatch(userSession: User) {
 }
 export async function checkAndAssignBatchforReview(userSession: User) {
   let username = userSession.username;
+  let categories = userSession.categories;
   async function assignNewReviewBatch() {
     let batch = await get_available_batch_to_review(userSession);
     if (batch) {
@@ -94,7 +96,7 @@ export async function checkAndAssignBatchforReview(userSession: User) {
     return null;
   }
   async function assignBatchtoAnnotate() {
-    let batch = await get_not_asigned_batch([], true);
+    let batch = await get_not_asigned_batch([], true, categories);
 
     if (batch) {
       await db.user.update({
@@ -361,7 +363,7 @@ export async function getAsignedReviewText(user: User, history: string | null) {
       orderBy: { order: "asc" },
     });
     if (ga && gb) return { ga, gb, review: true };
-  } else {
+  } else if (user.allow_annotation) {
     const asignedbatch = batch;
     const ignoredIds = user?.ignored_list.map((item: any) => item.id);
     const rejectedIds = user?.rejected_list.map((item: any) => item.id);

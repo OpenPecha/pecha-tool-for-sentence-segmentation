@@ -2,17 +2,20 @@ import { LoaderFunction, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import Table from "~/components/Table";
 import React from "react";
-import { getUser, getUsers } from "~/model/user";
+import { getReviewerList, getUser, getUsers } from "~/model/user";
 import ReviewerDetail from "~/components/ReviewerDetail";
+import { getCategories, getCategoriesByReviewer } from "~/model/utils/category";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  let users = await getUsers();
   let url = new URL(request.url);
   let session = url.searchParams.get("session") as string;
   if (!session) return redirect("/error");
   let user = await getUser(session);
+  let users = await getUsers(user.id);
+  let reviewers = await getReviewerList();
+  let categories = await getCategoriesByReviewer(user.id);
   if (!user || user.role !== "reviewer") return redirect("/error");
-  return { user, users };
+  return { user, users, reviewers, categories };
 };
 
 function dashboard() {

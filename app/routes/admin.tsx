@@ -5,7 +5,12 @@ import {
   LoaderFunction,
   redirect,
 } from "@remix-run/node";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import {
+  Link,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+} from "@remix-run/react";
 import classNames from "classnames";
 import { useState } from "react";
 import { FiEdit2 } from "react-icons/fi";
@@ -23,6 +28,8 @@ import {
   removeGroupFromUser,
 } from "~/model/user";
 import { getCategories } from "~/model/utils/category";
+import { AiFillHome } from "react-icons/ai";
+import { FiRefreshCw } from "react-icons/fi";
 
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
@@ -85,8 +92,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 function admin() {
-  let { user, userlist, unasigned_groups, textInfo, reviewers } =
-    useLoaderData();
+  let { user, userlist, textInfo, reviewers } = useLoaderData();
   let [search, setSearch] = useState("");
   let list = userlist.filter((data) => data.username.includes(search));
   let userFetcher = useFetcher();
@@ -95,16 +101,29 @@ function admin() {
     { color: "bg-green-500", text: "all accepted" },
     { color: "bg-red-500", text: "some rejected" },
   ];
+  const revalidator = useRevalidator();
+  let resetUsers = async () => {
+    userFetcher.submit(
+      {
+        action: "reset",
+      },
+      {
+        method: "DELETE",
+        action: "/api/user",
+      }
+    );
+  };
   return (
     <>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center bg-gray-400 shadow-sm">
         <Link
           to={`/?session=${user.username}`}
-          className="text-white bg-gray-500 p-2"
+          className="text-white bg-gray-500 p-2 w-10"
         >
-          Home
+          <AiFillHome />
         </Link>
-        <div className="flex  mr-2 flex-col">
+
+        <div className="flex  mr-2 gap-2 p-1">
           {colorScheme?.map((data) => {
             return (
               <div
@@ -119,65 +138,106 @@ function admin() {
             );
           })}
         </div>
+        <button
+          disabled={revalidator.state !== "idle"}
+          onClick={() => revalidator.revalidate()}
+          className="text-white bg-gray-500 p-2 w-10"
+        >
+          <FiRefreshCw />
+        </button>
       </div>
-      <h1>Admin : {user.username}</h1>
-
-      <TextDashboard info={textInfo} />
-      <div className="mb-5 flex justify-between items-center ">
-        <div className="flex gap-3  mx-auto">
-          <h2>Users:</h2>
-          <input
-            placeholder="search"
-            onChange={(e) => setSearch(e.target.value)}
-            className="input input-bordered input-sm w-full max-w-xs ml-2"
-          ></input>
-        </div>
-        <div className="flex gap-3  mx-auto">
-          <label className="input-group">
-            <span>reviewer:</span>
-            <select
-              onChange={(e) => setFilter(e.target.value)}
-              className="select select-bordered select-sm w-full max-w-xs"
-            >
-              <option selected value="all">
-                All
-              </option>
-              {reviewers?.map((reviewer) => (
-                <option value={reviewer.username} key={reviewer + "-key"}>
-                  {reviewer.username}
+      <div className="bg-gray-100 my-2 shadow-md p-2">
+        <TextDashboard info={textInfo} />
+        <div className="mb-5 flex justify-between items-center ">
+          <div className="flex gap-3  mx-auto">
+            <h2>Users:</h2>
+            <input
+              placeholder="search"
+              onChange={(e) => setSearch(e.target.value)}
+              className="input input-bordered input-sm w-full max-w-xs ml-2"
+            ></input>
+          </div>
+          <div className="flex gap-3  mx-auto">
+            <label className="input-group">
+              <span>reviewer:</span>
+              <select
+                onChange={(e) => setFilter(e.target.value)}
+                className="select select-bordered select-sm w-full max-w-xs"
+              >
+                <option selected value="all">
+                  All
                 </option>
-              ))}
-            </select>
-          </label>
+                {reviewers?.map((reviewer) => (
+                  <option value={reviewer.username} key={reviewer + "-key"}>
+                    {reviewer.username}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
+        <button
+          className="btn-xs float-right -translate-y-3 flex justify-end hover:bg-gray-600 hover:text-white"
+          type="button"
+          onClick={resetUsers}
+        >
+          reset
+        </button>
       </div>
-      <div className="overflow-x-auto max-h-[60vh] overflow-y-scroll">
-        {userlist.length > 0 && (
-          <table className="table table-xs border-collapse">
-            <tr>
-              <th>User</th>
-              <th>Role</th>
-              <th>category</th>
-              <th>Assigned Jobs</th>
-            </tr>
-            {list
-              .filter((item) => {
-                if (filter === "all") return true;
-                return (
-                  item.username === filter || item.reviewer?.username === filter
-                );
-              })
-              .map((user: User) => (
-                <Users user={user} key={user.id} fetcher={userFetcher} />
-              ))}
+
+      {userlist.length > 0 && (
+        <div className="overflow-scroll">
+          <table className="table table-xs">
+            <thead>
+              <tr>
+                <th></th>
+                <th>User</th>
+                <th>Role</th>
+                <th>category</th>
+                <th>Assigned Jobs</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list
+                .sort((a, b) => {
+                  if (a.role === "admin") return -1;
+                  if (b.role === "admin") return 1;
+                  if (a.role === "reviewer") return -1;
+                  if (b.role === "reviewer") return 1;
+                  return 0;
+                })
+                .filter((item) => {
+                  if (filter === "all") return true;
+                  return (
+                    item.username === filter ||
+                    item.reviewer?.username === filter
+                  );
+                })
+                .map((user: User, index: number) => (
+                  <Users
+                    user={user}
+                    key={user.id}
+                    fetcher={userFetcher}
+                    index={index}
+                  />
+                ))}
+            </tbody>
           </table>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 }
 
-function Users({ user, fetcher }: { user: User; fetcher: any }) {
+function Users({
+  user,
+  fetcher,
+  index,
+}: {
+  user: User;
+  fetcher: any;
+  index: number;
+}) {
   let { groups, reviewedBatch, categories } = useLoaderData();
   const [openEditCategory, setOpenEditCategory] = useState(false);
 
@@ -231,6 +291,7 @@ function Users({ user, fetcher }: { user: User; fetcher: any }) {
   }
   return (
     <tr className="hover:bg-gray-300 border-b-gray-300 border-b-2">
+      <th>{index + 1}</th>
       <td>{user.username}</td>
       <td>{user.role}</td>
       <td>
@@ -261,7 +322,7 @@ function Users({ user, fetcher }: { user: User; fetcher: any }) {
       </td>
       <td>
         <button
-          className="h-10 w-32"
+          className="p-1 w-32"
           onClick={() => window.my_modal_2.showModal()}
         >
           check
@@ -314,19 +375,25 @@ function Users({ user, fetcher }: { user: User; fetcher: any }) {
 }
 
 function TextDashboard({ info }) {
-  let { total, accepted, rejected, pending } = info;
-  let classname = " p-3 w-48 shadow-md";
+  let { total, accepted, rejected, reviewed } = info;
+
   return (
     <>
-      <h2 className="text-lg text-center underline">Text Dashboard</h2>
+      <h2 className="text-lg text-center underline">Dashboard</h2>
       <div className="flex flex-wrap gap-4 mb-4 w-full justify-center">
-        <div className={classname}>Total text: {total}</div>
-        <div className={classname}>Accepted text: {accepted}</div>
-        <div className={classname}>Rejected text: {rejected}</div>
-        <div className={classname}>Pending text: {pending}</div>
-        <div className={classname}>1 Group = 10 Text</div>
+        <EachInfo>Total text: {total}</EachInfo>
+        <EachInfo>Accepted text: {accepted}</EachInfo>
+        <EachInfo>Rejected text: {rejected}</EachInfo>
+        <EachInfo>reviewed text: {reviewed}</EachInfo>
+        <EachInfo>1 Group = 10 Text</EachInfo>
       </div>
     </>
+  );
+}
+
+export function EachInfo({ children }) {
+  return (
+    <div className=" p-3 w-48 shadow-md flex justify-center">{children}</div>
   );
 }
 

@@ -1,12 +1,13 @@
 import { User } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
 import React from "react";
+import { EachInfo } from "~/routes/admin";
 
 function ReviewerDetail({ user }: { user: User }) {
   let approve_count = user.approved_text.length / 2;
-  let reviewed_count = user.reviewed_list.length / 2;
-  let reviewed = `${reviewed_count - approve_count}`;
-  const pay = approve_count * 100 + reviewed * 50;
+  let reviewed_count: number | string = user.reviewed_list.length / 2;
+  reviewed_count = `${reviewed_count - approve_count}`;
+  const pay = approve_count * 100 + reviewed_count * 50;
   let fetcher = useFetcher();
   function handleToggleAssign() {
     fetcher.submit(
@@ -22,11 +23,10 @@ function ReviewerDetail({ user }: { user: User }) {
     );
   }
   return (
-    <>
-      <div className="mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 mb-5">
-        <EachInfo title="Approved" count={approve_count} />
-        <EachInfo title="Reviewed" count={reviewed} />
-        <EachInfo title="Payment" count={"Rs " + pay} />
+    <div className="bg-gray-100 my-2 shadow-md p-2">
+      <div className="flex flex-wrap gap-4 mb-4 mt-4 w-full justify-center">
+        <EachInfo>Reviewed: {reviewed_count}</EachInfo>
+        <EachInfo>Earn: ₹ {pay}</EachInfo>
       </div>
       <div className="flex gap-2">
         <label className="cursor-pointer label">annotate</label>
@@ -39,19 +39,8 @@ function ReviewerDetail({ user }: { user: User }) {
           aria-label="Toggle_role"
         />
       </div>
-    </>
-  );
-}
-
-const EachInfo = ({ title, count }) => {
-  return (
-    <div className="card w-full md:w-80 mx-auto bg-neutral text-neutral-content">
-      <div className="card-body p-1 md:p-2 items-center text-center">
-        <h2 className="card-title">{title}</h2>
-        <div className="card-actions justify-end">{count}</div>
-      </div>
     </div>
   );
-};
+}
 
 export default ReviewerDetail;

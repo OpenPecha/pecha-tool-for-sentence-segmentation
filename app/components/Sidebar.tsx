@@ -9,13 +9,12 @@ import HistoryItem from "./History";
 
 interface SidebarProps {
   user: any;
-  online: any[];
   reviewer: boolean;
   batch?: string;
   history?: any;
 }
 
-function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
+function Sidebar({ user, reviewer, batch, history }: SidebarProps) {
   const data = useLoaderData();
   const text = data.text;
   const [openMenu, setOpenMenu] = useState(false);
@@ -60,7 +59,7 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
   return (
     <div className="flex flex-col">
       <div
-        className="flex px-2 py-3 text-white bg-gray-600 text-lg font-semibold items-center  gap-2"
+        className="flex px-2 py-3 text-white bg-gray-600 text-lg font-semibold items-center  gap-2 "
         onClick={() => setOpenMenu(true)}
       >
         <Hamburger />
@@ -97,12 +96,13 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
           <TextInfo>Approved :{user?.approved_text?.length}</TextInfo>
           <TextInfo>Rejected :{user?.rejected_list?.length}</TextInfo>
           <TextInfo>error : {finalErrorCount} %</TextInfo>
-          <TextInfo>earn : Rs {pay}</TextInfo>
+          <TextInfo>earn : ₹ {pay}</TextInfo>
         </div>
         <div className="flex-1">
           <div className="text-sm mb-2 font-bold">History</div>
           <div className="flex flex-col gap-2 max-h-[30vh] overflow-y-auto">
             {role === "annotator" &&
+              user?.rejected_list.length > 0 &&
               ([...user?.rejected_list] || [])
                 .sort(sortUpdate_reviewed)
                 .map((text: Text) => (
@@ -116,6 +116,7 @@ function Sidebar({ user, online, reviewer, batch, history }: SidebarProps) {
                   />
                 ))}
             {role === "annotator" &&
+              user?.approved_text?.length > 0 &&
               ([...user?.approved_text] || [])
                 .sort(sortUpdate_reviewed)
                 .map((text: Text) => (

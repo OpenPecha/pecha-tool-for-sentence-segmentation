@@ -1,6 +1,5 @@
 import {
   redirect,
-  type LinksFunction,
   type LoaderFunction,
   type V2_MetaFunction,
 } from "@remix-run/node";
@@ -17,10 +16,8 @@ import { Character } from "~/tiptapProps/extension/character";
 import { editorProps } from "~/tiptapProps/events";
 import checkUnknown from "~/lib/checkUnknown";
 import { createUserIfNotExists } from "~/model/user";
-import usePusherPresence from "~/lib/usePresence";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import { ClientOnly } from "remix-utils";
-import { getter } from "~/service/pusher.server";
 import { Sentence } from "~/tiptapProps/extension/sentence";
 import { NEW_LINER } from "~/constant";
 
@@ -36,8 +33,6 @@ export const loader: LoaderFunction = async ({ request }) => {
     if (user.role === "reviewer") {
       return redirect("/reviewer?session=" + session);
     }
-    // let activeText = await getter(APP_ID!, KEY!, SECRET!, CLUSTER!);
-
     let text = null;
     if (user.allow_annotation) text = await getTextToDisplay(user, history);
     let textFromUser = await getTextToDisplayByUser(user?.id);
@@ -58,13 +53,6 @@ export default function Index() {
 
   let text = data?.text?.original_text?.trim();
 
-  const { textOnline } = usePusherPresence(
-    `presence-sentence-${data.NODE_ENV}`,
-    data?.KEY,
-    data?.CLUSTER,
-    data?.user,
-    data?.text
-  );
   let user = data.user;
   let insertHTML = insertHTMLonText(text);
   let newText = checkUnknown(insertHTML);
@@ -113,20 +101,20 @@ export default function Index() {
     data.text.reviewed_text !== null;
   if (data.error) return <div>{data.error}</div>;
   return (
-    <div className="main">
-      <Sidebar user={data.user} online={textOnline} reviewer={false} />
-      <div className="flex flex-1 justify-around items-center flex-col">
+    <div className="flex flex-col md:flex-row overflow-hidden w-screen h-screen">
+      <Sidebar user={data.user} reviewer={false} />
+      <div className="flex flex-1 justify-around items-center flex-col md:flex-row">
         {!data.text ? (
           <div>
             Thank you . your work is complete ! 😊😊😊 Check if there is any
             rejected text in history
           </div>
         ) : (
-          <div className="container">
-            <div className="label mb-2">transcript</div>
+          <div className="fixed bottom-[150px] md:top-[-80px] md:relative  max-h-[450px] w-[90%] rounded-sm md:h-[54vh]">
+            <div className="label mb-2 shadow-lg">Text</div>
             <ClientOnly fallback={null}>
               {() => (
-                <div className="shadow-lg max-h-[50vh] overflow-y-scroll text-xl max-w-full mx-auto">
+                <div className=" max-h-[50vh] p-2 overflow-y-scroll shadow-md text-xl max-w-full mx-auto">
                   <Editor editor={editor!} />
                 </div>
               )}
@@ -136,7 +124,7 @@ export default function Index() {
         )}
         <ClientOnly fallback={null}>
           {() => (
-            <div className="btn-container">
+            <div className="flex gap-2 fixed bottom-0 justify-center">
               <Button
                 disabled={isButtonDisabled}
                 handleClick={saveText}
@@ -151,13 +139,6 @@ export default function Index() {
                 title="REJECT (x)"
                 shortCut="x"
               />
-              {/* <Button
-                disabled={isButtonDisabled}
-                handleClick={ignoreTask}
-                type="IGNORE"
-                title="IGNORE (i)"
-                shortCut="i"
-              /> */}
               <Button
                 disabled={isButtonDisabled}
                 handleClick={undoTask}

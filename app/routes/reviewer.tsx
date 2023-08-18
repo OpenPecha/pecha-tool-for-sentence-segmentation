@@ -120,50 +120,50 @@ function review() {
   };
 
   return (
-    <div className="main">
+    <div className="flex flex-col md:flex-row overflow-hidden w-screen h-screen">
       <Sidebar
         batch={ga?.batch && ga?.batch?.slice(0, -1) + "c"}
         user={user}
-        online={[]}
         reviewer={true}
       ></Sidebar>
-      <div className="groupText relative max-w-[100vw] max-h-[100dvh] md:max-w-[80vw] mx-auto pt-[50px]">
-        {review && (
-          <Tabs
-            className="p-3 max-w-[800px] mx-auto mb-5"
-            selectedIndex={tabIndex}
-            onSelect={(index) => setTabIndex(index)}
-          >
-            <TabList>
-              <Tab>A( {ga?.modified_by?.username} )</Tab>
-              <Tab>B( {gb?.modified_by?.username} )</Tab>
-            </TabList>
-            {/* <TabPanel className="max-h-[30vh] overflow-scroll">
+      <div className="flex flex-1 justify-around items-center flex-col md:flex-row">
+        <div className="fixed bottom-[150px] md:top-[-80px] md:relative  max-h-[450px] w-[90%] rounded-sm md:h-[54vh]">
+          {review ? (
+            <Tabs
+              className="p-3 max-w-[800px] mx-auto mb-5"
+              selectedIndex={tabIndex}
+              onSelect={(index) => setTabIndex(index)}
+            >
+              <TabList>
+                <Tab>A( {ga?.modified_by?.username} )</Tab>
+                <Tab>B( {gb?.modified_by?.username} )</Tab>
+              </TabList>
+              {/* <TabPanel className="max-h-[30vh] overflow-scroll">
               <EachPanel textA={ga?.original_text} textB={ga?.modified_text} />
             </TabPanel>
             <TabPanel className="max-h-[30vh] overflow-scroll">
               <EachPanel textA={gb?.original_text} textB={gb?.modified_text} />
             </TabPanel> */}
-          </Tabs>
-        )}
-        {!data.text && !data.ga ? (
-          <div>Thank you . your work is complete ! 😊😊😊</div>
-        ) : (
-          <ClientOnly fallback={null}>
-            {() =>
-              editor && (
-                <div
-                  className={classNames(
-                    "shadow-lg  overflow-y-scroll text-xl max-w-3xl mx-2 md:mx-auto ",
-                    review ? "max-h-[50vh]" : "max-h-[60vh]"
-                  )}
-                >
-                  <EditorContainer editor={editor!} />
-                </div>
-              )
-            }
-          </ClientOnly>
-        )}
+            </Tabs>
+          ) : (
+            <div className="label mb-2 shadow-lg">Text</div>
+          )}
+          {!data.text && !data.ga ? (
+            <div>Thank you . your work is complete ! 😊😊😊</div>
+          ) : (
+            <ClientOnly fallback={null}>
+              {() =>
+                editor && (
+                  <>
+                    <div className="max-h-[50vh] p-2 overflow-y-scroll shadow-md text-xl max-w-full mx-auto">
+                      <EditorContainer editor={editor!} />
+                    </div>
+                  </>
+                )
+              }
+            </ClientOnly>
+          )}
+        </div>
 
         <ClientOnly fallback={null}>
           {() => (

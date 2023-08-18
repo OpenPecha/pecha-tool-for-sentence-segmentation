@@ -8,8 +8,8 @@ import MultiSelect from "./MultiSelect";
 import { User } from "@prisma/client";
 function Table({ users }) {
   return (
-    <div className="overflow-x-auto h-[80dvh]">
-      <table className="table table-md">
+    <div className="overflow-scroll">
+      <table className="table table-xs">
         <thead>
           <tr>
             <th></th>
@@ -113,7 +113,7 @@ function Row({ user, index }) {
     setOpenEditCategory(false);
   }
   return (
-    <tr>
+    <tr className="hover:bg-gray-300 border-b-gray-300 border-b-2">
       <th>{index + 1}</th>
       <td>
         {user.username}
@@ -182,20 +182,18 @@ function Row({ user, index }) {
         )}
       </td>
       <td>
-        {!openEditCategory && user.categories.length > 0 && (
-          <>
-            {user.categories.map((c) => {
+        {!openEditCategory && (
+          <div className="flex gap-2">
+            {user?.categories?.map((c) => {
               return <span className="badge badge-primary">{c}</span>;
             })}
-          </>
-        )}
-        {!openEditCategory && (
-          <button
-            onClick={() => setOpenEditCategory(true)}
-            className="mx-1 -translate-y-2"
-          >
-            <FiEdit2 size={10} />
-          </button>
+            <button
+              onClick={() => setOpenEditCategory(true)}
+              className="mx-1 -translate-y-2"
+            >
+              <FiEdit2 size={10} />
+            </button>
+          </div>
         )}
         {openEditCategory && (
           <MultiSelect

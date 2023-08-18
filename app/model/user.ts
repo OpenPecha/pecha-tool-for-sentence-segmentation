@@ -269,3 +269,14 @@ export function updateUserCategory(id: string, categories: string) {
     },
   });
 }
+
+export function resetUsers() {
+  return db.user.updateMany({
+    data: {
+      assigned_batch: [],
+      assigned_batch_for_review: [],
+      categories: [],
+      allow_annotation: false,
+    },
+  });
+}

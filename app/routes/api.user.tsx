@@ -1,6 +1,7 @@
 import { ActionFunction, LoaderFunction } from "@remix-run/node";
 import {
   getUsers,
+  resetUsers,
   updateUserAssign,
   updateUserCategory,
   updateUserNickname,
@@ -34,6 +35,9 @@ export const action: ActionFunction = async ({ request }) => {
     let categories = formdata.get("categories") as string;
     let updated = await updateUserCategory(id, categories);
     return updated;
+  }
+  if (action === "reset" && request.method === "DELETE") {
+    return await resetUsers();
   }
   return null;
 };

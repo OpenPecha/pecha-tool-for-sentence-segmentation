@@ -29,7 +29,7 @@ def remove_file_extension(filename):
 
 # eachtime change category and startInde
 category="med"
-START_INDEX=10000   
+START_INDEX=1000 
 batch_number =START_INDEX
 last_batch_number=START_INDEX
 def upload_data_to_postgres(txt_file, database, user, password, host, port, table_name,group_name,category):

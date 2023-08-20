@@ -3,10 +3,16 @@ import { db } from "~/service/db.server";
 
 //sort by category list
 export function batchSort(a: string, b: string) {
-  let category = a.split("_")[0];
-  let sliced_a = a.slice(0, -1).replace(`${category}_`, "");
-  let sliced_b = b.slice(0, -1).replace(`${category}_`, "");
-  return sliced_a - sliced_b;
+  const numA = parseInt(a.match(/\d+/)[0]);
+  const numB = parseInt(b.match(/\d+/)[0]);
+
+  if (numA !== numB) {
+    return numA - numB;
+  } else {
+    const lastCharA = a.charAt(a.length - 1);
+    const lastCharB = b.charAt(b.length - 1);
+    return lastCharA.localeCompare(lastCharB);
+  }
 }
 
 //count batch length
@@ -45,29 +51,35 @@ export async function get_all_batch() {
   const sortedNumbers = Array.from(uniqueBatches).sort(batchSort);
 
   // Get assigned batches from the user table
-  const assignedBatches = await db.user.findMany({
+  const user_assignedBatches = await db.user.findMany({
     select: { assigned_batch: true },
   });
-  const assignedNumbers = assignedBatches.flatMap(
-    (user) => user.assigned_batch
+  const assigned_batch = Array.from(
+    new Set(user_assignedBatches.flatMap((user) => user.assigned_batch))
   );
-  let data_asign = await db.text.findFirst({
-    where: {
-      batch: { in: assignedNumbers },
-      modified_text: null,
-    },
-  });
   // Separate unassigned numbers
-  let temp = sortedNumbers.filter(
-    (number) => !assignedNumbers.includes(number)
+  let unassigned_batchs = sortedNumbers.filter(
+    (number) => !assigned_batch.includes(number)
   );
 
-  const unassignedNumbers = temp;
-
+  //get batch assigned to reviewer
+  let reviewer = await db.user.findMany({
+    where: { role: "reviewer" },
+    select: { assigned_batch: true },
+  });
+  let reviewer_batch = Array.from(
+    new Set(reviewer.flatMap((user) => user.assigned_batch))
+  );
+  unassigned_batchs = unassigned_batchs.filter((item) => {
+    let second = item?.endsWith("a")
+      ? item?.slice(0, -1) + "b"
+      : item?.slice(0, -1) + "a";
+    return !reviewer_batch.includes(item) && !reviewer_batch.includes(second);
+  });
   // Return the two groups
   return {
-    unassigned: unassignedNumbers,
-    assigned: assignedNumbers.sort(batchSort),
+    unassigned: unassigned_batchs,
+    assigned: assigned_batch,
   };
 }
 
@@ -79,14 +91,13 @@ export async function get_not_asigned_batch(
   categories?: string[]
 ) {
   let { unassigned } = await get_all_batch();
-  let batchFromReviewer = await getListasignedBatchreviewer();
-  let batchFormat = batch?.map((p) => p.slice(0, -1));
-  let batchFormat2 = batchFromReviewer?.map((p) => p.slice(0, -1));
-
-  if (batch?.length) {
+  if (categories.length === 0)
+    throw new Error("Please select at least one category");
+  if (batch && batch?.length > 0) {
+    let batchFormat = batch?.map((p) => p.slice(0, -1));
     unassigned = unassigned.filter((item: string) => {
       let data = item.slice(0, -1);
-      return !batchFormat?.includes(data) && !batchFormat2?.includes(data);
+      return !batchFormat?.includes(data);
     });
   }
   if (reviewer) {
@@ -103,7 +114,7 @@ export async function get_not_asigned_batch(
       return categories.some((element2) => element1.startsWith(element2));
     });
   }
-
+  console.log(unassigned);
   return unassigned[0] || "";
 }
 
@@ -282,17 +293,4 @@ export async function getCountOfbatchforreview(batch: string[]) {
     console.log(e);
     return 0;
   }
-}
-
-export async function getListasignedBatchreviewer() {
-  const data = await db.user.findMany({
-    where: {
-      role: "reviewer",
-    },
-    select: {
-      assigned_batch: true,
-    },
-  });
-  let result = data.map((item) => item.assigned_batch).flat();
-  return result;
 }

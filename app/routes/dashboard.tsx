@@ -1,12 +1,18 @@
 import { LoaderFunction, redirect } from "@remix-run/node";
 import { Link, useLoaderData, useRevalidator } from "@remix-run/react";
-import Table from "~/components/Table";
-import React from "react";
 import { getReviewerList, getUser, getUsers } from "~/model/user";
-import ReviewerDetail from "~/components/ReviewerDetail";
-import { getCategories, getCategoriesByReviewer } from "~/model/utils/category";
+import { getCategoriesByReviewer } from "~/model/utils/category";
 import { MdArrowBack } from "react-icons/md";
 import { FiRefreshCw } from "react-icons/fi";
+import ReviewerDetail from "~/components/ReviewerDetail";
+import Table from "~/components/Table";
+import { User } from "@prisma/client";
+export function meta() {
+  return [
+    { title: "Dashboard" },
+    { name: "description", content: "Dashboard page for pechatool" },
+  ];
+}
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
   let session = url.searchParams.get("session") as string;
@@ -21,7 +27,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 function dashboard() {
   let { users, user } = useLoaderData();
-  let annotators = users.filter((u) => u.role === "annotator");
+  let annotators = users.filter((user: User) => user.role === "annotator");
   const revalidator = useRevalidator();
 
   return (

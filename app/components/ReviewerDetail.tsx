@@ -1,6 +1,5 @@
 import { User } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
-import React from "react";
 import { EachInfo } from "~/routes/admin";
 
 function ReviewerDetail({ user }: { user: User }) {
@@ -34,7 +33,7 @@ function ReviewerDetail({ user }: { user: User }) {
           type="checkbox"
           className={`toggle toggle-success `}
           disabled={fetcher.state !== "idle"}
-          defaultChecked={user?.allow_annotation!}
+          checked={user?.allow_annotation!}
           onChange={handleToggleAssign}
           aria-label="Toggle_role"
         />

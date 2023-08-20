@@ -1,24 +1,31 @@
 import { LoaderFunction, redirect } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import Sidebar from "~/components/Sidebar";
 import { getAsignedReviewText } from "~/model/text";
 import { getUser } from "~/model/user";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { getDiff, getErrorCount } from "~/lib/dmp";
 import { useEffect, useState } from "react";
 import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { NEW_LINER } from "~/constant";
 import { editorProps } from "~/tiptapProps/events";
 import { Divider } from "~/tiptapProps/extension/divider";
 import { Character } from "~/tiptapProps/extension/character";
 import { Sentence } from "~/tiptapProps/extension/sentence";
-import EditorContainer from "~/components/Editor.client";
 import { ClientOnly } from "remix-utils";
+import EditorContainer from "~/components/Editor.client";
 import checkUnknown from "~/lib/checkUnknown";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import Button from "~/components/Button";
-import { NEW_LINER } from "~/constant";
-import classNames from "classnames";
+import StarterKit from "@tiptap/starter-kit";
+import Sidebar from "~/components/Sidebar";
+import { useEditorContainer } from "~/lib/hook/useEditorContainer";
+
+export function meta() {
+  return [
+    { title: "review pechatool" },
+    { name: "description", content: "reviewer page for pechatool" },
+  ];
+}
 
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
@@ -60,20 +67,7 @@ function review() {
       setSelectedText(newText);
     }
   }, [tabIndex, review, ga?.modified_text]);
-  const editor = useEditor(
-    {
-      extensions: [
-        StarterKit,
-        Divider(setter),
-        Character(charClick),
-        Sentence(setter),
-      ],
-      content: newText,
-      editorProps,
-      editable: false,
-    },
-    [newText]
-  );
+  const editor = useEditorContainer(newText);
   let fetcher = useFetcher();
   let isButtonDisabled = fetcher.state !== "idle";
   let saveText = async () => {
@@ -138,12 +132,6 @@ function review() {
                 <Tab>A( {ga?.modified_by?.username} )</Tab>
                 <Tab>B( {gb?.modified_by?.username} )</Tab>
               </TabList>
-              {/* <TabPanel className="max-h-[30vh] overflow-scroll">
-              <EachPanel textA={ga?.original_text} textB={ga?.modified_text} />
-            </TabPanel>
-            <TabPanel className="max-h-[30vh] overflow-scroll">
-              <EachPanel textA={gb?.original_text} textB={gb?.modified_text} />
-            </TabPanel> */}
             </Tabs>
           ) : (
             <div className="label mb-2 shadow-lg">Text</div>
@@ -155,7 +143,7 @@ function review() {
               {() =>
                 editor && (
                   <>
-                    <div className="max-h-[50vh] p-2 overflow-y-scroll shadow-md text-xl max-w-full mx-auto">
+                    <div className="max-h-[50vh] w-full max-w-[650px] p-2 overflow-y-scroll shadow-md text-xl  mx-auto">
                       <EditorContainer editor={editor!} />
                     </div>
                   </>
@@ -191,16 +179,3 @@ function review() {
 }
 
 export default review;
-
-function EachPanel({ textA, textB }) {
-  let a = textA || "";
-  let b = "";
-  if (textB) b = JSON.parse(textB).join("\n");
-
-  let { html } = getDiff(a, b);
-  return (
-    <div className="px-5 py-0">
-      <div dangerouslySetInnerHTML={{ __html: html }}></div>
-    </div>
-  );
-}

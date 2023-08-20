@@ -1,12 +1,8 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, MouseEvent } from "react";
 import { EditorContent, Editor } from "@tiptap/react";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import selectText from "~/lib/selectRange";
 import { DIVIDER } from "~/constant";
-
-interface CustomMouseEvent extends MouseEvent {
-  target: HTMLElement;
-}
 
 let select = 0;
 let selectsentence = 0;
@@ -58,11 +54,13 @@ function EditorContainer({ editor }: { editor: Editor }) {
   useEffect(() => {
     const content = editor?.getText();
     let clickCount = 0;
-    const segments: HTMLElement[] | any = document.querySelectorAll(".seg");
-    const sentenceSegment = document.querySelectorAll(".sen");
-    const divider = document.querySelectorAll(".Divider");
-    const handleWordClick = (event: CustomMouseEvent) => {
-      let parent = event.target.parentElement;
+    const segments: NodeListOf<HTMLDivElement> =
+      document.querySelectorAll(".seg");
+    const sentenceSegment: NodeListOf<HTMLDivElement> =
+      document.querySelectorAll(".sen");
+    const handleWordClick = (event: MouseEvent<HTMLDivElement>) => {
+      const target = event.target as HTMLDivElement;
+      let parent = target.parentElement;
       let modifiedContent = content;
       const selection = parent?.innerText;
       const locationText = parent?.classList;
@@ -72,7 +70,7 @@ function EditorContainer({ editor }: { editor: Editor }) {
       setTimeout(() => {
         if (clickCount === 1) {
           // Single click
-          let classname = event.target.classList[1];
+          let classname = target.classList[1];
           const elements = document.getElementsByClassName(classname);
           const lastElement = elements[elements.length - 1];
 
@@ -113,8 +111,9 @@ function EditorContainer({ editor }: { editor: Editor }) {
         }, 300);
       }, 200);
     };
-    const handleDividerClick = (e: CustomMouseEvent) => {
-      let location = parseInt(e.target.classList[0].replace("d-", ""));
+    const handleDividerClick = (ev: MouseEvent<HTMLDivElement>) => {
+      const target = ev.target as HTMLDivElement;
+      let location = parseInt(target.classList[0].replace("d-", ""));
       let modifiedContent = content;
       let first = modifiedContent.slice(0, location);
 
@@ -124,12 +123,15 @@ function EditorContainer({ editor }: { editor: Editor }) {
       editor?.commands.setContent(newText);
     };
     sentenceSegment.forEach((s) => {
-      s.addEventListener("mouseover", (event) => handleMouse(event, "over"));
-      s.addEventListener("mouseout", (event) => handleMouse(event, "leave"));
+      s.addEventListener("mouseover", (e) => handleMouse(e, "over"));
+      s.addEventListener("mouseout", (e) => handleMouse(e, "leave"));
       s.addEventListener("click", handleWordClick);
     });
-    divider.forEach((d) => {
-      d.addEventListener("click", handleDividerClick);
+    const dividers: NodeListOf<HTMLDivElement> =
+      document.querySelectorAll(".Divider");
+
+    dividers.forEach((divider) => {
+      divider.addEventListener("click", (e) => handleDividerClick(e));
     });
     if (select > 1) {
       selectText(segments[select]);
@@ -200,12 +202,8 @@ function EditorContainer({ editor }: { editor: Editor }) {
 
     return () => {
       sentenceSegment.forEach((segment) => {
-        segment.removeEventListener("mouseover", (event) =>
-          handleMouse(event, "over")
-        );
-        segment.removeEventListener("mouseout", (event) =>
-          handleMouse(event, "leave")
-        );
+        segment.removeEventListener("mouseover", (e) => handleMouse(e, "over"));
+        segment.removeEventListener("mouseout", (e) => handleMouse(e, "leave"));
         segment.removeEventListener("click", handleWordClick);
       });
       document.removeEventListener("keydown", handleKeyDown);

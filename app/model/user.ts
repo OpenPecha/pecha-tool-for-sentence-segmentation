@@ -270,8 +270,8 @@ export function updateUserCategory(id: string, categories: string) {
   });
 }
 
-export function resetUsers() {
-  return db.user.updateMany({
+export async function resetUsers() {
+  await db.user.updateMany({
     data: {
       assigned_batch: [],
       assigned_batch_for_review: [],
@@ -279,4 +279,14 @@ export function resetUsers() {
       allow_annotation: false,
     },
   });
+  await db.text.updateMany({
+    data: {
+      reviewed_text: null,
+      modified_by_id: null,
+      modified_text: null,
+      reviewer_id: null,
+      status: null,
+    },
+  });
+  return true;
 }

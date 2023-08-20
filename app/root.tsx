@@ -12,7 +12,7 @@ import globalStyle from "~/styles/global.css";
 import controlStyle from "~/styles/control_btn.css";
 import sidebarStyle from "~/styles/sidebar.css";
 import tabStyle from "react-tabs/style/react-tabs.css";
-
+import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
 export const links: LinksFunction = () => {
   return [
     { rel: "stylesheet", href: tailwindStyle },
@@ -41,20 +41,28 @@ export default function App() {
     </html>
   );
 }
+export function ErrorBoundary() {
+  const error = useRouteError();
 
-export function ErrorBoundary({ error }) {
-  console.error(error);
-  return (
-    <html>
-      <head>
-        <title>Oh no!</title>
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        {/* add the UI you want your users to see */}
-        <Scripts />
-      </body>
-    </html>
-  );
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>
+          {error.status} {error.statusText}
+        </h1>
+        <p>{error.data}</p>
+      </div>
+    );
+  } else if (error instanceof Error) {
+    return (
+      <div>
+        <h1>Error</h1>
+        <p>{error.message}</p>
+        <p>The stack trace is:</p>
+        <pre>{error.stack}</pre>
+      </div>
+    );
+  } else {
+    return <h1>Unknown Error</h1>;
+  }
 }

@@ -12,9 +12,7 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import classNames from "classnames";
-import { useState } from "react";
-import { FiEdit2 } from "react-icons/fi";
-import MultiSelect from "~/components/MultiSelect";
+import { useRef, useState } from "react";
 import { getAprovedbatch, getTextInfo } from "~/model/text";
 import {
   addGroupToUser,
@@ -30,6 +28,7 @@ import {
 import { getCategories } from "~/model/utils/category";
 import { AiFillHome } from "react-icons/ai";
 import { FiRefreshCw } from "react-icons/fi";
+import AsignCategory from "~/components/AsignCategory";
 
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
@@ -51,7 +50,12 @@ export const loader: LoaderFunction = async ({ request }) => {
     reviewers,
   };
 };
-
+export function meta() {
+  return [
+    { title: "Admin Page" },
+    { name: "description", content: "admin page for pechatool" },
+  ];
+}
 export const action: ActionFunction = async ({ request }) => {
   let formdata = await request.formData();
   if (request.method === "POST") {
@@ -103,6 +107,8 @@ function admin() {
   ];
   const revalidator = useRevalidator();
   let resetUsers = async () => {
+    let c = confirm("Are you sure you want to reset all users?");
+    if (!c) return;
     userFetcher.submit(
       {
         action: "reset",
@@ -195,6 +201,8 @@ function admin() {
                 <th>Role</th>
                 <th>category</th>
                 <th>Assigned Jobs</th>
+                <th>Approved </th>
+                <th>Reviewed </th>
               </tr>
             </thead>
             <tbody>
@@ -238,9 +246,8 @@ function Users({
   fetcher: any;
   index: number;
 }) {
-  let { groups, reviewedBatch, categories } = useLoaderData();
-  const [openEditCategory, setOpenEditCategory] = useState(false);
-
+  let { groups, reviewedBatch } = useLoaderData();
+  let modelRef = useRef(null);
   let removeGroup = (e) => {
     if (groups[e].rejected) {
       alert(
@@ -267,67 +274,26 @@ function Users({
         }
       );
   };
-
-  let removing =
-    fetcher.formData?.get("id") === user.id && fetcher.formMethod === "DELETE";
-  let fet = useFetcher();
-  function handleClick(category) {
-    let data = [...user.categories, category];
-    if (user.categories.includes(category)) {
-      data = user.categories.filter((c) => c !== category);
-    }
-    fet.submit(
-      {
-        id: user.id,
-        categories: JSON.stringify(data),
-        action: "change_categories",
-      },
-      {
-        method: "POST",
-        action: "/api/user",
-      }
-    );
-    setOpenEditCategory(false);
-  }
+  let approved_count = user.approved_text.length;
+  let reviewed_count = user.approved_text.filter(
+    (i) => i.reviewed_text !== null
+  ).length;
   return (
     <tr className="hover:bg-gray-300 border-b-gray-300 border-b-2">
       <th>{index + 1}</th>
       <td>{user.username}</td>
       <td>{user.role}</td>
       <td>
-        {!openEditCategory && user.categories.length > 0 && (
-          <>
-            {user.categories.map((c) => {
-              return <span className="badge bg-green-300">{c}</span>;
-            })}
-          </>
-        )}
-        {!openEditCategory && user.role === "reviewer" && (
-          <button
-            onClick={() => setOpenEditCategory(true)}
-            className="mx-1 -translate-y-2"
-          >
-            <FiEdit2 size={10} />
-          </button>
-        )}
-        {openEditCategory &&
-          categories.map((category) => (
-            <EachCategory
-              user={user}
-              category={category}
-              key={category + "_cat"}
-              handleClick={() => handleClick(category)}
-            />
-          ))}
+        <AsignCategory user={user} editable={user.role === "reviewer"} />
       </td>
       <td>
         <button
-          className="p-1 w-32"
-          onClick={() => window.my_modal_2.showModal()}
+          className=" p-1 w-32"
+          onClick={() => modelRef?.current?.showModal()}
         >
-          check
+          view
         </button>
-        <dialog id="my_modal_2" className="modal">
+        <dialog ref={modelRef} className="modal">
           <form method="dialog" className="modal-box">
             <button className=" btn-sm btn-circle btn-ghost absolute right-2 top-2">
               ✕
@@ -340,15 +306,13 @@ function Users({
                     " border-2 px-1 border-gray-500 cursor-pointer ",
                     groups[data]?.approved
                       ? "bg-green-300"
-                      : groups[data]?.ignored.includes(user.username)
-                      ? "bg-yellow-500"
                       : groups[data]?.rejected
                       ? "bg-pink-500"
                       : "bg-white"
                   )}
                   onClick={() => removeGroup(data)}
                 >
-                  {data.split("_")[1]}
+                  {data}
                 </button>
               ))}
               {user.assigned_batch_for_review.map((data, index) => {
@@ -370,6 +334,8 @@ function Users({
           </form>
         </dialog>
       </td>
+      <td>{approved_count}</td>
+      <td>{reviewed_count}</td>
     </tr>
   );
 }
@@ -394,19 +360,6 @@ function TextDashboard({ info }) {
 export function EachInfo({ children }) {
   return (
     <div className=" p-3 w-48 shadow-md flex justify-center">{children}</div>
-  );
-}
-
-function EachCategory({ user, category, handleClick }) {
-  return (
-    <span
-      className={`p-1 shadow-sm border-2 border-gray-200 cursor-pointer ${
-        user.categories.includes(category) ? "bg-green-300" : ""
-      }`}
-      onClick={handleClick}
-    >
-      {category}
-    </span>
   );
 }
 

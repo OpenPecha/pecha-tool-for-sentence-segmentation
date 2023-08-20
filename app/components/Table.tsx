@@ -1,12 +1,30 @@
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { FiEdit2 } from "react-icons/fi";
 import { TiTick } from "react-icons/ti";
 import { ImCross } from "react-icons/im";
 import { error_and_pay } from "~/lib/payCalc";
-import MultiSelect from "./MultiSelect";
 import { User } from "@prisma/client";
-function Table({ users }) {
+import AssignCategory from "./AsignCategory";
+
+type TextType = Text & {
+  reviewed_text: Text;
+};
+
+type UserType = User & {
+  approved_text: TextType[];
+  reviewed_list: TextType[];
+  reviewer: User;
+};
+
+type TableProps = {
+  users: UserType[];
+};
+type RowProps = {
+  user: UserType;
+  index: number;
+};
+function Table({ users }: TableProps) {
   return (
     <div className="overflow-scroll">
       <table className="table table-xs">
@@ -46,16 +64,18 @@ function Table({ users }) {
   );
 }
 
-function Row({ user, index }) {
+function Row({ user, index }: RowProps) {
   let approved = user.approved_text.length;
-  let reviewed = user.approved_text.filter((item) => item.reviewed).length;
+  let reviewed = user.approved_text.filter(
+    (item) => item.reviewed_text !== null
+  ).length;
   let { reviewers, categories } = useLoaderData();
   let { finalErrorCount, pay } = error_and_pay(user);
-  const inputRef = useRef();
+  const inputRef = useRef(null);
   const [openEdit, setOpenEdit] = useState(false);
   const [openEditCategory, setOpenEditCategory] = useState(false);
-
   let fetcher = useFetcher();
+
   function handleToggleAssign() {
     fetcher.submit(
       {
@@ -100,18 +120,7 @@ function Row({ user, index }) {
       );
     }
   }
-  function handleMultiSelect(value: string[]) {
-    let data = value.map((item) => item.value);
-    fetcher.submit(
-      {
-        id: user.id,
-        categories: JSON.stringify(data),
-        action: "change_categories",
-      },
-      { method: "POST", action: "/api/user" }
-    );
-    setOpenEditCategory(false);
-  }
+
   return (
     <tr className="hover:bg-gray-300 border-b-gray-300 border-b-2">
       <th>{index + 1}</th>
@@ -156,7 +165,7 @@ function Row({ user, index }) {
           type="checkbox"
           className={`toggle toggle-success `}
           disabled={fetcher.state !== "idle" || !user.reviewer}
-          defaultChecked={user?.allow_annotation!}
+          checked={user?.allow_annotation!}
           onChange={handleToggleAssign}
           aria-label="Toggle_role"
         />
@@ -182,26 +191,7 @@ function Row({ user, index }) {
         )}
       </td>
       <td>
-        {!openEditCategory && (
-          <div className="flex gap-2">
-            {user?.categories?.map((c) => {
-              return <span className="badge badge-primary">{c}</span>;
-            })}
-            <button
-              onClick={() => setOpenEditCategory(true)}
-              className="mx-1 -translate-y-2"
-            >
-              <FiEdit2 size={10} />
-            </button>
-          </div>
-        )}
-        {openEditCategory && (
-          <MultiSelect
-            values={categories}
-            handleChange={handleMultiSelect}
-            defaults={user.categories}
-          />
-        )}
+        <AssignCategory user={user} editable={user.role === "annotator"} />
       </td>
     </tr>
   );

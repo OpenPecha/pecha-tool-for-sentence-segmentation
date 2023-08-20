@@ -4,25 +4,18 @@ import {
   type V2_MetaFunction,
 } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
-import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { getTextToDisplay, getTextToDisplayByUser } from "~/model/text";
+import { createUserIfNotExists } from "~/model/user";
+import { NEW_LINER } from "~/constant";
 import Button from "~/components/Button";
 import Editor from "~/components/Editor.client";
 import Sidebar from "~/components/Sidebar";
-import { getTextToDisplay, getTextToDisplayByUser } from "~/model/text";
-
-import { Divider } from "~/tiptapProps/extension/divider";
-import { Character } from "~/tiptapProps/extension/character";
-import { editorProps } from "~/tiptapProps/events";
-import checkUnknown from "~/lib/checkUnknown";
-import { createUserIfNotExists } from "~/model/user";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
-import { ClientOnly } from "remix-utils";
-import { Sentence } from "~/tiptapProps/extension/sentence";
-import { NEW_LINER } from "~/constant";
+import checkUnknown from "~/lib/checkUnknown";
+import { useEditorContainer } from "~/lib/hook/useEditorContainer";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  let { KEY, CLUSTER, APP_ID, SECRET, NODE_ENV } = process.env;
+  let { NODE_ENV } = process.env;
   let url = new URL(request.url);
   let session = url.searchParams.get("session");
   let history = url.searchParams.get("history") || null;
@@ -34,9 +27,10 @@ export const loader: LoaderFunction = async ({ request }) => {
       return redirect("/reviewer?session=" + session);
     }
     let text = null;
-    if (user.allow_annotation) text = await getTextToDisplay(user, history);
+    if (user.allow_annotation && user.categories.length > 0)
+      text = await getTextToDisplay(user, history);
     let textFromUser = await getTextToDisplayByUser(user?.id);
-    return { text, textFromUser, user, KEY, CLUSTER, NODE_ENV };
+    return { text, textFromUser, user, NODE_ENV };
   }
 };
 
@@ -50,28 +44,12 @@ export const meta: V2_MetaFunction = () => {
 export default function Index() {
   let fetcher = useFetcher();
   const data = useLoaderData();
-
   let text = data?.text?.original_text?.trim();
-
   let user = data.user;
   let insertHTML = insertHTMLonText(text);
   let newText = checkUnknown(insertHTML);
-  const setter = () => {};
-  const charClick = () => {};
-  const editor = useEditor(
-    {
-      extensions: [
-        StarterKit,
-        Divider(setter),
-        Character(charClick),
-        Sentence(setter),
-      ],
-      content: newText,
-      editorProps,
-      editable: false,
-    },
-    [newText]
-  );
+  const editor = useEditorContainer(newText);
+
   let saveText = async () => {
     let text = editor?.getText();
     const escapedSymbol = NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -104,51 +82,42 @@ export default function Index() {
     <div className="flex flex-col md:flex-row overflow-hidden w-screen h-screen">
       <Sidebar user={data.user} reviewer={false} />
       <div className="flex flex-1 justify-around items-center flex-col md:flex-row">
-        {!data.text ? (
-          <div>
+        {!data.text || !editor ? (
+          <>
             Thank you . your work is complete ! 😊😊😊 Check if there is any
             rejected text in history
-          </div>
+          </>
         ) : (
           <div className="fixed bottom-[150px] md:top-[-80px] md:relative  max-h-[450px] w-[90%] rounded-sm md:h-[54vh]">
             <div className="label mb-2 shadow-lg">Text</div>
-            <ClientOnly fallback={null}>
-              {() => (
-                <div className=" max-h-[50vh] p-2 overflow-y-scroll shadow-md text-xl max-w-full mx-auto">
-                  <Editor editor={editor!} />
-                </div>
-              )}
-            </ClientOnly>
-            {!editor && <div>loading...</div>}
+            <div className=" max-h-[50vh] p-2 overflow-y-scroll shadow-md text-xl max-w-full mx-auto">
+              <Editor editor={editor} />
+            </div>
           </div>
         )}
-        <ClientOnly fallback={null}>
-          {() => (
-            <div className="flex gap-2 fixed bottom-0 justify-center">
-              <Button
-                disabled={isButtonDisabled}
-                handleClick={saveText}
-                type="CONFIRM"
-                title="CONFIRM (a)"
-                shortCut="a"
-              />
-              <Button
-                disabled={isButtonDisabled}
-                handleClick={rejectTask}
-                type="REJECT"
-                title="REJECT (x)"
-                shortCut="x"
-              />
-              <Button
-                disabled={isButtonDisabled}
-                handleClick={undoTask}
-                type="UNDO"
-                title="UNDO (backspace)"
-                shortCut="Backspace"
-              />
-            </div>
-          )}
-        </ClientOnly>
+        <div className="flex gap-2 fixed bottom-0 justify-center">
+          <Button
+            disabled={isButtonDisabled}
+            handleClick={saveText}
+            type="CONFIRM"
+            title="CONFIRM (a)"
+            shortCut="a"
+          />
+          <Button
+            disabled={isButtonDisabled}
+            handleClick={rejectTask}
+            type="REJECT"
+            title="REJECT (x)"
+            shortCut="x"
+          />
+          <Button
+            disabled={isButtonDisabled}
+            handleClick={undoTask}
+            type="UNDO"
+            title="UNDO (backspace)"
+            shortCut="Backspace"
+          />
+        </div>
       </div>
     </div>
   );

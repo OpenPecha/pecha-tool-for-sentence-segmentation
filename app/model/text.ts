@@ -39,7 +39,7 @@ export async function checkAndAssignBatch(userSession: User) {
         await db.user.update({
           where: { username: userSession.username },
           data: {
-            assigned_batch: { push: batch[0] },
+            assigned_batch: { push: batch },
           },
         });
         return batch;
@@ -74,8 +74,7 @@ export async function checkAndAssignBatch(userSession: User) {
       return batch;
     }
   } catch (e) {
-    console.error("Error in checkAndAssignBatch:", e);
-    throw new Error("Unable to assign batch.");
+    throw new Error(`Unable to assign batch. ${e}`);
   }
 }
 export async function checkAndAssignBatchforReview(userSession: User) {
@@ -219,14 +218,13 @@ export async function getTextToDisplay(
     throw new Error("User not found");
   }
   const asignedbatch = batch;
-  const ignoredIds = user?.ignored_list.map((item: any) => item.id);
   const rejectedIds = user?.rejected_list.map((item: any) => item.id);
   const text = await db.text.findFirst({
     where: {
       modified_text: null,
       OR: [{ status: null }, { status: "PENDING" }],
       id: {
-        notIn: [...(ignoredIds || []), ...(rejectedIds || [])],
+        notIn: [...(rejectedIds || [])],
       },
       batch: asignedbatch,
     },

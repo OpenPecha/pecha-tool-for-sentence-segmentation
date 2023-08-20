@@ -1,14 +1,14 @@
 import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { Cross, Hamburger, Tick } from "./SVGS";
-import { Role, Text } from "@prisma/client";
+import { Role, Text, User } from "@prisma/client";
 import { error_and_pay } from "~/lib/payCalc";
 import TextInfo from "./TextInfo";
 import { sortUpdate_reviewed } from "~/lib/sortReviewedUpdate";
 import HistoryItem from "./History";
 
 interface SidebarProps {
-  user: any;
+  user: User;
   reviewer: boolean;
   batch?: string;
   history?: any;
@@ -55,7 +55,7 @@ function Sidebar({ user, reviewer, batch, history }: SidebarProps) {
       mergedArray.push(item);
     }
   });
-
+  let dashboard_url = { admin: "/admin", reviewer: "/dashboard" };
   return (
     <div className="flex flex-col">
       <div
@@ -72,22 +72,15 @@ function Sidebar({ user, reviewer, batch, history }: SidebarProps) {
       >
         <div className="px-2 flex gap-2 flex-col border-b-2 border-b-[#384451] mb-3 pb-2 mt-2 ">
           <SidebarHeader />
-          {user.role === "admin" && (
+          {(user.role === "admin" || user.role === "reviewer") && (
             <Link
-              to={`/admin?session=${user?.username}`}
-              className="text-white bg-gray-500 p-3 decoration-inherit"
-            >
-              Admin
-            </Link>
-          )}
-          {user.role === "reviewer" && (
-            <Link
-              to={`/dashboard?session=${user?.username}`}
+              to={`${dashboard_url[user.role]}?session=${user?.username}`}
               className="text-white bg-gray-500 p-3 decoration-inherit"
             >
               Dashboard
             </Link>
           )}
+
           <TextInfo>User : {user?.username}</TextInfo>
           <TextInfo>
             text id :{ga ? ga.id.replace("a_", "") : text?.id}
@@ -101,36 +94,37 @@ function Sidebar({ user, reviewer, batch, history }: SidebarProps) {
         <div className="flex-1">
           <div className="text-sm mb-2 font-bold">History</div>
           <div className="flex flex-col gap-2 max-h-[30vh] overflow-y-auto">
-            {role === "annotator" &&
-              user?.rejected_list.length > 0 &&
-              ([...user?.rejected_list] || [])
-                .sort(sortUpdate_reviewed)
-                .map((text: Text) => (
-                  <HistoryItem
-                    user={user}
-                    id={text?.id}
-                    key={text.id + "-accepted"}
-                    onClick={() => setOpenMenu(false)}
-                    icon={text?.modified_text ? <Tick /> : <Cross />}
-                    reviewer={reviewer}
-                  />
-                ))}
-            {role === "annotator" &&
-              user?.approved_text?.length > 0 &&
-              ([...user?.approved_text] || [])
-                .sort(sortUpdate_reviewed)
-                .map((text: Text) => (
-                  <HistoryItem
-                    user={user}
-                    id={text?.id}
-                    key={text.id + "-accepted"}
-                    onClick={() => setOpenMenu(false)}
-                    icon={text?.modified_text ? <Tick /> : <Cross />}
-                    reviewer={reviewer}
-                    disabled={!!text?.reviewed_text}
-                  />
-                ))}
-
+            {role === "annotator" && (
+              <>
+                {user?.rejected_list.length > 0 &&
+                  ([...user?.rejected_list] || [])
+                    .sort(sortUpdate_reviewed)
+                    .map((text: Text) => (
+                      <HistoryItem
+                        user={user}
+                        id={text?.id}
+                        key={text.id + "-accepted"}
+                        onClick={() => setOpenMenu(false)}
+                        icon={text?.modified_text ? <Tick /> : <Cross />}
+                        reviewer={reviewer}
+                      />
+                    ))}
+                {user?.approved_text?.length > 0 &&
+                  ([...user?.approved_text] || [])
+                    .sort(sortUpdate_reviewed)
+                    .map((text: Text) => (
+                      <HistoryItem
+                        user={user}
+                        id={text?.id}
+                        key={text.id + "-accepted"}
+                        onClick={() => setOpenMenu(false)}
+                        icon={text?.modified_text ? <Tick /> : <Cross />}
+                        reviewer={reviewer}
+                        disabled={!!text?.reviewed_text}
+                      />
+                    ))}
+              </>
+            )}
             {role === "reviewer" &&
               mergedArray
                 ?.sort(sortUpdate_reviewed)

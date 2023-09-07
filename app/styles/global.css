@@ -1,0 +1,37 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto+Condensed&display=swap");
+
+:root {
+  --purple: #583fcf;
+  --normal-btn: #b9b9b9;
+  --success-btn: #4fd364;
+  --cancel-btn: #f74c4a;
+  --word: #f1c232;
+  --sentence: #ffff00;
+  --editor-font-size: 24px;
+}
+
+body {
+  font-family: "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.ProseMirror::selection {
+  background-color: yellow;
+}
+.ProseMirror:focus {
+  outline: none;
+}
+button:disabled {
+  opacity: 0.3;
+}
+
+.Divider {
+  cursor: pointer;
+}
+.hover {
+  background-color: var(--sentence);
+}
+
+.seg:hover .sen:hover {
+  background-color: var(--word);
+  cursor: pointer;
+}

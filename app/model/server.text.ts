@@ -257,3 +257,24 @@ export async function changeCategory(version: string, category: string) {
     throw new Error(e);
   }
 }
+export async function deleteTextByVersion(version: string) {
+  try {
+    let deleted = await db.text.deleteMany({
+      where: { version },
+    });
+    return deleted.count;
+  } catch (e) {
+    throw new Error(e + "cannot delete");
+  }
+}
+export async function getLastBatch() {
+  let batch = await db.text.findFirst({
+    select: {
+      batch: true,
+    },
+    orderBy: {
+      batch: "desc",
+    },
+  });
+  return batch?.batch || 0;
+}

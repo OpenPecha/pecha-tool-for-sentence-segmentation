@@ -1,7 +1,7 @@
 import { LoaderFunction, defer, redirect } from "@remix-run/node";
-import React from "react";
 import AboutText from "~/components/admin/AboutText";
 import { getUniqueTextsGroup } from "~/model/server.group";
+import { getLastBatch } from "~/model/server.text";
 import { getUser } from "~/model/server.user";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -10,9 +10,11 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (!session) return redirect("/error");
   let texts = await getUniqueTextsGroup();
   let user = await getUser(session, true);
+  let lastbatch = await getLastBatch();
   return defer({
     user,
     texts,
+    lastbatch,
   });
 };
 

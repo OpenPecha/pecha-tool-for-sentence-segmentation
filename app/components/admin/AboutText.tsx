@@ -2,15 +2,18 @@ import { useFetcher, useLoaderData } from "@remix-run/react";
 import React, { useEffect, useState } from "react";
 import { BiSolidCloudDownload } from "react-icons/bi";
 import { downloadJsonlFile } from "~/lib/downloadfile";
+import UploadText from "./UploadText";
+import { TiDelete } from "react-icons/ti";
 type Text_Props = {
   version: string;
   category: string;
 };
 
 function AboutText() {
-  const { texts } = useLoaderData();
+  const { texts, user } = useLoaderData();
   return (
     <>
+      {user.role === "ADMIN" && <UploadText />}
       <div className="collapse collapse-plus bg-base-200">
         <input type="radio" name="my-accordion-3" />
         <div className="collapse-title text-xl font-medium bg-gray-300">
@@ -61,12 +64,30 @@ function Text_Category({ text }: { text: Text_Props }) {
     );
     setHasChanges(false);
   }
+  function handleDelete() {
+    fetcher.submit(
+      {
+        version: text.version,
+      },
+      {
+        method: "DELETE",
+        action: "/api/text",
+      }
+    );
+  }
   return (
     <form
       onSubmit={handleSubmit}
       className="text-center flex w-full px-2 justify-between mt-2"
     >
-      <h4 className="text-lg font-bold">{text.version}</h4>
+      <h4 className="text-lg font-bold">
+        {text.version}
+        {user.role === "ADMIN" && (
+          <button onClick={handleDelete} type="button">
+            <TiDelete />
+          </button>
+        )}
+      </h4>
       <input hidden name="_action" readOnly value="change_category"></input>
       <div className="flex gap-2">
         <input

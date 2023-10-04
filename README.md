@@ -17,6 +17,13 @@
 </p>
 <hr>
 
+
+## Project owner(s)
+
+<!-- Link to the repo owners' github profiles -->
+
+- [@tenkus47](https://github.com/tenkus47)
+  
 ## Description
 
 Pecha tool web app to segment sentence with spaces

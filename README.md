@@ -40,22 +40,6 @@ set Environment variables as:
 
 - DATABASE_URL
 
-uses Pusher for sessions:
-
-- APP_ID
-- KEY
-- SECRET
-- CLUSTER
-- NODE_ENV
-
-<!-- This section must link to the docs which are in the root of the repository in /docs -->
-
-## Owners
-
-- [@tenkus47](https://github.com/tenkus47)
-
-<!-- This section lists the owners of the repo -->
-
 ## Acknowledgements
 
 **sentence segmentation tool** is build using Remix and tiptap.

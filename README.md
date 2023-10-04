@@ -4,7 +4,7 @@
   <br>
 </h1>
 
-<h3 align="center">Prodigy sentence segmentation tool</h3>
+<h3 align="center"> sentence segmentation tool</h3>
 
 <!-- Replace the title of the repository -->
 

@@ -1,10 +1,8 @@
 import { useFetcher } from "@remix-run/react";
-import { useSocket } from "./contexts/SocketContext";
 import { User } from "@prisma/client";
 
 function AllowAnnotation({ annotator }: { annotator: User }) {
   const fetcher = useFetcher();
-  const socket = useSocket();
 
   function handleChangeAllow() {
     fetcher.submit(
@@ -18,7 +16,6 @@ function AllowAnnotation({ annotator }: { annotator: User }) {
         method: "POST",
       }
     );
-    socket?.emit("change-allow", { annotator });
   }
 
   return (

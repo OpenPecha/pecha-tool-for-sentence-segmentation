@@ -5,7 +5,6 @@ import TextInfo from "./TextInfo";
 import { AdminHistoryItem } from "./History";
 import { sortUpdate_reviewed } from "~/lib/sortReviewedUpdate";
 import { Hamburger, Tick } from "../assets/svgs";
-import { useSocket } from "./contexts/SocketContext";
 import { toolname } from "~/const";
 
 interface SidebarProps {
@@ -20,16 +19,9 @@ function AdminHistorySidebar({
   selectedId,
 }: SidebarProps) {
   const data = useLoaderData();
-  const socket = useSocket();
   const [openMenu, setOpenMenu] = useState(false);
   const reval = useRevalidator();
 
-  useEffect(() => {
-    if (!socket) return;
-    socket.on("text-status-changed", (data) => {
-      reval.revalidate();
-    });
-  }, [socket]);
   const SidebarHeader = () => (
     <div className="flex bg-[#384451] px-2 py-3 items-center justify-between md:hidden">
       <Link to={`/admin?session=${data.user.username}`}>

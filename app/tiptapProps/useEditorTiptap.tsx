@@ -5,13 +5,15 @@ import { Divider } from "~/tiptapProps/extension/divider";
 import { Sentence } from "~/tiptapProps/extension/sentence";
 import { editorProps } from "~/tiptapProps/events";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
+import { useEffect } from "react";
 
 export function useEditorTiptap(text: string) {
-  const setter = () => {};
-  const charClick = () => {};
-  let insertHTML = insertHTMLonText(text);
 
-  return useEditor(
+  
+  let insertHTML = insertHTMLonText(text);
+  const charClick = () => {};
+  const setter = () => {};
+  let editor=useEditor(
     {
       extensions: [
         StarterKit,
@@ -23,6 +25,13 @@ export function useEditorTiptap(text: string) {
       editorProps,
       editable: false,
     },
-    [insertHTML]
+    []
   );
-}
+
+  useEffect(()=>{
+   if(text){
+    editor?.commands.setContent(insertHTML)
+   }
+  },[editor,text])
+
+  return editor}

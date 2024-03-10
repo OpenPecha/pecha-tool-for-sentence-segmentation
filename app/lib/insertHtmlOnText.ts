@@ -34,6 +34,8 @@ function insertHTMLonText(content: string): string {
   textHTML += "</Sn>";
   return textHTML;
 }
+
+
 function splitText(text: string) {
   let segment = segmentTibetanText(text);
   let data = segment.map((item) => item.text);

@@ -81,6 +81,7 @@ export async function getTextToDisplay(userId: string, history: any) {
     let show = text?.modified_text
       ? JSON.parse(text?.modified_text).join(" ")
       : text?.original_text;
+      if(!text) return {error:{message:'no History on that ID'}}
     return {
       ...text,
       id: text?.id,
@@ -88,26 +89,31 @@ export async function getTextToDisplay(userId: string, history: any) {
       status: text?.status,
     };
   }
-  let batch = await checkAndAssignBatch(userId);
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    include: {
-      ignored_list: true,
-      rejected_list: true,
-    },
+ 
+  let RemainingWork=await db.text.findFirst({
+    where:{
+      modified_by_id:userId,
+      modified_text:null
+    }
   });
-  const rejectedIds = user?.rejected_list.map((item: any) => item.id) || [];
-  let text = await db.text.findFirst({
-    where: {
-      batch: batch,
-      OR: [{ status: null }, { status: "PENDING" }],
+  if(RemainingWork) return RemainingWork;
+  
+  let unassignedWork=await db.text.findFirst({
+    where:{
+      modified_by_id:null,
+      modified_text:null,
+    }
+  })
+  let assignText=await db.text.update({
+    where:{
+      id:unassignedWork?.id,
     },
-    orderBy: {
-      id: "asc",
-    },
-  });
-  if (!text) return null;
-  return text;
+    data:{
+      modified_by_id:userId,
+      status:'PENDING'
+    }
+  })  
+  return assignText
 }
 
 export async function getProgress() {

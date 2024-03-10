@@ -9,7 +9,7 @@ interface CustomMouseEvent extends MouseEvent {
   target: HTMLElement;
 }
 
-function EditorContainer({ editor }: { editor: Editor }) {
+function EditorContainer({ editor }: { editor: Editor|null }) {
   let content = editor?.getText();
   function getSTcount() {
     const elements = document.querySelectorAll("*");

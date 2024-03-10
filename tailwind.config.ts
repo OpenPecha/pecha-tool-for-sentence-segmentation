@@ -7,6 +7,11 @@ export default {
   ],
   theme: {
     extend: {},
+    fontFamily: {
+      Elsie: ["Elsie", "sans-serif"],
+      Inter: ["Inter", "sans-serif"],
+      monlam: ["Monlam", "sans-serif"],
+    },
   },
   plugins: [require("daisyui")],
 } satisfies Config;

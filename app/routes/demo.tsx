@@ -3,7 +3,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { useRef, useState } from "react";
 import Button from "~/components/Button";
 import Sidebar from "~/components/demo/Sidebar";
-import EditorContainer from "~/components/Editor.client";
+import EditorContainer from "~/components/Editor";
 import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { db } from "~/service/db.server";

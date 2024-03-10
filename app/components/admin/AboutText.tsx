@@ -1,6 +1,6 @@
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import React, { useEffect, useState } from "react";
-import { BiSolidCloudDownload } from "react-icons/bi";
+import { BiSolidCloudDownload } from "react-icons/bi/index.js";
 import { downloadJsonlFile } from "~/lib/downloadfile";
 import UploadText from "./UploadText";
 import { TiDelete } from "react-icons/ti";

@@ -15,7 +15,6 @@ import { getAprovedBatch } from "~/model/server.text";
 import { getUser, getUsers, removeBatchFromUser } from "~/model/server.user";
 import { getCategories } from "~/model/utils/server.category";
 import { Outlet, useOutletContext, useRevalidator } from "@remix-run/react";
-import { useSocket } from "~/components/contexts/SocketContext";
 import { toolname } from "~/const";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -76,15 +75,9 @@ export const meta: V2_MetaFunction = () => {
 
 function Index() {
   const [selectedUser, setSelectedUser] = useState<string>("");
-  const socket = useSocket();
   const reval = useRevalidator();
   const user = useOutletContext();
-  useEffect(() => {
-    if (!socket) return;
-    socket.on("text-status-changed", (data) => {
-      if (data) reval.revalidate();
-    });
-  }, [socket]);
+  
   return (
     <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5 ">
       <div className="col-span-12 xl:col-span-8 ">

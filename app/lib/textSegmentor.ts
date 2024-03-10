@@ -6,7 +6,7 @@ function makeSegment(text, start) {
   };
 }
 
-export default function segmentTibetanText(text) {
+export default function segmentTibetanText(text:string) {
   const breaks = "༄༅།";
   const spaces = " ་";
   const newline = "\n";
@@ -27,7 +27,7 @@ export default function segmentTibetanText(text) {
       inSpace = false;
     }
   }
-
+  if (text===''||text===null) return ''
   for (let char of text) {
     if (char === newline) {
       processCurrentSegment();

@@ -3,7 +3,6 @@ import { useState } from "react";
 import TextInfo from "./TextInfo";
 import { HistoryItem } from "./History";
 import { Cross, Crossburger, Hamburger, Tick } from "../assets/svgs";
-import { useOnlineCount } from "./hooks/useOnlineCount";
 import type { User, Text } from "@prisma/client";
 import { toolname } from "~/const";
 
@@ -17,7 +16,6 @@ type userType = {
 };
 
 function Sidebar({ user, text }: userType) {
-  const onlineCount = useOnlineCount();
   let [openMenu, setOpenMenu] = useState(false);
   return (
     <div className="flex flex-col">
@@ -46,7 +44,6 @@ function Sidebar({ user, text }: userType) {
           <TextInfo>Batch : {text?.batch}</TextInfo>
           <TextInfo>Approved : {user?.text?.length}</TextInfo>
           <TextInfo>Rejected :{user?.rejected_list?.length}</TextInfo>
-          <TextInfo>Online:{onlineCount}</TextInfo>
           <TextInfo>
             Reviewed : {user?.text.filter((r) => r.reviewed)?.length}
           </TextInfo>

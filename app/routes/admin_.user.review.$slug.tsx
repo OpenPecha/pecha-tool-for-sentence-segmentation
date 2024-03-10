@@ -6,13 +6,11 @@ import checkUnknown from "~/lib/checkUnknown";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import { getUser } from "~/model/server.user";
 import AdminHistorySidebar from "~/components/AdminHistorySidebar";
-import { ClientOnly } from "remix-utils";
-import EditorContainer from "~/components/Editor.client";
+import EditorContainer from "~/components/Editor";
 import Button from "~/components/Button";
 import { db } from "~/service/db.server";
 import { sortUpdate_reviewed } from "~/lib/sortReviewedUpdate";
 import { useEditorTiptap } from "~/tiptapProps/useEditorTiptap";
-import { useSocket } from "~/components/contexts/SocketContext";
 
 export const loader = async ({ request, params }: DataFunctionArgs) => {
   let url = new URL(request.url);
@@ -50,7 +48,6 @@ function UserDetail() {
   let text = text_data?.sort((a, b) =>
     a.reviewed === b.reviewed ? 0 : !a.reviewed ? 1 : -1
   );
-  const socket = useSocket();
   const [content, setContent] = useState("");
   const [selectedId, setSelectedId] = useState<number | undefined>(id_now);
   useEffect(() => {
@@ -71,11 +68,7 @@ function UserDetail() {
   let editor = useEditorTiptap(content);
 
   if (!editor) return null;
-  function text_reviewed() {
-    setTimeout(() => {
-      socket?.emit("reviewed", { annotator });
-    }, 1000);
-  }
+  
   let saveText = async () => {
     fetcher.submit(
       {
@@ -86,7 +79,6 @@ function UserDetail() {
       },
       { method: "POST", action: "/api/text" }
     );
-    text_reviewed();
   };
 
   let rejectTask = async () => {
@@ -94,7 +86,6 @@ function UserDetail() {
       { id: selectedId!, userId: annotator.id, _action: "reject", admin: true },
       { method: "PATCH", action: "/api/text" }
     );
-    text_reviewed();
   };
   let isButtonDisabled = text.length < 1;
   return (
@@ -115,14 +106,11 @@ function UserDetail() {
             <div className="flex items-center justify-between opacity-75 text-sm font-bold px-2 capitalize pt-1 ">
               transcript
             </div>
-            <ClientOnly fallback={null}>
-              {() => <EditorContainer editor={editor!} />}
-            </ClientOnly>
+            <EditorContainer editor={editor!} />
             {!editor && <div>loading...</div>}
           </div>
         )}
-        <ClientOnly fallback={null}>
-          {() => (
+      
             <div className="flex gap-2 fixed bottom-0 justify-center">
               <Button
                 disabled={isButtonDisabled}
@@ -139,8 +127,6 @@ function UserDetail() {
                 shortCut="x"
               />
             </div>
-          )}
-        </ClientOnly>
       </div>
     </div>
   );

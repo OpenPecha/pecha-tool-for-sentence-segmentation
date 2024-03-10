@@ -4,9 +4,11 @@
   <br>
 </h1>
 
-<h3 align="center"> sentence segmentation tool</h3>
+<h3 align="center">Word segmentation tool</h3>
 
 <!-- Replace the title of the repository -->
+
+<!-- Link to the repo owners' github profiles -->
 
 <p align="center">
   <a href="#description">Description</a> •
@@ -17,16 +19,13 @@
 </p>
 <hr>
 
-
 ## Project owner(s)
 
-<!-- Link to the repo owners' github profiles -->
-
 - [@tenkus47](https://github.com/tenkus47)
-  
+
 ## Description
 
-Pecha tool web app to segment sentence with spaces
+Pecha tool web app to segment word with spaces
 
 ## Install
 
@@ -39,10 +38,19 @@ Requires to have node and npm installed.
 set Environment variables as:
 
 - DATABASE_URL
+- NODE_ENV
+
+<!-- This section must link to the docs which are in the root of the repository in /docs -->
+
+## Owners
+
+- [@tenkus47](https://github.com/tenkus47)
+
+<!-- This section lists the owners of the repo -->
 
 ## Acknowledgements
 
-**sentence segmentation tool** is build using Remix and tiptap.
+**word segmentation tool** is build using Remix and tiptap.
 
 We are always open to cooperation in introducing new features, tool integrations and testing solutions.
 

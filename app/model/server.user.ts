@@ -8,6 +8,7 @@ export const createUserIfNotExists = async (username: string) => {
     },
     include: {
       text: {
+        where:{NOT:{modified_text:null}},
         select: { id: true, reviewed: true, batch: true },
         orderBy: { id: "desc" },
       },
@@ -50,17 +51,16 @@ export const getUsers = async () => {
 export const getUser = async (username: string, min: boolean) => {
   let include = min
     ? {
-        text: { select: { id: true, reviewed: true } },
+        text: {select: { id: true, reviewed: true } },
         rejected_list: { select: { id: true } },
       }
-    : { text: true, rejected_list: true };
+    : { text: {where:{NOT:{modified_text:null}}}, rejected_list: true };
 
   try {
     let user = db.user.findUnique({
       where: {
         username,
       },
-
       include: include,
     });
     return user;

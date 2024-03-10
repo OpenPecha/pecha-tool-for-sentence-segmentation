@@ -12,18 +12,21 @@ import { createUserIfNotExists } from "~/model/server.user";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import { useEditorTiptap } from "~/tiptapProps/useEditorTiptap";
 import formatTime from "~/lib/formatTime";
-import { useEffect, useMemo } from "react";
 export const loader: LoaderFunction = async ({ request }) => {
   let { NODE_ENV } = process.env;
   let url = new URL(request.url);
   let session = url.searchParams.get("session");
   let history = url.searchParams.get("history") || null;
+
   if (!session) {
     return redirect("https://pecha.tools");
   } else {
     let user = await createUserIfNotExists(session);
     let text = null;
-    if (user.allow_assign) {
+    if(user?.role==='ADMIN'||user?.role==='REVIEWER'){
+      return redirect(`/admin/user/?session=${user.username}`);
+    }
+    if (user?.allow_assign) {
       text = await getTextToDisplay(user?.id, history);
       if(text?.error){
         return {error:text.error.message}
@@ -79,7 +82,7 @@ export default function Index(){
                 alt="notification "
                 className="w-8 h-8"
               />
-              SOME OF YOUR WORK IS REJECTED
+              YOUR WORK CONTAINS REJECTED TASK
             </div>
           )}
           {error && <div>{error}</div>}

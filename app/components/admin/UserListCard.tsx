@@ -33,7 +33,7 @@ const UserListCard = ({
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white py-6 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
-      <h4 className="mb-6 pl-2 px-7.5 text-xl font-semibold text-black dark:text-white">
+      <h4 className="mb-3 text-center pl-2 px-7.5 text-xl font-semibold text-black dark:text-white">
         Annotators
       </h4>
       <div className="flex gap-2  items-center flex-1 mb-2 mx-2">
@@ -88,7 +88,7 @@ function EachUser({ user, setSelectedUser, selectedUser }) {
   let currentBatch = user.assigned_batch.filter(
     (item) => !groups[item]?.reviewed && groups[item]?.approved
   );
-
+  let non_user='https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI='
   return (
     <div
       key={user.id + "-userList"}
@@ -97,9 +97,11 @@ function EachUser({ user, setSelectedUser, selectedUser }) {
         selectedUser === user.username && "bg-green-300"
       }`}
     >
+        <img src={user?.picture||non_user} alt='' className="w-8 h-8 rounded-full ml-2"/>
+
       <div className="flex flex-1 items-center justify-between px-2">
         <div>
-          <h5 className="font-medium text-black dark:text-white">
+          <h5 className="font-bold capitalize font-Inter text-black dark:text-white">
             {user.nickname}
           </h5>
           <p>

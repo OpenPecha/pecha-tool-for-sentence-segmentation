@@ -65,15 +65,6 @@ const AboutUser = ({
         <Title>Category:</Title>
         <AssignCategory user={annotator} />
       </Info>
-      <Info>
-        <Title>
-          Assigned Batch:
-          <div title={"reviewed/total"}>
-            {reviewed_count}/{approved_count}
-          </div>
-        </Title>
-        <AssignedBatchList user={annotator} />
-      </Info>
 
       <Link
         title="visit"

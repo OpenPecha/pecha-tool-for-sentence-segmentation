@@ -68,8 +68,8 @@ function AdminHistorySidebar({
           </TextInfo>
         </div>
         <div className="flex-1">
-          <div className="text-sm mb-2 font-bold">History</div>
-          <div className="flex flex-col gap-2 max-h-fit overflow-y-auto">
+          <div className="text-sm mb-2 font-bold pl-2">History</div>
+          <div className="flex flex-col gap-2 max-h-fit overflow-y-auto pl-2">
             {user &&
               user?.text?.sort(sortUpdate_reviewed).map((text: historyText) => (
                 <AdminHistoryItem

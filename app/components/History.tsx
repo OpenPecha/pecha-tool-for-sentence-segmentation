@@ -5,6 +5,7 @@ interface HistoryItemProps {
   onClick: () => void;
   icon: JSX.Element;
   disabled?: boolean;
+  currentId:number;
 }
 interface AdminHistoryItemProps {
   id: number;
@@ -13,7 +14,7 @@ interface AdminHistoryItemProps {
   reviewed: boolean;
   selectedId: number;
 }
-function HistoryItem({ id, user, onClick, icon, disabled }: HistoryItemProps) {
+function HistoryItem({ id, user, onClick, icon, disabled,currentId }: HistoryItemProps) {
   const { history } = useLoaderData();
   if (disabled)
     return (

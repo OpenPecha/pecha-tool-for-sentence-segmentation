@@ -45,12 +45,12 @@ function Sidebar({ user, text }: userType) {
           <TextInfo>Approved : {user?.text?.length}</TextInfo>
           <TextInfo>Rejected :{user?.rejected_list?.length}</TextInfo>
           <TextInfo>
-            Reviewed : {user?.text.filter((r) => r.reviewed)?.length}
+            Reviewed : {user?.text?.filter((r) => r.reviewed)?.length}
           </TextInfo>
         </div>
         <div className="flex-1">
           <div className="text-sm mb-2 font-bold">History</div>
-          <div className="flex flex-col gap-2 max-h-fit overflow-y-auto">
+          <div className="flex flex-col gap-2 max-h-fit overflow-y-auto pl-2">
             {user?.rejected_list?.map((text: historyText) => (
               <HistoryItem
                 user={user}
@@ -58,6 +58,7 @@ function Sidebar({ user, text }: userType) {
                 key={text.id + "-rejected"}
                 onClick={() => setOpenMenu(false)}
                 icon={<Cross />}
+                currentId={29}
               />
             ))}
 
@@ -68,6 +69,8 @@ function Sidebar({ user, text }: userType) {
                 key={text.id + "-accepted"}
                 onClick={() => setOpenMenu(false)}
                 disabled={text?.reviewed}
+                currentId={29}
+
                 icon={
                   <div className="flex items-center justify-between flex-1">
                     <Tick />

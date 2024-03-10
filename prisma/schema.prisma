@@ -13,6 +13,7 @@ datasource db {
 model User {
   id             String   @id @default(uuid())
   username       String   @unique
+  picture        String?   
   nickname       String?   @unique 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -27,6 +28,7 @@ model User {
   reviewer_id    String?
   allow_assign   Boolean? @default(false)
   categories     String[]   @default([])
+
 }
 
 model Text {

@@ -1,5 +1,24 @@
-import { Role } from "@prisma/client";
+import { Role, User } from "@prisma/client";
 import { db } from "~/service/db.server";
+
+export const updatePicture=async(user:User)=>{
+
+  if (!user.picture) {
+    //get user detail from api
+    let api = "https://pecha.tools/api/user/?email=" + user.username;
+    let response = await fetch(api);
+    let data = await response.json();
+    
+   return await db.user.update({
+      where: { username:user.username },
+      data: {
+        picture: data?.picture||null,
+      },
+    });
+  }
+  return user;
+}
+
 
 export const createUserIfNotExists = async (username: string) => {
   const existingUser = await db.user.findUnique({
@@ -8,15 +27,17 @@ export const createUserIfNotExists = async (username: string) => {
     },
     include: {
       text: {
-        where:{NOT:{modified_text:null}},
+        where:{AND:{modified_text:{not:{equals:null}},reviewed:{not:{equals:true}}}},
         select: { id: true, reviewed: true, batch: true },
         orderBy: { id: "desc" },
       },
       rejected_list: { select: { id: true, reviewed: true, batch: true } },
     },
   });
+  
   if (existingUser) {
-    return existingUser;
+     await updatePicture(existingUser)
+     return existingUser
   }
   const newUser = await db.user.create({
     data: {
@@ -28,8 +49,8 @@ export const createUserIfNotExists = async (username: string) => {
       text: true,
     },
   });
-
-  return newUser;
+  await updatePicture(newUser)
+  return newUser 
 };
 
 export const getUsers = async () => {

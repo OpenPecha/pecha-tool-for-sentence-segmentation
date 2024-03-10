@@ -1,5 +1,4 @@
 import { useFetcher } from "@remix-run/react";
-import { User } from "discord.js";
 import React from "react";
 import { FiEdit2 } from "react-icons/fi";
 import { TiTick } from "react-icons/ti";

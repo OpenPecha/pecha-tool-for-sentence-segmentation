@@ -1,16 +1,14 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useOutletContext } from "@remix-run/react";
 import AllowAnnotation from "../AllowAnnotation";
 import AssignCategory from "../AssignCategory";
 import AssignNickName from "../AssignNickName";
 import AssignReviewer from "../AssignReviewer";
 import AssignRole from "../AssignRole";
 import AssignedBatchList from "../AssignedBatchList";
-import { useMemo } from "react";
-import { User } from "@prisma/client";
 
 function Info({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-start px-2 text-lg mt-2">
+    <div className="flex flex-col items-start px-2 text-lg mt-2 dark:text-white text-black">
       {children}
     </div>
   );
@@ -23,22 +21,20 @@ function Title({ children }: { children: React.ReactNode }) {
   );
 }
 
-const AboutUser = ({
-  selectedUser,
-  user,
-}: {
-  selectedUser: string;
-  user: any;
-}) => {
-  const { users } = useLoaderData();
-  const annotator = users.find((user: User) => user?.username === selectedUser);
-  const reviewed_count = annotator?.text.filter((item) => item.reviewed).length;
-  const approved_count = annotator?.text.length;
-  let url = `/admin/user/review/${selectedUser}?session=` + user.username;
-  let isAdmin = user.role === "ADMIN";
+const AboutUser = ({ selectedUser }: { selectedUser: string }) => {
+  const { user } = useLoaderData();
+  let { current_user } = useOutletContext();
+  const annotator = user;
+
+  let url =
+    `/admin/user/review/${selectedUser?.username}?session=` +
+    current_user?.username;
+  let isAdmin = current_user?.role === "ADMIN";
   if (selectedUser === "") return null;
+
+  if (!annotator) return null;
   return (
-    <div className="sticky top-[80px]  rounded-sm border border-stroke bg-white px-5 pt-6 pb-10 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-10 ">
+    <div className="sticky top-[80px]  rounded-sm border border-stroke bg-white dark:bg-slate-600  px-5 pt-6 pb-10 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-10 ">
       <div className="flex flex-col md:flex-row justify-between px-1">
         <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
           {annotator?.username}

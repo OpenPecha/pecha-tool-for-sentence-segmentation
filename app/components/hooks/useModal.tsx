@@ -11,7 +11,9 @@ function useModal() {
       {children}
     </button>
   );
-
+  function changeOpen() {
+    setIsOpen(!isOpen);
+  }
   const Modal = ({ children }) => (
     <>
       {isOpen && (
@@ -40,7 +42,7 @@ function useModal() {
     </>
   );
 
-  return { Toggle_Modal, Modal };
+  return { Toggle_Modal, Modal, changeOpen };
 }
 
 export default useModal;

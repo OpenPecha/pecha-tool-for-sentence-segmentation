@@ -3,8 +3,8 @@ import Header from "~/components/admin/Header";
 import { Outlet, useLoaderData, useLocation } from "@remix-run/react";
 import Sidebar from "~/components/admin/Sidebar";
 import { LoaderFunction, defer, json, redirect } from "@remix-run/node";
-import { getUser } from "~/model/server.user";
-import { getProgress } from "~/model/server.text";
+import { getUser } from "~/model/user.server";
+import { getProgress } from "~/model/text.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);

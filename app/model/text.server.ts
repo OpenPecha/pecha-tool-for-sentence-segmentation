@@ -1,6 +1,6 @@
 import { Status } from "@prisma/client";
 import { db } from "~/service/db.server";
-import { getUnassignedBatch } from "./server.group";
+import { getUnassignedBatch } from "./group.server";
 
 export async function checkAndAssignBatch(userId: string) {
   try {
@@ -79,7 +79,7 @@ export async function getTextToDisplay(userId: string, history: any) {
       where: { id: parseInt(history) },
     });
     let show = text?.modified_text
-      ? JSON.parse(text?.modified_text).join(" ")
+      ? JSON.parse(text?.modified_text).join("\n")
       : text?.original_text;
       if(!text) return {error:{message:'no History on that ID'}}
     return {
@@ -176,21 +176,41 @@ export function saveText(
   adminId: string,
   time?: string
 ) {
-  return db.text.update({
-    where: {
-      id,
-    },
-    data: {
-      modified_text: JSON.stringify(text.split(" ")),
-      modified_by_id: userId,
-      status: "APPROVED",
-      rejected_by: { disconnect: { id: userId } },
-      reviewed: !!adminId,
-      reviewed_by_id: adminId || null,
-      duration: time || null,
-    },
-  });
+  let isReviewer = !!adminId;
+  let duration = time ? parseFloat(time) : null;
+  let word_count = text.split("་").filter((word) => !word.includes("།")).length;
+  if (!isReviewer) {
+    return db.text.update({
+      where: {
+        id,
+      },
+      data: {
+        modified_text: text,
+        modified_by_id: userId,
+        reviewed: false,
+        status: "APPROVED",
+        rejected_by: { disconnect: { id: userId } },
+        duration,
+        modified_on: new Date(),
+        word_count,
+      },
+    });
+  } else {
+    return db.text.update({
+      where: {
+        id,
+      },
+      data: {
+        modified_text: JSON.stringify(text.split(" ")),
+        status: "APPROVED",
+        rejected_by: { disconnect: { id: userId } },
+        reviewed: true,
+        reviewed_by_id: adminId,
+      },
+    });
+  }
 }
+
 
 export async function getAprovedBatch() {
   let data = await db.text.findMany({
@@ -283,4 +303,13 @@ export async function getLastBatch() {
     },
   });
   return batch?.batch || 0;
+}
+
+export async function delete_modified({id}:{id:string}){
+  return await db.text.update({
+    where:{id:parseInt(id)},
+    data:{
+      modified_text:null
+    }
+  })
 }

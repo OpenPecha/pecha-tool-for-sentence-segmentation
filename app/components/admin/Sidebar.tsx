@@ -3,7 +3,7 @@ import { NavLink, useLoaderData, useLocation } from "@remix-run/react";
 import SidebarLinkGroup from "./SidebarLinkGroup";
 import { toolname } from "~/const";
 import { BiSolidDashboard } from "react-icons/bi/index.js";
-import { Hamburger } from "../../assets/svgs";
+import { Cross, Hamburger } from "../../assets/svgs";
 import { FiUsers } from "react-icons/fi";
 import { AiOutlineFileText } from "react-icons/ai";
 interface SidebarProps {
@@ -19,7 +19,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   return (
     <aside
       ref={sidebar}
-      className={` absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden text-white bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${
+      className={` absolute left-0 top-0 z-10 flex h-screen w-72.5 flex-col overflow-y-hidden text-white bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
@@ -37,7 +37,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           aria-expanded={sidebarOpen}
           className="block lg:hidden"
         >
-          <Hamburger />
+<Hamburger />
         </button>
       </div>
       <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
@@ -75,6 +75,17 @@ function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                   }
                 >
                   <AiOutlineFileText /> Text
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to={"/admin/report?session=" + user.username}
+                  className={({ isActive }) =>
+                    "group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white " +
+                    (isActive && "!text-white  bg-slate-600 dark:bg-meta-4")
+                  }
+                >
+                  <AiOutlineFileText /> Report
                 </NavLink>
               </li>
             </ul>

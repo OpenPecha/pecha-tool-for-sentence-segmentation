@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import DropdownUser from "../Dropdowns/DropdownUser";
 import Progress from "../Progress";
 import { useLoaderData } from "@remix-run/react";
-import { Hamburger } from "../../assets/svgs";
+import { Cross, Hamburger } from "../../assets/svgs";
 
 const Header = (props: {
   sidebarOpen: string | boolean | undefined;
@@ -22,7 +22,7 @@ const Header = (props: {
             }}
             className="z-10 block rounded-sm   bg-white p-1.5 shadow-sm dark:border-strokedark dark:bg-boxdark lg:hidden"
           >
-            <Hamburger />
+          {props.sidebarOpen?<Cross/>:<Hamburger />}
           </button>
           {/* <!-- Hamburger Toggle BTN --> */}
 

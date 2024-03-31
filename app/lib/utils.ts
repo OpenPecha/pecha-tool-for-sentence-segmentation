@@ -14,3 +14,4 @@ export function checkContentChange(oldText: string, newText: string) {
 export function removeDivider(text: string) {
   return text.replace(new RegExp(DIVIDER, "g"), "");
 }
+

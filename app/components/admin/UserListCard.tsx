@@ -1,18 +1,12 @@
 import { User } from "@prisma/client";
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useOutletContext } from "@remix-run/react";
 import { useState } from "react";
-const UserListCard = ({
-  setSelectedUser,
-  selectedUser,
-  user,
-}: {
-  user: any;
-  selectedUser: string | null;
-  setSelectedUser: (data: string) => void;
-}) => {
+import { timeAgo } from "~/lib/getFormattedDate";
+const UserListCard = () => {
   let { users } = useLoaderData();
+  const current_user = useOutletContext();
   let reviewers = users.filter((user) => user.role === "REVIEWER");
-  let isAdmin = user.role === "ADMIN";
+  let isAdmin = current_user?.role === "ADMIN";
   const [selectedReviewer, setSelectedReviewer] = useState("All");
   const [search, setSearch] = useState("");
 
@@ -32,10 +26,12 @@ const UserListCard = ({
   }
 
   return (
-    <div className="col-span-12 rounded-sm border border-stroke bg-white py-6 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
-      <h4 className="mb-3 text-center pl-2 px-7.5 text-xl font-semibold text-black dark:text-white">
-        Annotators
-      </h4>
+    <div className="col-span-12 rounded-sm border border-stroke bg-white dark:bg-slate-600 py-6 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
+      <div className="flex justify-between px-2">
+        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
+          Annotators
+        </h4>
+      </div>
       <div className="flex gap-2  items-center flex-1 mb-2 mx-2">
         <input
           type="text"
@@ -53,10 +49,10 @@ const UserListCard = ({
             value={selectedReviewer}
           >
             <option value={"All"}>All</option>
-            {reviewers.map((reviewer: User) => (
+            {reviewers.map((reviewer: User, index: number) => (
               <option
                 value={reviewer.username}
-                key={reviewer.id + "-key-selection"}
+                key={reviewer.id + "-key-" + index}
               >
                 {reviewer.username}
               </option>
@@ -66,58 +62,59 @@ const UserListCard = ({
       )}
       <div>
         {list.map((user: any) => (
-          <EachUser
-            key={user.id + "unique_key"}
-            user={user}
-            setSelectedUser={setSelectedUser}
-            selectedUser={selectedUser}
-          />
+          <EachUser user={user} key={user} />
         ))}
       </div>
     </div>
   );
 };
 
-function EachUser({ user, setSelectedUser, selectedUser }) {
-  let { groups } = useLoaderData();
+function EachUser({ user }) {
+  const current_user = useOutletContext();
 
-  const handleSelection = (value: string) => {
-    console.log("hi from userlistcard");
-    setSelectedUser(value);
-  };
-  let currentBatch = user.assigned_batch.filter(
-    (item) => !groups[item]?.reviewed && groups[item]?.approved
-  );
-  let non_user='https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI='
+  let remaining_count = user?.text;
+  let Time = user?.modified_on;
+  let time_ago = timeAgo(Time?.modified_on);
+  if (!user) return null;
   return (
-    <div
-      key={user.id + "-userList"}
-      onClick={() => handleSelection(user.username)}
-      className={` cursor-pointer flex items-center gap-5 py-3 px-7.5 hover:bg-gray-3 dark:hover:bg-meta-4 hover:rounded-sm transition duration-300 ease-in-out hover:bg-green-300 ${
-        selectedUser === user.username && "bg-green-300"
-      }`}
+    <Link
+      key={user.id + "unique_key"}
+      to={`/admin/user/${user.username}?session=` + current_user?.username}
+      className={` cursor-pointer flex items-center gap-5 py-3 px-7.5 hover:bg-gray-3 dark:hover:bg-meta-4 hover:rounded-sm transition duration-300 ease-in-out hover:bg-green-300`}
     >
-        <img src={user?.picture||non_user} alt='' className="w-8 h-8 rounded-full ml-2"/>
-
+      {user.picture ? (
+        <div className="avatar ml-2">
+          <div className="w-[40px] rounded-full">
+            <img src={user.picture} alt="" />
+          </div>
+        </div>
+      ) : (
+        <div className="avatar placeholder ml-2">
+          <div className="bg-neutral-focus text-neutral-content rounded-full w-12">
+            <span>{user.username.charAt(0)}</span>
+          </div>
+        </div>
+      )}
       <div className="flex flex-1 items-center justify-between px-2">
-        <div>
-          <h5 className="font-bold capitalize font-Inter text-black dark:text-white">
-            {user.nickname}
-          </h5>
-          <p>
+        <div className="w-full">
+          <div className="font-medium text-black dark:text-white flex justify-between items-center w-full">
+            <div>{user.nickname}</div>
+            <div className="text-xs ">{time_ago}</div>
+          </div>
+          <p className="flex justify-between items-center">
             <span className="text-sm text-black dark:text-white">
               {user.username}
             </span>
-            <span className="text-xs"> . 12 min</span>
           </p>
         </div>
-        {currentBatch.length > 0 && (
+
+        {remaining_count > 0 && (
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
-            <span className="text-xs text-white">{currentBatch.length}</span>
+            <span className="text-xs text-white">{remaining_count}</span>
           </div>
         )}
       </div>
-    </div>
+    </Link>
   );
 }
 

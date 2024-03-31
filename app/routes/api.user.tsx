@@ -7,7 +7,7 @@ import {
   updateUserCategory,
   updateUserReviewer,
   updateUserRole,
-} from "~/model/server.user";
+} from "~/model/user.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   return { users: await getUsers() };

@@ -7,7 +7,6 @@ module.exports = {
   ignoredRouteFiles: ["**/.*"],
   serverDependenciesToBundle: [
     "@uidotdev/usehooks",
-    // If you installed is-ip optional dependency you will need these too
     "is-ip",
     "ip-regex",
     "super-regex",
@@ -16,6 +15,7 @@ module.exports = {
     "time-span",
     "convert-hrtime",
     "is-regexp",
+    "react-date-range"
   ],
   tailwind: true,
   browserNodeBuiltinsPolyfill: {

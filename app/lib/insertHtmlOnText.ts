@@ -4,7 +4,7 @@ import segmentTibetanText from "./textSegmentor";
 
 function insertHTMLonText(content: string): string {
   if (!content) return "";
-
+  
   const regex = new RegExp(NEW_LINER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   const data = splitText(content);
   let sentenceCount = 1;

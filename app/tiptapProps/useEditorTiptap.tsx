@@ -4,16 +4,11 @@ import { Character } from "~/tiptapProps/extension/character";
 import { Divider } from "~/tiptapProps/extension/divider";
 import { Sentence } from "~/tiptapProps/extension/sentence";
 import { editorProps } from "~/tiptapProps/events";
-import insertHTMLonText from "~/lib/insertHtmlOnText";
-import { useEffect } from "react";
 
-export function useEditorTiptap(text: string) {
-
-  
-  let insertHTML = insertHTMLonText(text);
+export function useEditorTiptap() {
   const charClick = () => {};
   const setter = () => {};
-  let editor=useEditor(
+  let editor = useEditor(
     {
       extensions: [
         StarterKit,
@@ -21,17 +16,10 @@ export function useEditorTiptap(text: string) {
         Character(charClick),
         Sentence(setter),
       ],
-      content: insertHTML,
       editorProps,
       editable: false,
     },
     []
   );
-
-  useEffect(()=>{
-   if(text){
-    editor?.commands.setContent(insertHTML)
-   }
-  },[editor,text])
-
-  return editor}
+  return editor;
+}

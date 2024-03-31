@@ -3,14 +3,35 @@ import { EditorContent, BubbleMenu, Editor } from "@tiptap/react";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 import selectText from "~/lib/selectRange";
 import { DIVIDER } from "~/const";
+import { useLoaderData } from "@remix-run/react";
 
 let select = 0;
 interface CustomMouseEvent extends MouseEvent {
   target: HTMLElement;
 }
 
-function EditorContainer({ editor }: { editor: Editor|null }) {
+function EditorContainer({
+  editor,
+  html,
+}: {
+  editor: Editor | null;
+  html?: string;
+}) {
   let content = editor?.getText();
+  const { text } = useLoaderData();
+
+  useEffect(() => {
+    if (editor && !html) {
+      let content = text?.original_text.trim().replaceAll("?", "") || "";
+      let data = content?.replaceAll("\u0F37", "");
+      let html = insertHTMLonText(data);
+      editor?.commands.setContent(html);
+    }
+    if (html) {
+      editor?.commands.setContent(html);
+    }
+  }, [text, editor, html]);
+
   function getSTcount() {
     const elements = document.querySelectorAll("*");
 
@@ -215,6 +236,7 @@ function EditorContainer({ editor }: { editor: Editor|null }) {
     let newText = insertHTMLonText(modifiedContent);
     editor?.commands.setContent(newText);
   };
+  if (!editor) return null;
   return (
     <div className="text-slate-600 h-[90%] m-auto bg-white max-h-[60dvh] overflow-y-scroll p-2 text-3xl">
       <EditorContent editor={editor} />

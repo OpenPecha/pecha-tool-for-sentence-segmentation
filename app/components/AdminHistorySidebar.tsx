@@ -1,5 +1,10 @@
-import { Link, useLoaderData, useRevalidator } from "@remix-run/react";
-import { useState, useEffect } from "react";
+import {
+  Link,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
+import { useEffect, useRef, useState } from "react";
 import { historyText } from "./Sidebar";
 import TextInfo from "./TextInfo";
 import { AdminHistoryItem } from "./History";
@@ -9,18 +14,53 @@ import { toolname } from "~/const";
 
 interface SidebarProps {
   user: any;
-  setSelectedId: (data: number | undefined) => void;
-  selectedId: number | undefined;
 }
 
-function AdminHistorySidebar({
-  user,
-  setSelectedId,
-  selectedId,
-}: SidebarProps) {
+function AdminHistorySidebar({ user }: SidebarProps) {
   const data = useLoaderData();
   const [openMenu, setOpenMenu] = useState(false);
-  const reval = useRevalidator();
+  const [searchParams, setSeachParams] = useSearchParams();
+  function loadmore() {
+    let currentLoad = searchParams.get("load")
+      ? parseInt(searchParams.get("load") as string)
+      : 20;
+    let newnumber = `${parseInt(currentLoad) + 20}`;
+    setSeachParams((p) => {
+      p.set("load", newnumber);
+      return p;
+    });
+  }
+  const lastItemRef = useRef(null);
+  const [hasFetched, setHasFetched] = useState(false);
+  const items = user?.text;
+  const prevLengthRef = useRef(items.length);
+  useEffect(() => {
+    // Reset hasFetched to false if the length of items changes (indicating new items)
+    if (items.length !== prevLengthRef.current) {
+      setHasFetched(false);
+      prevLengthRef.current = items.length;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasFetched) {
+          loadmore();
+          setHasFetched(true);
+        }
+      },
+      {
+        rootMargin: "100px",
+      }
+    );
+
+    if (lastItemRef.current) {
+      observer.observe(lastItemRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [items.length, loadmore, hasFetched]);
 
   const SidebarHeader = () => (
     <div className="flex bg-[#384451] px-2 py-3 items-center justify-between md:hidden">
@@ -40,7 +80,7 @@ function AdminHistorySidebar({
       >
         <Hamburger />
         <Link
-          to={`/admin/metabase?session=${data.user.username}`}
+          to={`/admin/metabase?session=${data?.user.username}`}
           style={{ textDecoration: "none", color: "inherit" }}
         >
           {toolname}
@@ -60,30 +100,44 @@ function AdminHistorySidebar({
             DASHBOARD
           </Link>
           <TextInfo>User : {user?.username}</TextInfo>
-          <TextInfo>text id :{selectedId}</TextInfo>
+          <TextInfo>text id :{data?.currentText?.id}</TextInfo>
           <TextInfo>Approved :{user?.text?.length}</TextInfo>
-          <TextInfo>Rejected :{user?.rejected_list?.length}</TextInfo>
-          <TextInfo>
-            Reviewed : {user?.text.filter((r) => r.reviewed)?.length}
-          </TextInfo>
+          <TextInfo>Rejected :{user?._count.rejected_list}</TextInfo>
+          <TextInfo>Reviewed :{user?._count.text}</TextInfo>
+          <button
+            type="button"
+            className="p-2 bg-gray-300 rounded-md font-bold font-Inter text-black"
+            onClick={loadmore}
+          >
+            load more history
+          </button>
         </div>
         <div className="flex-1">
-          <div className="text-sm mb-2 font-bold pl-2">History</div>
-          <div className="flex flex-col gap-2 max-h-fit overflow-y-auto pl-2">
+          <div className="flex flex-col gap-2 max-h-fit overflow-y-auto">
             {user &&
-              user?.text?.sort(sortUpdate_reviewed).map((text: historyText) => (
-                <AdminHistoryItem
-                  id={text?.id}
-                  key={text.id + "-accepted"}
-                  onClick={() => {
-                    setOpenMenu(false);
-                    setSelectedId(text?.id);
-                  }}
-                  icon={<Tick />}
-                  reviewed={text?.reviewed!}
-                  selectedId={selectedId!}
-                />
-              ))}
+              user?.text
+                ?.sort(sortUpdate_reviewed)
+                .map((text: historyText, index: number) => (
+                  <div
+                    key={text.id + "-accepted"}
+                    className="px-3"
+                    ref={index === user?.text.length - 1 ? lastItemRef : null}
+                  >
+                    <AdminHistoryItem
+                      id={text?.id}
+                      onClick={() => {
+                        setOpenMenu(false);
+                        setSeachParams((p) => {
+                          p.set("adminhistory", text?.id);
+                          return p;
+                        });
+                      }}
+                      icon={<Tick />}
+                      reviewed={text?.reviewed!}
+                      selectedId={data?.currentText?.id}
+                    />
+                  </div>
+                ))}
           </div>
         </div>
       </div>

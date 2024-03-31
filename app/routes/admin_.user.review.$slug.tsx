@@ -24,13 +24,12 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
         text: {
           where: {
             status: "APPROVED",
-            reviewed: true,
           },
           select: {
             id: true,
             reviewed: true,
           },
-          orderBy: { updatedAt: "desc" },
+          orderBy: { updatedAt: "asc" },
           take,
         },
         rejected_list: { select: { id: true } }, // Select specific fields or all (undefined)
@@ -53,7 +52,7 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
       modified_by_id: annotator?.id,
       status: "APPROVED",
     },
-    orderBy: { id: "desc" },
+    orderBy: { id: "asc" },
   });
   if (history) {
     currentText = await db.text.findFirst({
@@ -102,7 +101,7 @@ function UserDetail() {
     );
   };
 
-  let isButtonDisabled = currentText.length < 1;
+  let isButtonDisabled = !show;
   return (
     <div className="flex flex-col md:flex-row">
       <AdminHistorySidebar user={annotator} />

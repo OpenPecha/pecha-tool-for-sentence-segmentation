@@ -24,9 +24,9 @@ function AdminHistorySidebar({ user }: SidebarProps) {
     let currentLoad = searchParams.get("load")
       ? parseInt(searchParams.get("load") as string)
       : 20;
-    let newnumber = `${parseInt(currentLoad) + 20}`;
+    let updatedLoad = `${currentLoad + 20}`;
     setSeachParams((p) => {
-      p.set("load", newnumber);
+      p.set("load", updatedLoad);
       return p;
     });
   }

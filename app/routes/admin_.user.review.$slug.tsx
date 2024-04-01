@@ -29,7 +29,7 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
             id: true,
             reviewed: true,
           },
-          orderBy: { updatedAt: "asc" },
+          orderBy: { id: "asc" },
           take,
         },
         rejected_list: { select: { id: true } }, // Select specific fields or all (undefined)

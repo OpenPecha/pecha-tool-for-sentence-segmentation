@@ -103,6 +103,9 @@ export async function getTextToDisplay(userId: string, history: any) {
       modified_by_id:null,
       modified_text:null,
     }
+    ,orderBy:{
+      id:'asc'
+    }
   })
   let assignText=await db.text.update({
     where:{

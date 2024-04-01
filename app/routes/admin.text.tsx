@@ -33,7 +33,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       category: true, // Include category in the query
     },
     orderBy: {
-      updatedAt: "desc",
+      batch: "desc",
     },
     distinct: ["version"],
     take: PER_PAGE,

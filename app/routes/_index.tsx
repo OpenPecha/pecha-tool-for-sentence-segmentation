@@ -4,9 +4,7 @@ import Button from "~/components/Button";
 import Editor from "~/components/Editor";
 import Sidebar from "~/components/Sidebar";
 import { getTextToDisplay } from "~/model/text.server";
-import checkUnknown from "~/lib/checkUnknown";
 import { createUserIfNotExists } from "~/model/user.server";
-import insertHTMLonText from "~/lib/insertHtmlOnText";
 import { useEditorTiptap } from "~/tiptapProps/useEditorTiptap";
 import formatTime from "~/lib/formatTime";
 export const loader: LoaderFunction = async ({ request }) => {

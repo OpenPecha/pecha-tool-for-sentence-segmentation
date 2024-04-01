@@ -34,21 +34,20 @@ export const loader: LoaderFunction = async ({ request }) => {
           distinct: ["batch"],
         },
       },
+      orderBy: { reviewer_id: "asc" },
     }),
   ]);
-  let sorted_user = users
-    .sort((a, b) => b.assigned_batch.length - a.assigned_batch.length)
-    .map((user) => {
-      return {
-        username: user?.username,
-        nickname: user?.nickname,
-        role: user?.role,
-        picture: user?.picture,
-        text: user?.text.length,
-        reviewer_id: user?.reviewer_id,
-        modified_on: user?.text?.find((item) => item.modified_on !== null),
-      };
-    });
+  let sorted_user = users.map((user) => {
+    return {
+      username: user?.username,
+      nickname: user?.nickname,
+      role: user?.role,
+      picture: user?.picture,
+      text: user?.text.length,
+      reviewer_id: user?.reviewer_id,
+      modified_on: user?.text?.find((item) => item.modified_on !== null),
+    };
+  });
   if (admin?.role !== "ADMIN") {
     sorted_user = sorted_user
       .filter(

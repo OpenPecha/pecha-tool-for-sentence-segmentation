@@ -11,11 +11,15 @@ export const loader: LoaderFunction = async ({ request }) => {
   let session = url.searchParams.get("session");
   if (!session) return redirect("/error");
   let user = await getUser(session, true);
-  let progress = await getProgress();
-  return json({
-    user,
-    progress,
-  });
+
+  if (user?.role === "ADMIN" || user?.role === "REVIEWER") {
+    let progress = await getProgress();
+    return json({
+      user,
+      progress,
+    });
+  }
+  return null;
 };
 
 const DefaultLayout = () => {

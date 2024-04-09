@@ -29,7 +29,7 @@ export const createUserIfNotExists = async (username: string) => {
       text: {
         where:{AND:{modified_text:{not:{equals:null}},reviewed:{not:{equals:true}}}},
         select: { id: true, reviewed: true, batch: true },
-        orderBy: { id: "desc" },
+        orderBy: { updatedAt: "desc" },
       },
       rejected_list: { select: { id: true, reviewed: true, batch: true } },
     },

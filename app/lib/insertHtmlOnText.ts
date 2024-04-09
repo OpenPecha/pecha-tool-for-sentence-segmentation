@@ -40,12 +40,13 @@ function splitText(text: string) {
   let segment = segmentTibetanText(text);
   let data = segment.map((item) => item.text);
   let finalItem = [];
+  
   for (var i = 0; i < data.length; i++) {
     if (data[i].startsWith("\n")) {
       let temp = data[i].split("\n");
       finalItem.push("\n");
       finalItem.push(temp[1]);
-    } else if (data[i + 1] === "་") {
+    }  else if (data[i + 1] === "་") {
       if (data[i + 2] === "།" && data[i + 3] === " " && data[i + 4] === "།") {
         let temp =
           data[i] + data[i + 1] + data[i + 2] + data[i + 3] + data[i + 4];
@@ -63,8 +64,8 @@ function splitText(text: string) {
         finalItem.push(data[i] + "་ ");
         i = i + 2;
       } else {
-        finalItem.push(data[i] + "་");
-        i++;
+        finalItem.push(data[i] + data[i + 1]);
+        i+=data[i+1].length;
       }
     } else if (data[i + 1] === "་ ") {
       if (data[i + 2] === "།" && data[i + 3] === " " && data[i + 4] === "།") {
@@ -90,22 +91,23 @@ function splitText(text: string) {
         finalItem.push(temp);
         i = i + 3;
       } else if (data[i + 2] === " " && data[i + 3] === "\n") {
-        let temp = data[i] + data[i + 1] + " " + "\n";
-        finalItem.push(temp);
+        finalItem.push(data[i] + data[i + 1] + " ");
+        finalItem.push("\n");
         i = i + 3;
-      } else if (data[i + 2] === " " && data[i + 3] !== "།") {
-        let temp = data[i] + data[i + 1] + " ";
+      } else if (data[i + 2] === " ") {
+        let temp = data[i]+data[i + 1]+data[i + 2];
         finalItem.push(temp);
-        i = i + 2;
+        i=i+temp.length-1;
       }
     } else if (data[i + 1] === " ") {
       if (data[i + 2] === "།") {
         let temp = data[i] + data[i + 1] + data[i + 2];
         finalItem.push(temp);
-        i = i + 2;
+        i = i +2;
       } else {
-        finalItem.push(data[i] + data[i + 1]);
-        i++;
+        let temp=data[i] + data[i + 1];
+        finalItem.push(temp);
+        i+=1;
       }
     } else {
       if (data[i].endsWith("།") && data[i + 1] === " " && data[i + 2] === "།") {

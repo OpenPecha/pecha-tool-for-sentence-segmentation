@@ -71,7 +71,7 @@ export default function Index() {
       { method: "PATCH", action: "/api/text" }
     );
   };
-  let isButtonDisabled = !text || text.reviewed;
+  let isButtonDisabled = !text || text.reviewed || fetcher.state !== "idle";
   return (
     <div className="flex flex-col md:flex-row">
       <Sidebar user={user} text={text} />

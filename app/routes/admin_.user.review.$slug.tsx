@@ -101,7 +101,7 @@ function UserDetail() {
     );
   };
 
-  let isButtonDisabled = !show;
+  let isButtonDisabled = !show || fetcher.state !== "idle";
   return (
     <div className="flex flex-col md:flex-row">
       <AdminHistorySidebar user={annotator} />

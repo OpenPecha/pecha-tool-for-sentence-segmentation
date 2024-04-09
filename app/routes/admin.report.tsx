@@ -3,21 +3,19 @@ import { useState } from "react";
 import { db } from "~/service/db.server";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import style1 from "react-datepicker/dist/react-datepicker.css"; // main style file
-import { LinksFunction } from "@remix-run/node";
+import { LinksFunction, redirect } from "@remix-run/node";
 import useModal from "~/components/hooks/useModal";
 import DateRangePicker from "~/components/DateRangePicker";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: style1 },
-];
+export const links: LinksFunction = () => [{ rel: "stylesheet", href: style1 }];
 
 export const loader = async ({ request }) => {
   let url = new URL(request.url);
   let reviewer = url.searchParams.get("reviewer");
   let startDate = url.searchParams.get("startDate");
   let endDate = url.searchParams.get("endDate");
-
+  let session = url.searchParams.get("session");
   const [users, reviewers] = await Promise.all([
     db.user.findMany({
       where: {
@@ -77,10 +75,13 @@ export const loader = async ({ request }) => {
       averageWordCount: (word_count / taskCount).toFixed(2),
     };
   });
+  if (!reviewer && reviewers?.length > 0) {
+    return redirect(
+      "/admin/report?session=" + session + "&reviewer=" + reviewers[0]?.username
+    );
+  }
   return { usersDetail, reviewers };
 };
-
-
 
 function report() {
   let { usersDetail, reviewers } = useLoaderData();
@@ -154,13 +155,13 @@ function report() {
           <select
             id="selectReviewer"
             onChange={handleReviewerChange}
-            value={params.get("reviewer")! || params.get("session")}
+            value={params.get("session")! || params.get("session")}
             className="m-6"
           >
             <option value="all">all</option>
-            {reviewers.map((user,index) => {
+            {reviewers.map((user, index) => {
               return (
-                <option key={user.nickname+index} value={user.username}>
+                <option key={user.nickname + index} value={user.username}>
                   {user.username}
                 </option>
               );

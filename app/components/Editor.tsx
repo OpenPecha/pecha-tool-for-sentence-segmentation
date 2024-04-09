@@ -97,23 +97,18 @@ function EditorContainer({
               lastElement?.parentElement?.classList[1].replace("s-", "")
             ) + lastElement.innerText.length;
           if (content[location + 2] === DIVIDER) {
-            // modifiedContent =
-            //   modifiedContent.slice(0, location) +
-            //   modifiedContent.slice(location + 3);
           } else {
             modifiedContent =
               modifiedContent.slice(0, location) +
               DIVIDER +
               modifiedContent.slice(location);
+            console.log(modifiedContent);
             const newText = insertHTMLonText(modifiedContent);
             editor?.commands.setContent(newText);
           }
         } else if (clickCount === 2) {
           // Double click
           if (content[spaceToAddLocation + 2] === DIVIDER) {
-            // modifiedContent =
-            //   modifiedContent.slice(0, spaceToAddLocation) +
-            //   modifiedContent.slice(spaceToAddLocation + 3);
           } else {
             modifiedContent =
               modifiedContent.slice(0, spaceToAddLocation) +
@@ -133,7 +128,6 @@ function EditorContainer({
       let location = parseInt(e.target.classList[0].replace("d-", ""));
       let modifiedContent = content;
       let first = modifiedContent.slice(0, location);
-
       let second = modifiedContent.slice(location + 3);
       modifiedContent = first + second;
       const newText = insertHTMLonText(modifiedContent);
@@ -227,41 +221,11 @@ function EditorContainer({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [editor, content]);
-  const handleClick = () => {
-    let { from, to } = editor?.state.selection;
-    let content = editor?.getText();
-    if (!content) return;
-    let modifiedContent =
-      content.substring(0, from - 1) + " " + content.substring(to - 1);
-    let newText = insertHTMLonText(modifiedContent);
-    editor?.commands.setContent(newText);
-  };
+
   if (!editor) return null;
   return (
     <div className="text-slate-600 h-[90%] m-auto bg-white max-h-[60dvh] overflow-y-scroll p-2 text-3xl">
       <EditorContent editor={editor} />
-      {editor && (
-        <BubbleMenu
-          editor={editor}
-          tippyOptions={{ duration: 100 }}
-          shouldShow={(editor) => {
-            let { from } = editor;
-            let textLength = editor?.editor.getText().length;
-            let textContent = editor.state.doc.textBetween(from - 1, from, "");
-            if (from === 1 || from - 1 === textLength || textContent === " ")
-              return false;
-            if (editor.state.selection.from === editor.state.selection.to)
-              return true;
-            return false;
-          }}
-        >
-          <button
-            onClick={handleClick}
-            id="spaceButton"
-            style={{ display: "none" }}
-          ></button>
-        </BubbleMenu>
-      )}
     </div>
   );
 }

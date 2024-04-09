@@ -91,13 +91,13 @@ function splitText(text: string) {
         finalItem.push(temp);
         i = i + 3;
       } else if (data[i + 2] === " " && data[i + 3] === "\n") {
-        finalItem.push(data[i] + data[i + 1] + " ");
+        finalItem.push(data[i] + data[i + 1] + data[i + 2]);
         finalItem.push("\n");
         i = i + 3;
       } else if (data[i + 2] === " ") {
         let temp = data[i]+data[i + 1]+data[i + 2];
         finalItem.push(temp);
-        i=i+temp.length-1;
+        i=i+2;
       }
     } else if (data[i + 1] === " ") {
       if (data[i + 2] === "།") {

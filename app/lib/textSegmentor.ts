@@ -7,7 +7,7 @@ function makeSegment(text, start) {
 }
 
 export default function segmentTibetanText(text:string) {
-  const breaks = "༄༅།";
+  const breaks = "༄༅།༑";
   const spaces = " ་";
   const newline = "\n";
 

@@ -102,7 +102,6 @@ function EditorContainer({
               modifiedContent.slice(0, location) +
               DIVIDER +
               modifiedContent.slice(location);
-            console.log(modifiedContent);
             const newText = insertHTMLonText(modifiedContent);
             editor?.commands.setContent(newText);
           }

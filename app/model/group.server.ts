@@ -75,7 +75,6 @@ export const getGroupInfo = async (version: string) => {
       updatedAt: "desc",
     },
   });
-  console.log(textRecords);
   let reviewed_count =
     textRecords.filter((item) => item.reviewed === true).length ?? 0;
 

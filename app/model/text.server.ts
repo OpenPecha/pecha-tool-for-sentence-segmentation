@@ -81,7 +81,7 @@ export async function getTextToDisplay(userId: string, history: any) {
     let show = text?.modified_text
       ? JSON.parse(text?.modified_text).join("\n")
       : text?.original_text;
-      if(!text) return {error:{message:'no History on that ID'}}
+    if (!text) return { error: { message: "no History on that ID" } };
     return {
       ...text,
       id: text?.id,
@@ -89,34 +89,34 @@ export async function getTextToDisplay(userId: string, history: any) {
       status: text?.status,
     };
   }
- 
-  let RemainingWork=await db.text.findFirst({
-    where:{
-      modified_by_id:userId,
-      modified_text:null
-    }
-  });
-  if(RemainingWork) return RemainingWork;
-  
-  let unassignedWork=await db.text.findFirst({
-    where:{
-      modified_by_id:null,
-      modified_text:null,
-    }
-    ,orderBy:{
-      id:'asc'
-    }
-  })
-  let assignText=await db.text.update({
-    where:{
-      id:unassignedWork?.id,
+
+  let RemainingWork = await db.text.findFirst({
+    where: {
+      modified_by_id: userId,
+      modified_text: null,
     },
-    data:{
-      modified_by_id:userId,
-      status:'PENDING'
-    }
-  })  
-  return assignText
+  });
+  if (RemainingWork) return RemainingWork;
+
+  let unassignedWork = await db.text.findFirst({
+    where: {
+      modified_by_id: null,
+      modified_text: null,
+    },
+    orderBy: {
+      id: "asc",
+    },
+  });
+  let assignText = await db.text.update({
+    where: {
+      id: unassignedWork?.id,
+    },
+    data: {
+      modified_by_id: userId,
+      status: "PENDING",
+    },
+  });
+  return assignText;
 }
 
 export async function getProgress() {
@@ -175,13 +175,16 @@ export async function removeRejectText(
 export function saveText(
   id: number,
   text: string,
+  reviewed_text: string,
   userId: string,
   adminId: string,
   time?: string
 ) {
   let isReviewer = !!adminId;
   let duration = time ? parseFloat(time) : null;
-  let word_count = text.split("་").filter((word) => !word.includes("།")).length;
+  let word_count = text
+    ?.split("་")
+    .filter((word) => !word.includes("།")).length;
   if (!isReviewer) {
     return db.text.update({
       where: {
@@ -204,7 +207,7 @@ export function saveText(
         id,
       },
       data: {
-        modified_text: JSON.stringify(text.split(" ")),
+        reviewed_text: reviewed_text,
         status: "APPROVED",
         rejected_by: { disconnect: { id: userId } },
         reviewed: true,
@@ -213,7 +216,6 @@ export function saveText(
     });
   }
 }
-
 
 export async function getAprovedBatch() {
   let data = await db.text.findMany({
@@ -308,11 +310,11 @@ export async function getLastBatch() {
   return batch?.batch || 0;
 }
 
-export async function delete_modified({id}:{id:string}){
+export async function delete_modified({ id }: { id: string }) {
   return await db.text.update({
-    where:{id:parseInt(id)},
-    data:{
-      modified_text:null
-    }
-  })
+    where: { id: parseInt(id) },
+    data: {
+      modified_text: null,
+    },
+  });
 }

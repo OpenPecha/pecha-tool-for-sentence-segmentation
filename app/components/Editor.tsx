@@ -223,7 +223,7 @@ function EditorContainer({
 
   if (!editor) return null;
   return (
-    <div className="text-slate-600 h-[90%] m-auto bg-white max-h-[60dvh] overflow-y-scroll p-2 text-3xl">
+    <div className="text-slate-600 h-[90%] m-auto bg-white max-h-[60dvh] overflow-y-scroll p-2 text-xl leading-normal md:text-3xl ">
       <EditorContent editor={editor} />
     </div>
   );

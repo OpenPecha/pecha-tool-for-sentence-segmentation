@@ -17,6 +17,7 @@ type userType = {
 
 function Sidebar({ user, text }: userType) {
   let [openMenu, setOpenMenu] = useState(false);
+  let unreviewed_list = user?.text?.filter((r) => !r.reviewed);
   return (
     <div className="flex flex-col">
       <div className=" flex px-2 py-3 text-white bg-gray-600 text-lg font-semibold items-center  gap-2 ">
@@ -61,7 +62,7 @@ function Sidebar({ user, text }: userType) {
               />
             ))}
 
-            {user?.text?.map((text: historyText) => (
+            {unreviewed_list.map((text: historyText) => (
               <HistoryItem
                 user={user}
                 id={text?.id}

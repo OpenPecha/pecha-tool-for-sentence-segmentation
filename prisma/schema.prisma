@@ -34,6 +34,7 @@ model Text {
   id             Int       @id() @unique(sort: Desc) @default(autoincrement())
   original_text  String
   modified_text  String?
+  reviewed_text  String?
   status         Status?
   modified_by    User?     @relation("UserModifiedText", fields: [modified_by_id], references: [id])
   modified_by_id String?

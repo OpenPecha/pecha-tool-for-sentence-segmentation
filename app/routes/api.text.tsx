@@ -55,12 +55,14 @@ export const action: ActionFunction = async ({ request }) => {
 
   if (request.method === "POST") {
     const modified_text = formData.get("modified_text") as string;
+    const reviewed_text = formData.get("reviewed_text") as string;
     const userId = formData.get("userId") as string;
     const id = formData.get("id") as string;
     const time = formData.get("duration") as string;
     let text = await saveText(
       parseInt(id),
       modified_text,
+      reviewed_text,
       userId,
       admin_id,
       time

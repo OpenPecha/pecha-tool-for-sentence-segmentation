@@ -70,19 +70,22 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
 function UserDetail() {
   const fetcher = useFetcher();
   const { annotator, user, currentText } = useLoaderData() as any;
-  let show =
-    (currentText && JSON.parse(currentText?.modified_text!)?.join("\n")) ||
-    currentText?.original_text;
+  let show = currentText?.reviewed
+    ? JSON.parse(currentText?.reviewed_text!)?.join("\n")
+    : currentText && JSON.parse(currentText?.modified_text!)?.join("\n");
   let newText = currentText ? insertHTMLonText(show) : "";
   let editor = useEditorTiptap();
 
   if (!editor) return null;
 
   let saveText = async () => {
+    let current_text = editor!.getText();
+    let savedModified = current_text.replaceAll("↩️", "").split("\n");
+    let modified_text = JSON.stringify(savedModified);
     fetcher.submit(
       {
         id: currentText?.id!,
-        modified_text: editor?.getText()!,
+        reviewed_text: modified_text,
         userId: annotator.id,
         adminId: user?.id,
       },

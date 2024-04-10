@@ -24,12 +24,13 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
         text: {
           where: {
             status: "APPROVED",
+            reviewed: true,
           },
           select: {
             id: true,
             reviewed: true,
           },
-          orderBy: { id: "asc" },
+          orderBy: { updatedAt: "desc" },
           take,
         },
         rejected_list: { select: { id: true } }, // Select specific fields or all (undefined)

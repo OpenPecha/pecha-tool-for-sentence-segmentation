@@ -18,12 +18,11 @@ function EditorContainer({
   html?: string;
 }) {
   let content = editor?.getText();
-  const { text } = useLoaderData();
-
+  let { text } = useLoaderData();
   useEffect(() => {
     if (editor && !html) {
-      let content = text?.original_text.trim().replaceAll("?", "") || "";
-      let data = content?.replaceAll("\u0F37", "");
+      let content = text?.original_text.trim() || "";
+      let data = content.replace(/[\u0E46\u0F37?]/g, "");
       let html = insertHTMLonText(data);
       editor?.commands.setContent(html);
     }

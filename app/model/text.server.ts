@@ -94,6 +94,7 @@ export async function getTextToDisplay(userId: string, history: any) {
     where: {
       modified_by_id: userId,
       modified_text: null,
+      original_text: { not: "" },
     },
   });
   if (RemainingWork) return RemainingWork;
@@ -102,6 +103,7 @@ export async function getTextToDisplay(userId: string, history: any) {
     where: {
       modified_by_id: null,
       modified_text: null,
+      original_text: { not: "" },
     },
     orderBy: {
       id: "asc",

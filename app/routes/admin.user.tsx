@@ -40,7 +40,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       orderBy: { reviewer_id: "asc" },
     }),
   ]);
-  console.log(users[0].text);
   let sorted_user = users.map((user) => {
     return {
       username: user?.username,

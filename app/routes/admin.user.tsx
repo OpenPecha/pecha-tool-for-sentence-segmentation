@@ -31,7 +31,6 @@ export const loader: LoaderFunction = async ({ request }) => {
         text: {
           where: { reviewed: { not: true } },
           select: { modified_on: true },
-          distinct: ["batch"],
         },
       },
       orderBy: { reviewer_id: "asc" },

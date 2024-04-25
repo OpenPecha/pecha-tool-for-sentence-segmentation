@@ -73,6 +73,7 @@ function EachUser({ user }) {
   const current_user = useOutletContext();
 
   let remaining_count = user?.text;
+  console.log(remaining_count);
   let Time = user?.modified_on;
   let time_ago = timeAgo(Time?.modified_on);
   if (!user) return null;

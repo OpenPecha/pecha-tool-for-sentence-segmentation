@@ -29,13 +29,18 @@ export const loader: LoaderFunction = async ({ request }) => {
         picture: true,
         reviewer_id: true,
         text: {
-          where: { reviewed: { not: true }, original_text: { not: "" } },
+          where: {
+            reviewed: { not: true },
+            original_text: { not: "" },
+            modified_on: { not: null },
+          },
           select: { modified_on: true },
         },
       },
       orderBy: { reviewer_id: "asc" },
     }),
   ]);
+  console.log(users[0].text);
   let sorted_user = users.map((user) => {
     return {
       username: user?.username,

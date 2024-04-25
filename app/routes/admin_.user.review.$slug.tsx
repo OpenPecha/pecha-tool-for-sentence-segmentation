@@ -25,6 +25,7 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
           where: {
             status: "APPROVED",
             reviewed: true,
+            original_text: { not: "" },
           },
           select: {
             id: true,
@@ -52,6 +53,7 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
       reviewed: false,
       modified_by_id: annotator?.id,
       status: "APPROVED",
+      original_text: { not: "" },
     },
     orderBy: { id: "asc" },
   });

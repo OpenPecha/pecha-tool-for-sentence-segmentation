@@ -29,7 +29,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         picture: true,
         reviewer_id: true,
         text: {
-          where: { reviewed: { not: true } },
+          where: { reviewed: { not: true }, original_text: { not: "" } },
           select: { modified_on: true },
         },
       },

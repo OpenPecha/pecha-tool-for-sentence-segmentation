@@ -31,7 +31,7 @@ const UserListCard = () => {
         />
       </div>
 
-      <div>
+      <div className="overflow-auto h-[70vh]">
         {list.map((user: any) => (
           <EachUser user={user} key={user.id} />
         ))}

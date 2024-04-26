@@ -25,7 +25,7 @@ export function getNumberOfReviewedTask(username: string | null) {
   });
 }
 
-export function getTaskOfUser(
+export async function getTaskOfUser(
   username: string | null,
   take: number,
   skip: number,
@@ -33,7 +33,7 @@ export function getTaskOfUser(
   endDate: string | Date
 ) {
   if (username) {
-    return db.text.findMany({
+    return await db.text.findMany({
       select: {
         id: true,
         original_text: true,

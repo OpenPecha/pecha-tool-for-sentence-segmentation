@@ -2,7 +2,7 @@ import { LoaderFunction, redirect } from "@remix-run/node";
 import React, { useState } from "react";
 import { getUser } from "~/model/user.server";
 import { getNumberOfReviewedTask, getNumberOfTask, getUsersList } from "./data";
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet, useLoaderData, useMatches } from "@remix-run/react";
 import Header from "./Component/Header";
 import TopInfo from "./Component/TopInfo";
 import UserListCard from "./Component/UsersListCard";
@@ -23,16 +23,25 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 function owner() {
+  let matches = useMatches();
+  let isUserSelected = matches.find((p) => p.params?.username);
+
   return (
     <div className="dark:bg-boxdark-2 dark:text-bodydark">
       <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
         <Header />
         <main>
-          <div className="flex gap-2 mx-10 mt-5 ">
+          <div className="flex gap-2  mt-5 ">
             <UserListCard />
             <div className="flex flex-col w-full">
               <TopInfo />
-              <Outlet />
+              {isUserSelected ? (
+                <Outlet />
+              ) : (
+                <div className="flex justify-center text-lg ">
+                  user not selected
+                </div>
+              )}
             </div>
           </div>
         </main>

@@ -3,6 +3,16 @@ import { db } from "~/service/db.server";
 export function getUsersList() {
   return db.user.findMany({
     where: { OR: [{ role: "REVIEWER" }, { role: "ANNOTATOR" }] },
+    include: {
+      text: {
+        where: {
+          reviewed: { not: true },
+          original_text: { not: "" },
+          modified_on: { not: null },
+        },
+        select: { modified_on: true },
+      },
+    },
   });
 }
 

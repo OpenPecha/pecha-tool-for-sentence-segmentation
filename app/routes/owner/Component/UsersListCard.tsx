@@ -41,7 +41,7 @@ const UserListCard = () => {
 };
 
 function EachUser({ user }) {
-  let remaining_count = user?.text;
+  let remaining_count = user?.text?.length;
   let { user: current_user } = useLoaderData();
   let Time = user?.modified_on;
   let time_ago = timeAgo(Time?.modified_on);

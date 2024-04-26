@@ -21,6 +21,7 @@ function AssignRole({
     { value: "REVIEWER", label: "REVIEWER" },
     { value: "ANNOTATOR", label: "ANNOTATOR" },
     { value: "USER", label: "USER" },
+    { value: "OWNER", label: "OWNER" },
   ];
   let value = { value: annotator.role, label: annotator.role };
   function handleChange(data) {

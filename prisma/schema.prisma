@@ -65,4 +65,5 @@ enum Role {
   ANNOTATOR
   ADMIN
   REVIEWER
+  OWNER
 }

@@ -28,10 +28,12 @@ function owner() {
       <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
         <Header />
         <main>
-          <TopInfo />
-          <div className="flex gap-2 mx-10 mt-5">
+          <div className="flex gap-2 mx-10 mt-5 ">
             <UserListCard />
-            <Outlet />
+            <div className="flex flex-col w-full">
+              <TopInfo />
+              <Outlet />
+            </div>
           </div>
         </main>
       </div>

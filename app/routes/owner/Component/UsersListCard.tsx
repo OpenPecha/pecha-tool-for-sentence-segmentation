@@ -16,7 +16,7 @@ const UserListCard = () => {
   );
 
   return (
-    <div className="col-span-12 rounded-sm border border-stroke bg-white dark:bg-slate-600 py-6 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
+    <div className="col-span-12 p-2 rounded-sm border border-stroke bg-white dark:bg-slate-600 py-6 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
       <div className="flex justify-between px-2">
         <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
           Annotators

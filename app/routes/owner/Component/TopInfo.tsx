@@ -7,7 +7,7 @@ function TopInfo() {
     (l) => l?.role === "ANNOTATOR"
   )?.length;
   return (
-    <div className="flex max-w-6xl mx-auto gap-2 justify-between mt-2">
+    <div className="flex max-w-6xl mb-2 mx-auto gap-2 justify-between mt-2">
       <div className="w-fit  p-3 bg-white rounded-lg shadow border border-neutral-200 flex-col justify-start items-start inline-flex">
         <div className="self-stretch h-20 flex-col justify-start items-start gap-3 flex">
           <div className="self-stretch h-20 flex-col justify-start items-start gap-2 flex">

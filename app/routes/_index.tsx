@@ -21,6 +21,9 @@ export const loader: LoaderFunction = async ({ request }) => {
     if (user?.role === "ADMIN" || user?.role === "REVIEWER") {
       return redirect(`/admin/user/?session=${user.username}`);
     }
+    if (user?.role === "OWNER") {
+      return redirect(`/owner?session=${user.username}`);
+    }
     if (user?.allow_assign) {
       text = await getTextToDisplay(user?.id, history);
 

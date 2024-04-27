@@ -7,12 +7,12 @@ import {
   useNavigate,
   useSearchParams,
 } from "@remix-run/react";
-import { getUser } from "~/model/user.server";
 import {
   getNumberOfReviewedTask,
   getNumberOfTask,
   getTaskOfUser,
   getTotalWordCount,
+  getUser,
 } from "./owner/data";
 import { Suspense, useState } from "react";
 import { PaginationBar } from "./owner/Component/Pagination";
@@ -33,7 +33,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   let endDate = url.searchParams.get("endDate") ?? new Date(Date.now());
 
   if (!username) return {};
-  let user = await getUser(username, false);
+  let user = await getUser(username);
   let textcount = await getNumberOfTask(username);
   let reviewedTextCount = await getNumberOfReviewedTask(username);
   let take = PER_PAGE_TEXT_COUNT;

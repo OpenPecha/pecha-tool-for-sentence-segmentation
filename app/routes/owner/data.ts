@@ -34,7 +34,18 @@ export function getNumberOfReviewedTask(username: string | null) {
     },
   });
 }
-
+export const getUser = async (username: string) => {
+  try {
+    let user = db.user.findUnique({
+      where: {
+        username,
+      },
+    });
+    return user;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
 export async function getTaskOfUser(
   username: string | null,
   take: number,

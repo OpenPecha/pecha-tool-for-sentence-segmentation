@@ -19,7 +19,7 @@ import { PaginationBar } from "./owner/Component/Pagination";
 import DateRangePicker from "~/components/DateRangePicker";
 import style1 from "react-datepicker/dist/react-datepicker.css"; // main style file
 
-const PER_PAGE_TEXT_COUNT = 20;
+const PER_PAGE_TEXT_COUNT = 10;
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: style1 }];
 
 export const loader: LoaderFunction = async ({ request, params }) => {

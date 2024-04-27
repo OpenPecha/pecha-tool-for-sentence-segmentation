@@ -6,7 +6,7 @@ import { PER_PAGE_TEXT_COUNT } from "~/routes/owner.$username";
 export function PaginationBar({ total }: { total: number }) {
   const [searchParams] = useSearchParams();
   const $skip = Number(searchParams.get("$skip")) || 0;
-  const $top = Number(searchParams.get("$top")) ?? PER_PAGE_TEXT_COUNT;
+  const $top = Number(searchParams.get("$top")) || PER_PAGE_TEXT_COUNT;
   const totalPages = Math.ceil(total / $top);
   const currentPage = Math.floor($skip / $top) + 1;
   const maxPages = 7;

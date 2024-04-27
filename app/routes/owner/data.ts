@@ -16,8 +16,23 @@ export function getUsersList() {
   });
 }
 
-export function getNumberOfTask(username: string | null) {
-  if (username) return db.text.count({ where: { modified_by: { username } } });
+export function getNumberOfTask(
+  username: string | null,
+  startDate: string | Date,
+  endDate: string | Date
+) {
+  if (username)
+    return db.text.count({
+      where: {
+        modified_by: { username },
+        modified_on:
+          startDate && endDate
+            ? startDate !== endDate
+              ? { gte: new Date(startDate), lte: new Date(endDate) }
+              : new Date(startDate)
+            : undefined,
+      },
+    });
   return db.text.count();
 }
 export function getNumberOfReviewedTask(username: string | null) {

@@ -16,25 +16,57 @@ export function getUsersList() {
   });
 }
 
-export function getNumberOfTask(
+export async function getNumberOfTask(
   username: string | null,
   startDate: string | Date,
   endDate: string | Date
 ) {
-  if (username)
-    return db.text.count({
-      where: {
-        modified_by: { username },
-        modified_on:
-          startDate && endDate
-            ? startDate !== endDate
-              ? { gte: new Date(startDate), lte: new Date(endDate) }
-              : new Date(startDate)
-            : undefined,
-      },
+  if (!username) {
+    let total = await db.text.count();
+    let reviewed = await getNumberOfReviewedTask(null);
+
+    return Promise.resolve({ total, reviewed });
+  }
+
+  // Convert dates to Date objects if they are strings
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // Create a where clause for the date range
+  const dateWhere =
+    startDate && endDate
+      ? startDate !== endDate
+        ? { gte: start, lte: end }
+        : start
+      : undefined;
+
+  // Count total texts
+  const totalTextsPromise = db.text.count({
+    where: {
+      modified_by: { username },
+      modified_on: dateWhere,
+    },
+  });
+
+  // Count reviewed texts
+  const reviewedTextsPromise = db.text.count({
+    where: {
+      modified_by: { username },
+      modified_on: dateWhere,
+      reviewed: true,
+    },
+  });
+
+  return Promise.all([totalTextsPromise, reviewedTextsPromise])
+    .then(([total, reviewed]) => {
+      return { total, reviewed };
+    })
+    .catch((error) => {
+      console.error("Error fetching task counts:", error);
+      return { total: 0, reviewed: 0 };
     });
-  return db.text.count();
 }
+
 export function getNumberOfReviewedTask(username: string | null) {
   if (username)
     return db.text.count({

@@ -29,10 +29,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (user?.role !== "OWNER") redirect("/?session=" + user?.username);
 
   let users = await getUsersList();
-  let numberOfTask = await getNumberOfTask(null);
-  let numberOfReviewedTask = await getNumberOfReviewedTask(null);
+  let { total, reviewed } = await getNumberOfTask(null);
 
-  return { user, users, numberOfTask, numberOfReviewedTask };
+  return { user, users, numberOfTask: total, numberOfReviewedTask: reviewed };
 };
 
 function owner() {

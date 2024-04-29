@@ -22,7 +22,7 @@ function EditorContainer({
   useEffect(() => {
     if (editor && !html) {
       let content = text?.original_text.trim() || "";
-      let data = content?.replaceAll(/[\u0F37ໆ?]/g, "");
+      let data = content?.replaceAll(/[\u0F37ཾໆ?]/g, "");
       let html = insertHTMLonText(data);
       editor?.commands.setContent(html);
     }

@@ -38,8 +38,12 @@ export const createUserIfNotExists = async (username: string) => {
   });
 
   if (existingUser) {
-    await updatePicture(existingUser);
-    return existingUser;
+    try {
+      await updatePicture(existingUser);
+      return existingUser;
+    } catch (e) {
+      return existingUser;
+    }
   }
   const newUser = await db.user.create({
     data: {

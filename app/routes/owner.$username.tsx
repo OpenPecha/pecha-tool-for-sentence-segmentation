@@ -1,7 +1,6 @@
 import { LinksFunction, LoaderFunction, defer } from "@remix-run/node";
 import {
   Await,
-  Link,
   Outlet,
   useLoaderData,
   useNavigate,
@@ -14,7 +13,7 @@ import {
   getTotalWordCount,
   getUser,
 } from "./owner/data";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { PaginationBar } from "./owner/Component/Pagination";
 import DateRangePicker from "~/components/DateRangePicker";
 import style1 from "react-datepicker/dist/react-datepicker.css"; // main style file
@@ -33,18 +32,24 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   let endDate = url.searchParams.get("endDate") ?? new Date(Date.now());
 
   if (!username) return {};
-  let user = await getUser(username);
-  let textcount = await getNumberOfTask(username);
-  let reviewedTextCount = await getNumberOfReviewedTask(username);
+  // let user = await getUser(username);
+  // let textcount = await getNumberOfTask(username, startDate, endDate);
+  // let reviewedTextCount = await getNumberOfReviewedTask(username);
+  // let totalWordCount = await getTotalWordCount(username, startDate, endDate);
+
   let take = PER_PAGE_TEXT_COUNT;
   let skip = url.searchParams.get("$skip") ?? "0";
+  let [user, textcount, totalWordCount] = await Promise.all([
+    getUser(username),
+    getNumberOfTask(username, startDate, endDate),
+    getTotalWordCount(username, startDate, endDate),
+  ]);
   let tasks = getTaskOfUser(username, take, parseInt(skip), startDate, endDate);
-  let totalWordCount = await getTotalWordCount(username, startDate, endDate);
   return defer({
-    user,
-    textcount,
-    reviewedTextCount,
     tasks,
+    user,
+    textcount: textcount?.total,
+    reviewedTextCount: textcount?.reviewed,
     session,
     totalWordCount: totalWordCount._sum.word_count,
   });

@@ -28,7 +28,7 @@ export default function App() {
       </head>
       <body className="m-0 overflow-hidden font-[20px]">
         <Outlet />
-        <Toaster />
+        <Toaster position="bottom-right" reverseOrder={false} />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

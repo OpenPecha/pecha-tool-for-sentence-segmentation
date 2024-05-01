@@ -7,6 +7,8 @@ import { getTextToDisplay } from "~/model/text.server";
 import { createUserIfNotExists } from "~/model/user.server";
 import { useEditorTiptap } from "~/tiptapProps/useEditorTiptap";
 import formatTime from "~/lib/formatTime";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 export const loader: LoaderFunction = async ({ request }) => {
   let { NODE_ENV } = process.env;
   let url = new URL(request.url);
@@ -74,7 +76,15 @@ export default function Index() {
       { method: "PATCH", action: "/api/text" }
     );
   };
-  let isButtonDisabled = !text || text.reviewed || fetcher.state !== "idle";
+  let fetching = fetcher.state !== "idle";
+  let isButtonDisabled = !text || text.reviewed || fetching;
+
+  useEffect(() => {
+    if (fetcher.data) {
+      toast.success("saved");
+    }
+  }, [fetcher?.data]);
+
   return (
     <div className="flex flex-col md:flex-row">
       <Sidebar user={user} text={text} />

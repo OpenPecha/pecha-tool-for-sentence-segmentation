@@ -10,6 +10,7 @@ import {
 import tailwindStyle from "./styles/tailwind.css";
 import globalStyle from "./styles/global.css";
 import drawwerStyle from "react-modern-drawer/dist/index.css";
+import { Toaster } from "react-hot-toast";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: tailwindStyle },
@@ -17,8 +18,6 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: drawwerStyle },
 ];
 export default function App() {
-
-
   return (
     <html lang="en">
       <head>
@@ -28,7 +27,8 @@ export default function App() {
         <Links />
       </head>
       <body className="m-0 overflow-hidden font-[20px]">
-          <Outlet />
+        <Outlet />
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

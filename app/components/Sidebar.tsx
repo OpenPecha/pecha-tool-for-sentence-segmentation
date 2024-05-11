@@ -49,14 +49,14 @@ function Sidebar({ user, text }: userType) {
             Reviewed : {user?.text?.filter((r) => r.reviewed)?.length}
           </TextInfo>
         </div>
-        <div className="dropdown dropdown-bottom">
-          <div tabIndex={0} role="button" className="btn m-1">
-            Show monthly wordcount
-          </div>
-          <ul
-            tabIndex={0}
-            className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 text-black"
-          >
+        <button
+          className="btn"
+          onClick={() => document?.getElementById("my_modal_2")?.showModal()}
+        >
+          Show monthly wordcount
+        </button>
+        <dialog id="my_modal_2" className="modal">
+          <div className="modal-box text-black">
             {Object.entries(monthlyData).map(([month, wordCount]) => (
               <li key={month}>
                 <strong>
@@ -64,8 +64,12 @@ function Sidebar({ user, text }: userType) {
                 </strong>
               </li>
             ))}
-          </ul>
-        </div>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
+
         <div className="flex-1">
           <div className="text-sm mb-2 ml-2 font-bold">History</div>
           <div className="flex flex-col gap-2 max-h-fit overflow-y-auto pl-2">

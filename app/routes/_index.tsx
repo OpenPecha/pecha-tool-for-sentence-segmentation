@@ -3,7 +3,7 @@ import { useFetcher, useLoaderData } from "@remix-run/react";
 import Button from "~/components/Button";
 import Editor from "~/components/Editor";
 import Sidebar from "~/components/Sidebar";
-import { getTextToDisplay } from "~/model/text.server";
+import { getMonthlyWordCount, getTextToDisplay } from "~/model/text.server";
 import { createUserIfNotExists } from "~/model/user.server";
 import { useEditorTiptap } from "~/tiptapProps/useEditorTiptap";
 import formatTime from "~/lib/formatTime";
@@ -33,8 +33,9 @@ export const loader: LoaderFunction = async ({ request }) => {
         return { error: text.error.message };
       }
     }
+    let monthlyData = await getMonthlyWordCount(user?.id);
     let current_time = Date.now();
-    return { text, user, NODE_ENV, history, current_time };
+    return { text, user, NODE_ENV, history, current_time, monthlyData };
   }
 };
 

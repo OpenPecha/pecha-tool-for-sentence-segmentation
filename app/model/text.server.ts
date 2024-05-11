@@ -320,3 +320,33 @@ export async function delete_modified({ id }: { id: string }) {
     },
   });
 }
+
+export async function getMonthlyWordCount(userId: string) {
+  const monthlyWordCounts = await db.text.groupBy({
+    by: ["modified_by_id", "modified_on"],
+    where: {
+      modified_by_id: userId,
+      reviewed: true,
+      modified_by: { id: userId },
+    },
+    _sum: {
+      word_count: true,
+    },
+  });
+
+  // Process the result to get the monthly word counts
+  const monthlyData = {};
+  monthlyWordCounts.forEach((entry) => {
+    const month = entry.modified_on?.getMonth() + 1; // Months are 0-indexed in JavaScript, so we add 1
+    const year = entry.modified_on?.getFullYear();
+    const monthKey = `${year}-${month.toString().padStart(2, "0")}`; // Format: "YYYY-MM"
+    monthlyData[monthKey] = entry._sum.word_count;
+  });
+  const filteredMonthlyWordCounts = Object.entries(monthlyData)
+    .filter(([month]) => month !== "undefined-NaN")
+    .reduce((obj, [key, val]) => {
+      obj[key] = val;
+      return obj;
+    }, {});
+  return filteredMonthlyWordCounts;
+}

@@ -1,4 +1,4 @@
-import { Link } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import TextInfo from "./TextInfo";
 import { HistoryItem } from "./History";
@@ -16,6 +16,7 @@ type userType = {
 };
 
 function Sidebar({ user, text }: userType) {
+  let { monthlyData } = useLoaderData();
   let [openMenu, setOpenMenu] = useState(false);
   let unreviewed_list = user?.text?.filter((r) => !r.reviewed);
   return (
@@ -48,8 +49,25 @@ function Sidebar({ user, text }: userType) {
             Reviewed : {user?.text?.filter((r) => r.reviewed)?.length}
           </TextInfo>
         </div>
+        <div className="dropdown dropdown-bottom">
+          <div tabIndex={0} role="button" className="btn m-1">
+            Show monthly wordcount
+          </div>
+          <ul
+            tabIndex={0}
+            className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 text-black"
+          >
+            {Object.entries(monthlyData).map(([month, wordCount]) => (
+              <li key={month}>
+                <strong>
+                  {month}: {wordCount}
+                </strong>
+              </li>
+            ))}
+          </ul>
+        </div>
         <div className="flex-1">
-          <div className="text-sm mb-2 font-bold">History</div>
+          <div className="text-sm mb-2 ml-2 font-bold">History</div>
           <div className="flex flex-col gap-2 max-h-fit overflow-y-auto pl-2">
             {user?.rejected_list?.map((text: historyText) => (
               <HistoryItem

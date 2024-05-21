@@ -17,6 +17,9 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
   const [user, annotator] = await Promise.all([
     await db.user.findUnique({
       where: { username: session! },
+      select: {
+        id: true,
+      },
     }),
     await db.user.findUnique({
       where: { username: params.slug! },
@@ -47,16 +50,7 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
   //check if user and admin are in same group
   if (annotator?.reviewer_id !== user?.id)
     return redirect("/?session=" + session);
-
-  let currentText = await db.text.findFirst({
-    where: {
-      reviewed: false,
-      modified_by_id: annotator?.id,
-      status: "APPROVED",
-      original_text: { not: "" },
-    },
-    orderBy: { id: "asc" },
-  });
+  let currentText;
   if (history) {
     currentText = await db.text.findFirst({
       where: {
@@ -64,6 +58,16 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
         id: parseInt(history),
         modified_by_id: annotator?.id,
       },
+    });
+  } else {
+    currentText = await db.text.findFirst({
+      where: {
+        reviewed: false,
+        modified_by_id: annotator?.id,
+        status: "APPROVED",
+        original_text: { not: "" },
+      },
+      orderBy: { id: "asc" },
     });
   }
   return { user, annotator, currentText };

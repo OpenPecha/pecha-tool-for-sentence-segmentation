@@ -43,7 +43,7 @@ Requires to have node and npm installed.
 
 set Environment variables as:
 
-- DATABASE_URL
+- ACCELERATED_DATABASE_URL
 - NODE_ENV
 
 <!-- This section must link to the docs which are in the root of the repository in /docs -->

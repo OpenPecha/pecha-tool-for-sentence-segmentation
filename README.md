@@ -25,7 +25,13 @@
 
 ## Description
 
-Pecha tool web app to segment word with spaces
+Pecha tool web app to segment word with spaces, this app is build on following TechStack
+
+Remix Run for full stack
+postgres for database
+prisma as a ORM
+DaisyUI for UI design
+Language used are JS,Python
 
 ## Install
 

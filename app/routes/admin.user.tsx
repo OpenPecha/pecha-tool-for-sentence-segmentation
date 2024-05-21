@@ -8,38 +8,48 @@ export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
   let session = url.searchParams.get("session");
   if (!session) return redirect("/error");
-  const [admin, users] = await Promise.all([
-    db.user.findUnique({
-      where: { username: session },
-      select: {
-        id: true,
-        nickname: true,
-        username: true,
-        role: true,
-        picture: true,
-      },
-    }),
-    db.user.findMany({
-      select: {
-        assigned_batch: true,
-        id: true,
-        nickname: true,
-        username: true,
-        role: true,
-        picture: true,
-        reviewer_id: true,
-        text: {
-          where: {
-            reviewed: { not: true },
-            original_text: { not: "" },
-            modified_on: { not: null },
-          },
-          select: { modified_on: true },
+  console.time("admins");
+  const admin = await db.user.findUnique({
+    where: { username: session },
+    select: {
+      id: true,
+      nickname: true,
+      username: true,
+      role: true,
+      picture: true,
+    },
+    cacheStrategy: {
+      ttl: 60,
+      swr: 10,
+    },
+  });
+  console.timeEnd("admins");
+  console.time("users");
+  const users = await db.user.findMany({
+    where: { reviewer_id: { not: null } },
+    select: {
+      assigned_batch: true,
+      id: true,
+      nickname: true,
+      username: true,
+      role: true,
+      picture: true,
+      reviewer_id: true,
+      text: {
+        where: {
+          reviewed: { not: true },
+          original_text: { not: "" },
+          modified_on: { not: null },
         },
+        select: { modified_on: true },
       },
-      orderBy: { reviewer_id: "asc" },
-    }),
-  ]);
+    },
+    cacheStrategy: {
+      ttl: 60,
+      swr: 10,
+    },
+  });
+  console.timeEnd("users");
   let sorted_user = users.map((user) => {
     return {
       username: user?.username,
@@ -66,6 +76,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         }
       });
   }
+
   return json({
     users: sorted_user,
   });

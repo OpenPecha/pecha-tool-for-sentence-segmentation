@@ -34,6 +34,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
         categories: true,
         allow_assign: true,
       },
+      cacheStrategy: {
+        ttl: 60,
+        swr: 10,
+      },
     }),
     getCategories(),
   ]);

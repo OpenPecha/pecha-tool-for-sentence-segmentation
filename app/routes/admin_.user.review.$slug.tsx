@@ -19,6 +19,11 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
       where: { username: session! },
       select: {
         id: true,
+        username: true,
+      },
+      cacheStrategy: {
+        ttl: 60,
+        swr: 10,
       },
     }),
     await db.user.findUnique({
@@ -37,13 +42,20 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
           orderBy: { updatedAt: "desc" },
           take,
         },
+        username: true,
         rejected_list: { select: { id: true } }, // Select specific fields or all (undefined)
         _count: {
-          select: { text: { where: { reviewed: true } }, rejected_list: true },
+          select: {
+            text: { where: { reviewed: true } },
+            rejected_list: true,
+          },
         },
         reviewer_id: true,
         id: true,
-        username: true,
+      },
+      cacheStrategy: {
+        ttl: 60,
+        swr: 10,
       },
     }),
   ]);

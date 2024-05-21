@@ -8,6 +8,10 @@ export async function getCategories() {
     select: {
       category: true,
     },
+    cacheStrategy: {
+      ttl: 60,
+      swr: 10,
+    },
   });
   const uniqueCategories = [...new Set(data.map((item) => item.category))];
   return uniqueCategories;

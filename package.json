@@ -11,7 +11,8 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@prisma/client": "5.4.2",
+    "@prisma/client": "^5.14.0",
+    "@prisma/extension-accelerate": "^1.0.0",
     "@remix-run/css-bundle": "2.1.0",
     "@remix-run/express": "2.8.1",
     "@remix-run/node": "2.1.0",

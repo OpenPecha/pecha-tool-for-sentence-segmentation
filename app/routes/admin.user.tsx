@@ -8,7 +8,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   let url = new URL(request.url);
   let session = url.searchParams.get("session");
   if (!session) return redirect("/error");
-  console.time("admins");
   const admin = await db.user.findUnique({
     where: { username: session },
     select: {
@@ -23,8 +22,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       swr: 10,
     },
   });
-  console.timeEnd("admins");
-  console.time("users");
   const users = await db.user.findMany({
     where: { reviewer_id: { not: null } },
     select: {
@@ -49,7 +46,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       swr: 10,
     },
   });
-  console.timeEnd("users");
   let sorted_user = users.map((user) => {
     return {
       username: user?.username,

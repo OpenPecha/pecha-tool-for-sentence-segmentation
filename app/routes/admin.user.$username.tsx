@@ -12,16 +12,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       where: { username },
       select: {
         id: true,
-        text: {
-          where: { reviewed: { not: true } },
-          select: {
-            batch: true,
-          },
-          distinct: ["batch"],
-        },
-        _count: {
-          select: { text: { where: { reviewed: true } }, rejected_list: true },
-        },
+
         reviewer: {
           select: {
             username: true,
@@ -41,8 +32,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     }),
     getCategories(),
   ]);
-  let currentBatch = user?.text.map((item) => item.batch);
-  return { user, categories, currentBatch };
+
+  return { user, categories };
 };
 
 export const action: ActionFunction = async ({ request }) => {

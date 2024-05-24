@@ -13,12 +13,13 @@ export const loader: LoaderFunction = async ({ request }) => {
   let { NODE_ENV } = process.env;
   let url = new URL(request.url);
   let session = url.searchParams.get("session");
+  let detail = url.searchParams.get("detail");
   let history = url.searchParams.get("history") || null;
 
   if (!session) {
     return redirect("https://pecha.tools");
   } else {
-    let user = await createUserIfNotExists(session);
+    let user = await createUserIfNotExists(session, detail);
     let text = null;
     if (user?.role === "ADMIN" || user?.role === "REVIEWER") {
       return redirect(`/admin/user/?session=${user.username}`);
@@ -70,6 +71,15 @@ export default function Index() {
       { method: "PATCH", action: "/api/text" }
     );
   };
+
+  let trashTask = async () => {
+    let id = text.id;
+    fetcher.submit(
+      { id, _action: "trash", userId: user.id },
+      { method: "PATCH", action: "/api/text" }
+    );
+  };
+
   let rejectTask = async () => {
     let id = text.id;
     fetcher.submit(
@@ -138,7 +148,13 @@ export default function Index() {
               title="REJECT (x)"
               shortCut="x"
             />
-
+            <Button
+              disabled={isButtonDisabled}
+              handleClick={trashTask}
+              value="TRASH"
+              title="TRASH (delete)"
+              shortCut="Delete"
+            />
             <Button
               disabled={isButtonDisabled}
               handleClick={undoTask}

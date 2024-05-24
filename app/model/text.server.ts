@@ -133,6 +133,21 @@ export async function getProgress() {
   }
 }
 
+export async function trashText(id: number, userId: string) {
+  let text = await db.text.update({
+    where: {
+      id,
+    },
+    data: {
+      status: "TRASHED",
+      rejected_by: { connect: { id: userId } },
+      modified_by: { disconnect: { id: userId } },
+      reviewed: false,
+    },
+  });
+  return text;
+}
+
 export async function rejectText(id: number, userId: string) {
   let text = await db.text.update({
     where: {

@@ -18,24 +18,30 @@ export const updatePicture = async (user: User) => {
   return user;
 };
 
-export const createUserIfNotExists = async (username: string) => {
-  const existingUser = await db.user.findUnique({
-    where: {
-      username: username,
-    },
-    include: {
-      text: {
+export const createUserIfNotExists = async (username: string, detail: any) => {
+  const existingUser = detail
+    ? await db.user.findUnique({
         where: {
-          AND: {
-            modified_text: { not: { equals: null } },
-          },
+          username: username,
         },
-        select: { id: true, reviewed: true, batch: true },
-        orderBy: { updatedAt: "desc" },
-      },
-      rejected_list: { select: { id: true, reviewed: true, batch: true } },
-    },
-  });
+        include: {
+          text: {
+            where: {
+              AND: {
+                modified_text: { not: { equals: null } },
+              },
+            },
+            select: { id: true, reviewed: true, status: true },
+            orderBy: { updatedAt: "desc" },
+          },
+          rejected_list: { select: { id: true, reviewed: true, status: true } },
+        },
+      })
+    : await db.user.findUnique({
+        where: {
+          username: username,
+        },
+      });
 
   if (existingUser) {
     try {

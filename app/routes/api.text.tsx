@@ -10,6 +10,7 @@ import {
   delete_modified,
   rejectText,
   saveText,
+  trashText,
   updateTextRejectCount,
 } from "~/model/text.server";
 import { updateUserAssign } from "~/model/user.server";
@@ -96,6 +97,9 @@ export const action: ActionFunction = async ({ request }) => {
     }
     if (action === "undo") {
       await delete_modified({ id });
+    }
+    if (action === "trash") {
+      return await trashText(parseInt(id), userId);
     }
     if (action === "change_category") {
       const category = formData.get("category") as string;

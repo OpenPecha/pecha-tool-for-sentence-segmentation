@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { Ignore, Right, Undo, Wrong } from "../assets/svgs";
+import { BiTrashAlt } from "react-icons/bi";
 interface ButtonProps {
   handleClick: () => void;
   value: string;
@@ -48,6 +49,10 @@ function Button({
       innerValue = <Undo />;
       classbtn += " bg-[--normal-btn]";
       break;
+    case "TRASH":
+      innerValue = <BiTrashAlt className={"h-[70px] w-auto fill-white"} />;
+      classbtn += " bg-[--trash-btn] ";
+      break;
   }
   return (
     <button
@@ -57,7 +62,7 @@ function Button({
       onClick={handleClick}
       ref={btnRef}
     >
-      {innerValue}
+      <span className="flex justify-center ">{innerValue}</span>
     </button>
   );
 }

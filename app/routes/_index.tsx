@@ -20,6 +20,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     return redirect("https://pecha.tools");
   } else {
     let user = await createUserIfNotExists(session, detail);
+    console.log(user);
     let text = null;
     if (user?.role === "ADMIN" || user?.role === "REVIEWER") {
       return redirect(`/admin/user/?session=${user.username}`);
@@ -29,11 +30,12 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
     if (user?.allow_assign) {
       text = await getTextToDisplay(user?.id, history);
-
       if (text?.error) {
         return { error: text.error.message };
       }
     }
+    console.log(history, text, user.id);
+
     let monthlyData = await getMonthlyWordCount(user?.id);
     let current_time = Date.now();
     return { text, user, NODE_ENV, history, current_time, monthlyData };

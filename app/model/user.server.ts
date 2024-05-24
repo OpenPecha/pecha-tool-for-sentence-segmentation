@@ -41,6 +41,11 @@ export const createUserIfNotExists = async (username: string, detail: any) => {
         where: {
           username: username,
         },
+        include: {
+          rejected_list: {
+            select: { id: true, reviewed: true, status: true },
+          },
+        },
       });
 
   if (existingUser) {

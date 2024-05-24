@@ -95,13 +95,15 @@ export default function Index() {
       toast.success("saved");
     }
   }, [fetcher?.data]);
-
+  let showrejectmessage = user?.rejected_list?.some(
+    (item) => item.status === "REJECTED"
+  );
   return (
     <div className="flex flex-col md:flex-row">
       <Sidebar user={user} text={text} />
 
       <div className="flex-1 flex items-center flex-col md:mt-[10vh] ">
-        {user?.rejected_list?.length > 0 && (
+        {showrejectmessage && (
           <div className="text-red-500 flex items-center gap-2 font-bold fixed top-[70px]">
             <img
               src="/assets/notification.gif"

@@ -1,12 +1,12 @@
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import TextInfo from "./TextInfo";
 import { HistoryItem } from "./History";
 import { Cross, Crossburger, Hamburger, Tick } from "../assets/svgs";
 import type { User, Text } from "@prisma/client";
 import { toolname } from "~/const";
 import { BiTrash } from "react-icons/bi";
-import { Checkbox, ToggleSwitch } from "flowbite-react";
+import { Checkbox } from "flowbite-react";
 
 export type historyText = {
   id: number;

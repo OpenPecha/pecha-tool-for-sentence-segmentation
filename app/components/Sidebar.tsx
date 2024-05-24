@@ -87,13 +87,14 @@ function Sidebar({ user, text }: userType) {
         </button>
         <dialog id="my_modal_2" className="modal">
           <div className="modal-box text-black">
-            {Object.entries(monthlyData)?.map(([month, wordCount]) => (
-              <li key={month}>
-                <strong>
-                  {month}: {wordCount}
-                </strong>
-              </li>
-            ))}
+            {!!monthlyData &&
+              Object.entries(monthlyData)?.map(([month, wordCount]) => (
+                <li key={month}>
+                  <strong>
+                    {month}: {wordCount}
+                  </strong>
+                </li>
+              ))}
           </div>
           <form method="dialog" className="modal-backdrop">
             <button>close</button>

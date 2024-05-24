@@ -112,7 +112,7 @@ export async function getTextToDisplay(userId: string, history: any) {
       id: "asc",
     },
   });
-  if (!!unassignedWork) {
+  if (!unassignedWork) {
     return { error: { message: "no text available" } };
   }
   let assignText = await db.text.update({

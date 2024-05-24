@@ -48,6 +48,8 @@ export const action: ActionFunction = async ({ request }) => {
 
   let url = new URL(headerUrl);
   let detail = url.searchParams.get("detail");
+  let trashed = url.searchParams.get("trashed");
+
   let session = url.searchParams.get("session") as string;
   let history = url.searchParams.get("history");
   let adminhistory = url.searchParams.get("adminhistory");
@@ -70,13 +72,23 @@ export const action: ActionFunction = async ({ request }) => {
       time
     );
     if (history) {
+      let url = `/?session=${session}`;
       if (detail) {
-        return redirect(`/?session=${session}&detail=true`);
+        url += "&detail=true";
       }
-      return redirect(`/?session=${session}`);
+      if (trashed) {
+        url += "&trashed=true";
+      }
+      return redirect(url);
     }
     if (adminhistory) {
       let newURL = url.pathname + "?session=" + session;
+      if (detail) {
+        newURL += "&detail=true";
+      }
+      if (trashed) {
+        newURL += "&trashed=true";
+      }
       return redirect(newURL);
     }
     return { status: "ok", text };
@@ -95,6 +107,12 @@ export const action: ActionFunction = async ({ request }) => {
       }
       if (adminhistory) {
         let newURL = url.pathname + "?session=" + session;
+        if (detail) {
+          newURL += "&detail=true";
+        }
+        if (trashed) {
+          newURL += "&trashed=true";
+        }
         return redirect(newURL);
       }
       return text;
@@ -103,7 +121,8 @@ export const action: ActionFunction = async ({ request }) => {
       await delete_modified({ id });
     }
     if (action === "trash") {
-      return await trashText(parseInt(id), userId);
+      let isReviewer = formData.get("isReviewer") as string;
+      await trashText(parseInt(id), userId, !!isReviewer);
     }
     if (action === "change_category") {
       const category = formData.get("category") as string;

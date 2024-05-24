@@ -21,7 +21,7 @@ type userType = {
 function Sidebar({ user, text }: userType) {
   let { monthlyData } = useLoaderData();
   let [openMenu, setOpenMenu] = useState(false);
-  let unreviewed_list = user?.text?.filter((r) => !r.reviewed);
+  let unreviewed_list = user?.text;
   let [showTrashed, setShowTrashed] = useState(false);
   let [param, setParam] = useSearchParams();
 
@@ -104,7 +104,6 @@ function Sidebar({ user, text }: userType) {
             <div className="text-sm mb-2 ml-2 font-bold">History</div>
             <div className="flex flex-col gap-2 max-h-fit overflow-y-auto pl-2">
               {user?.rejected_list?.map((text: historyText) => {
-                if (text.status === "TRASHED" && !showTrashed) return null;
                 return (
                   <HistoryItem
                     user={user}
@@ -117,22 +116,29 @@ function Sidebar({ user, text }: userType) {
                 );
               })}
 
-              {unreviewed_list?.map((text: historyText) => (
-                <HistoryItem
-                  user={user}
-                  id={text?.id}
-                  key={text.id + "-accepted"}
-                  onClick={() => setOpenMenu(false)}
-                  disabled={text?.reviewed}
-                  currentId={29}
-                  icon={
-                    <div className="flex items-center justify-between flex-1">
-                      <Tick />
-                      {text?.reviewed && <span>reviewed</span>}
-                    </div>
-                  }
-                />
-              ))}
+              {unreviewed_list?.map((text: historyText) => {
+                if (text.status === "TRASHED" && !showTrashed) return null;
+                return (
+                  <HistoryItem
+                    user={user}
+                    id={text?.id}
+                    key={text.id + "-accepted"}
+                    onClick={() => setOpenMenu(false)}
+                    disabled={text?.reviewed}
+                    currentId={29}
+                    icon={
+                      text.status === "TRASHED" ? (
+                        <BiTrash />
+                      ) : (
+                        <div className="flex items-center justify-between flex-1">
+                          <Tick />
+                          {text?.reviewed && <span>reviewed</span>}
+                        </div>
+                      )
+                    }
+                  />
+                );
+              })}
             </div>
           </div>
         )}

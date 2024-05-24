@@ -1,5 +1,5 @@
 import { DataFunctionArgs, redirect } from "@remix-run/node";
-import { useFetcher } from "@remix-run/react";
+import { useFetcher, useSearchParams } from "@remix-run/react";
 import { useLoaderData } from "react-router";
 import AdminHistorySidebar from "~/components/AdminHistorySidebar";
 import EditorContainer from "~/components/Editor";
@@ -11,54 +11,72 @@ import insertHTMLonText from "~/lib/insertHtmlOnText";
 export const loader = async ({ request, params }: DataFunctionArgs) => {
   let url = new URL(request.url);
   let session = url.searchParams.get("session");
+  let trashed = url.searchParams.get("trashed");
+  let detail = url.searchParams.get("detail");
+
   let history = url.searchParams.get("adminhistory");
   let load = url.searchParams.get("load") as string;
   let take = load ? parseInt(load) : 20;
-  const [user, annotator] = await Promise.all([
-    await db.user.findUnique({
-      where: { username: session! },
-      select: {
-        id: true,
-        username: true,
-      },
-      cacheStrategy: {
-        ttl: 60,
-        swr: 10,
-      },
-    }),
-    await db.user.findUnique({
-      where: { username: params.slug! },
-      select: {
-        text: {
-          where: {
-            status: "APPROVED",
-            reviewed: true,
-            original_text: { not: "" },
+  const user = await db.user.findUnique({
+    where: { username: session! },
+    select: {
+      id: true,
+      username: true,
+    },
+    cacheStrategy: {
+      ttl: 80,
+      swr: 20,
+    },
+  });
+  const annotator = detail
+    ? await db.user.findUnique({
+        where: { username: params.slug! },
+        select: {
+          text: {
+            where: {
+              status: "APPROVED",
+              original_text: { not: "" },
+            },
+            select: {
+              id: true,
+              reviewed: true,
+              status: true,
+            },
+            orderBy: { updatedAt: "desc" },
+            take,
           },
-          select: {
-            id: true,
-            reviewed: true,
+          username: true,
+          rejected_list: { select: { id: true, status: true } }, // Select specific fields or all (undefined)
+          _count: {
+            select: {
+              text: { where: { reviewed: true } },
+              rejected_list: true,
+            },
           },
-          orderBy: { updatedAt: "desc" },
-          take,
+          reviewer_id: true,
+          id: true,
         },
-        username: true,
-        rejected_list: { select: { id: true } }, // Select specific fields or all (undefined)
-        _count: {
-          select: {
-            text: { where: { reviewed: true } },
-            rejected_list: true,
-          },
+        cacheStrategy: {
+          ttl: 60,
+          swr: 10,
         },
-        reviewer_id: true,
-        id: true,
-      },
-      cacheStrategy: {
-        ttl: 60,
-        swr: 10,
-      },
-    }),
-  ]);
+      })
+    : await db.user.findUnique({
+        where: { username: params.slug! },
+      });
+
+  let trashedtask = trashed
+    ? await db.text.findMany({
+        where: {
+          OR: [
+            { modified_by: { username: params.slug! } },
+            { reviewed_by: { username: session! } },
+          ],
+          status: "TRASHED",
+        },
+        orderBy: { updatedAt: "desc" },
+      })
+    : [];
   //check if user and admin are in same group
   if (annotator?.reviewer_id !== user?.id)
     return redirect("/?session=" + session);
@@ -66,9 +84,11 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
   if (history) {
     currentText = await db.text.findFirst({
       where: {
-        status: "APPROVED",
         id: parseInt(history),
-        modified_by_id: annotator?.id,
+        OR: [
+          { modified_by_id: annotator?.id, status: "APPROVED" },
+          { modified_by_id: annotator?.id, status: "TRASHED" },
+        ],
       },
     });
   } else {
@@ -82,7 +102,7 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
       orderBy: { id: "asc" },
     });
   }
-  return { user, annotator, currentText };
+  return { user, annotator, currentText, trashedtask };
 };
 
 function UserDetail() {
@@ -90,7 +110,9 @@ function UserDetail() {
   const { annotator, user, currentText } = useLoaderData() as any;
   let show = currentText?.reviewed
     ? JSON.parse(currentText?.reviewed_text!)?.join("\n")
-    : currentText && JSON.parse(currentText?.modified_text!)?.join("\n");
+    : !!currentText?.modified_text
+    ? JSON.parse(currentText?.modified_text!)?.join("\n")
+    : currentText?.original_text;
   let newText = currentText ? insertHTMLonText(show) : "";
   let editor = useEditorTiptap();
 
@@ -122,7 +144,13 @@ function UserDetail() {
       { method: "PATCH", action: "/api/text" }
     );
   };
-
+  let trashTask = async () => {
+    let id = currentText?.id!;
+    fetcher.submit(
+      { id, _action: "trash", userId: user.id, isReviewer: true },
+      { method: "PATCH", action: "/api/text" }
+    );
+  };
   let isButtonDisabled = !show || fetcher.state !== "idle";
   return (
     <div className="flex flex-col md:flex-row">
@@ -162,6 +190,13 @@ function UserDetail() {
                 value="REJECT"
                 title="REJECT (x)"
                 shortCut="x"
+              />
+              <Button
+                disabled={isButtonDisabled}
+                handleClick={trashTask}
+                value="TRASH"
+                title="TRASH (delete)"
+                shortCut="Delete"
               />
             </div>
           </>

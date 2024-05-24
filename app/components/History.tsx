@@ -1,4 +1,5 @@
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import { FiTrash } from "react-icons/fi";
 interface HistoryItemProps {
   id: number;
   user: any;
@@ -13,6 +14,7 @@ interface AdminHistoryItemProps {
   icon: JSX.Element;
   reviewed: boolean;
   selectedId: number;
+  trashed: boolean;
 }
 function HistoryItem({
   id,
@@ -53,6 +55,7 @@ function AdminHistoryItem({
   icon,
   reviewed,
   selectedId,
+  trashed,
 }: AdminHistoryItemProps) {
   return (
     <div
@@ -64,6 +67,7 @@ function AdminHistoryItem({
     >
       {id}
       {reviewed ? icon : null}
+      {trashed ? <FiTrash /> : null}
     </div>
   );
 }

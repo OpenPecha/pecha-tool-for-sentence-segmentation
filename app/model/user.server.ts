@@ -27,14 +27,17 @@ export const createUserIfNotExists = async (username: string, detail: any) => {
         include: {
           text: {
             where: {
-              AND: {
-                modified_text: { not: { equals: null } },
-              },
+              reviewed: false,
             },
             select: { id: true, reviewed: true, status: true },
             orderBy: { updatedAt: "desc" },
           },
-          rejected_list: { select: { id: true, reviewed: true, status: true } },
+          rejected_list: {
+            where: {
+              status: "REJECTED",
+            },
+            select: { id: true, reviewed: true, status: true },
+          },
         },
       })
     : await db.user.findUnique({

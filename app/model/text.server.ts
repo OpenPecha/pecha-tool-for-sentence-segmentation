@@ -95,6 +95,8 @@ export async function getTextToDisplay(userId: string, history: any) {
       modified_by_id: userId,
       modified_text: null,
       original_text: { not: "" },
+      status: { not: "TRASHED" },
+      OR: [{ reviewed: false }, { reviewed: null }],
     },
   });
   if (RemainingWork) return RemainingWork;
@@ -104,6 +106,7 @@ export async function getTextToDisplay(userId: string, history: any) {
       modified_by_id: null,
       modified_text: null,
       original_text: { not: "" },
+      OR: [{ status: "PENDING" }, { status: null }],
     },
     orderBy: {
       id: "asc",
@@ -133,16 +136,20 @@ export async function getProgress() {
   }
 }
 
-export async function trashText(id: number, userId: string) {
+export async function trashText(
+  id: number,
+  userId: string,
+  isReviewer: boolean
+) {
   let text = await db.text.update({
     where: {
       id,
     },
     data: {
       status: "TRASHED",
-      rejected_by: { connect: { id: userId } },
-      modified_by: { disconnect: { id: userId } },
-      reviewed: false,
+      modified_by: { connect: { id: userId } },
+      modified_text: null,
+      reviewed: !!isReviewer,
     },
   });
   return text;
@@ -346,7 +353,7 @@ export async function getMonthlyWordCount(userId: string) {
   });
   const monthlyData = {};
   data.forEach((entry) => {
-    const monthYear = entry.modified_on.toISOString().substr(0, 7); // Extract month and year (format: "YYYY-MM")
+    const monthYear = entry?.modified_on?.toISOString().substr(0, 7); // Extract month and year (format: "YYYY-MM")
     if (!monthlyData[monthYear]) {
       monthlyData[monthYear] = 0;
     }

@@ -112,6 +112,9 @@ export async function getTextToDisplay(userId: string, history: any) {
       id: "asc",
     },
   });
+  if (!!unassignedWork) {
+    throw new Error("No work available");
+  }
   let assignText = await db.text.update({
     where: {
       id: unassignedWork?.id,

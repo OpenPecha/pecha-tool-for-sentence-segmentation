@@ -47,6 +47,7 @@ export const action: ActionFunction = async ({ request }) => {
   let headerUrl = request.headers.get("referer") as string;
 
   let url = new URL(headerUrl);
+  let detail = url.searchParams.get("detail");
   let session = url.searchParams.get("session") as string;
   let history = url.searchParams.get("history");
   let adminhistory = url.searchParams.get("adminhistory");
@@ -69,6 +70,9 @@ export const action: ActionFunction = async ({ request }) => {
       time
     );
     if (history) {
+      if (detail) {
+        return redirect(`/?session=${session}&detail=true`);
+      }
       return redirect(`/?session=${session}`);
     }
     if (adminhistory) {
@@ -108,6 +112,9 @@ export const action: ActionFunction = async ({ request }) => {
       return text;
     }
     if (history) {
+      if (detail) {
+        return redirect(`/?session=${session}&detail=true`);
+      }
       return redirect(`/?session=${session}`);
     }
   }

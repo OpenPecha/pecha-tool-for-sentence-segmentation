@@ -60,19 +60,18 @@ function Sidebar({ user, text }: userType) {
             </Link>
           )}
           <TextInfo>User : {user?.username.split("@")[0]}</TextInfo>
+          <TextInfo>text id :{text?.id}</TextInfo>
           <TextInfo>
             Show detail :{" "}
             <Checkbox checked={showDetail} onChange={handleShowDetail} />
           </TextInfo>
           {showDetail && (
             <>
-              <TextInfo>text id :{text?.id}</TextInfo>
               <TextInfo>Approved : {user?.text?.length}</TextInfo>
               <TextInfo>Rejected :{user?.rejected_list?.length}</TextInfo>
               <TextInfo>
                 Reviewed : {user?.text?.filter((r) => r.reviewed)?.length}
               </TextInfo>
-
               <TextInfo>
                 Show trashed :{" "}
                 <Checkbox checked={showTrashed} onChange={handleTrashView} />

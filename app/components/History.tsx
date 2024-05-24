@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 interface HistoryItemProps {
   id: number;
   user: any;
@@ -23,6 +23,11 @@ function HistoryItem({
   currentId,
 }: HistoryItemProps) {
   const { history } = useLoaderData();
+  const [param] = useSearchParams();
+  let showDetail = param.get("detail") === "true" ?? false;
+  let link = showDetail
+    ? `/?session=${user.username}&history=${id}&detail=true`
+    : `/?session=${user.username}&history=${id}`;
   if (disabled)
     return (
       <div className="px-2 text-white flex gap-3 cursor-pointer hover:border-2 border-purple-800">
@@ -31,7 +36,7 @@ function HistoryItem({
     );
   return (
     <Link
-      to={`/?session=${user.username}&history=${id}`}
+      to={link}
       className={`px-2 flex gap-3 items-center ${
         history == id ? "bg-gray-700" : ""
       }`}

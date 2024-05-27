@@ -2,6 +2,7 @@ services:
   - type: web
     name: sentence-segmentation-2
     env: node
+    region: Singapore
     plan: standard
     # Update the following line with your Strapi GitHub repo
     repo: https://github.com/OpenPecha/pecha-tool-for-sentence-segmentation
@@ -21,3 +22,4 @@ services:
 databases:
   - name: sentence-segmentation-pg-2
     plan: standard
+    region: Singapore

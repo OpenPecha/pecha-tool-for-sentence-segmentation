@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: sentence-segmentation
+    name: sentence-segmentation-2
     env: node
     plan: standard
     # Update the following line with your Strapi GitHub repo
@@ -19,5 +19,5 @@ services:
           property: connectionString
 
 databases:
-  - name: sentence-segmentation-pg
+  - name: sentence-segmentation-pg-2
     plan: standard

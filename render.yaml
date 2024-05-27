@@ -2,7 +2,7 @@ services:
   - type: web
     name: sentence-segmentation
     env: node
-    plan: starter
+    plan: standard
     # Update the following line with your Strapi GitHub repo
     repo: https://github.com/OpenPecha/pecha-tool-for-sentence-segmentation
     branch: main
@@ -20,4 +20,4 @@ services:
 
 databases:
   - name: sentence-segmentation-pg
-    plan: starter
+    plan: standard

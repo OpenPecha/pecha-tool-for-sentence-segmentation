@@ -17,10 +17,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       role: true,
       picture: true,
     },
-    cacheStrategy: {
-      ttl: 60,
-      swr: 10,
-    },
   });
   const users = await db.user.findMany({
     where: { reviewer_id: { not: null } },
@@ -40,10 +36,6 @@ export const loader: LoaderFunction = async ({ request }) => {
         },
         select: { modified_on: true },
       },
-    },
-    cacheStrategy: {
-      ttl: 60,
-      swr: 10,
     },
   });
   let sorted_user = users.map((user) => {

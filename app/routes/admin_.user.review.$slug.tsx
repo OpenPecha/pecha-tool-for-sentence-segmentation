@@ -23,10 +23,6 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
       id: true,
       username: true,
     },
-    cacheStrategy: {
-      ttl: 80,
-      swr: 20,
-    },
   });
   const annotator = detail
     ? await db.user.findUnique({
@@ -56,10 +52,7 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
           reviewer_id: true,
           id: true,
         },
-        cacheStrategy: {
-          ttl: 60,
-          swr: 10,
-        },
+       
       })
     : await db.user.findUnique({
         where: { username: params.slug! },

@@ -22,7 +22,7 @@ const Header = (props: {
             }}
             className="z-10 block rounded-sm   bg-white p-1.5 shadow-sm dark:border-strokedark dark:bg-boxdark lg:hidden"
           >
-          {props.sidebarOpen?<Cross/>:<Hamburger />}
+            {props.sidebarOpen ? <Cross /> : <Hamburger />}
           </button>
           {/* <!-- Hamburger Toggle BTN --> */}
 
@@ -37,7 +37,11 @@ const Header = (props: {
         </div>
 
         <div className="hidden sm:block">
-          <Progress max={progress.total} current={progress.reviewed} />
+          <Progress
+            accepted={progress.accepted}
+            max={progress.total}
+            current={progress.reviewed}
+          />
         </div>
 
         <div className="flex items-center gap-3 2xsm:gap-7">

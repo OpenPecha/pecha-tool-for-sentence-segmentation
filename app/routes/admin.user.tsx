@@ -65,9 +65,17 @@ export const loader: LoaderFunction = async ({ request }) => {
       });
   }
 
-  return json({
-    users: sorted_user,
-  });
+  return json(
+    {
+      users: sorted_user,
+    },
+    {
+      headers: {
+        "Cache-Control":
+          "public, max-age=60, s-maxage=60, stale-while-revalidate=60",
+      },
+    }
+  );
 };
 
 export const meta = () => {

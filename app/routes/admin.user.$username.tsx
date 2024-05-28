@@ -1,4 +1,4 @@
-import { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { ActionFunction, LoaderFunction, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import AboutUser from "~/components/admin/AboutUser";
 import { removeBatchFromUser } from "~/model/user.server";
@@ -29,7 +29,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     getCategories(),
   ]);
 
-  return { user, categories };
+  return json(
+    { user, categories },
+    {
+      status: 200,
+      headers: {
+        "Cache-Control": "public, max-age=60, s-maxage=60",
+      },
+    }
+  );
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -43,7 +51,6 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 function User() {
-  const fetcher = useFetcher();
   let { user } = useLoaderData();
 
   return <AboutUser selectedUser={user} />;

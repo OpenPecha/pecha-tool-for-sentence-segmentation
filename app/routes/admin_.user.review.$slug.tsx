@@ -8,6 +8,8 @@ import { db } from "~/service/db.server";
 import { useEditorTiptap } from "~/tiptapProps/useEditorTiptap";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
 
+let reviewer = null;
+
 export const loader = async ({ request, params }: DataFunctionArgs) => {
   let url = new URL(request.url);
   let session = url.searchParams.get("session");
@@ -17,13 +19,15 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
   let history = url.searchParams.get("adminhistory");
   let load = url.searchParams.get("load") as string;
   let take = load ? parseInt(load) : 20;
-  const user = await db.user.findUnique({
-    where: { username: session! },
-    select: {
-      id: true,
-      username: true,
-    },
-  });
+  const user = !!reviewer
+    ? reviewer
+    : await db.user.findUnique({
+        where: { username: session! },
+        select: {
+          id: true,
+          username: true,
+        },
+      });
   const annotator = detail
     ? await db.user.findUnique({
         where: { username: params.slug! },
@@ -52,7 +56,6 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
           reviewer_id: true,
           id: true,
         },
-       
       })
     : await db.user.findUnique({
         where: { username: params.slug! },

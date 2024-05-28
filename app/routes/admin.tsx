@@ -14,10 +14,17 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   if (user?.role === "ADMIN" || user?.role === "REVIEWER") {
     let progress = await getProgress();
-    return json({
-      user,
-      progress,
-    });
+    return json(
+      {
+        user,
+        progress,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=3600",
+        },
+      }
+    );
   }
   return null;
 };

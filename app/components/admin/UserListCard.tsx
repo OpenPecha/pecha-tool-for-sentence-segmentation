@@ -63,7 +63,7 @@ const UserListCard = () => {
       )}
       <div>
         {list.map((user: any) => (
-          <EachUser user={user} key={user} />
+          <EachUser user={user} key={user.username} />
         ))}
       </div>
     </div>
@@ -72,9 +72,7 @@ const UserListCard = () => {
 
 function EachUser({ user }) {
   const current_user = useOutletContext();
-
   let remaining_count = user?.text;
-
   let Time = user?.modified_on;
   let time_ago = timeAgo(Time?.modified_on);
   if (!user) return null;

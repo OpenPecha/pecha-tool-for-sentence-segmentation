@@ -33,6 +33,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           reviewed: { not: true },
           original_text: { not: "" },
           modified_on: { not: null },
+          status: { not: "TRASHED" },
         },
         select: { modified_on: true },
       },

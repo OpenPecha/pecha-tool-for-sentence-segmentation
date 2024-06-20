@@ -54,6 +54,16 @@ model Text {
   word_count     Int?      @default(0)
 }
 
+model System {
+  id     String     @unique @default(uuid())
+  status AppStatus?
+}
+
+enum AppStatus {
+  Activated
+  Paused
+}
+
 enum Status {
   PENDING
   APPROVED

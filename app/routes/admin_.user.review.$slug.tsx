@@ -130,14 +130,14 @@ function UserDetail() {
         },
       })
       .then((response) => {
-        setIsLoading(false);
         revalidate.revalidate();
       })
       .catch((error) => {
-        setIsLoading(false);
-
         console.error("Error saving text:", error);
         revalidate.revalidate();
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }
 
@@ -156,15 +156,14 @@ function UserDetail() {
         },
       })
       .then((response) => {
-        setIsLoading(false);
-
         revalidate.revalidate();
       })
       .catch((error) => {
-        setIsLoading(false);
-
         revalidate.revalidate();
         console.error("Error rejecting task:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }
   function trashTask() {
@@ -183,15 +182,14 @@ function UserDetail() {
         },
       })
       .then((response) => {
-        setIsLoading(false);
-
         revalidate.revalidate();
       })
       .catch((error) => {
-        setIsLoading(false);
-
         revalidate.revalidate();
         console.error("Error trashing task:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }
   let isButtonDisabled = !show || revalidate.state !== "idle" || isLoading;

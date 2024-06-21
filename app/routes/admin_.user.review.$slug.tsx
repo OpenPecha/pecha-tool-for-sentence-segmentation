@@ -109,9 +109,8 @@ function UserDetail() {
   let newText = currentText ? insertHTMLonText(show) : "";
   const [isLoading, setIsLoading] = useState(false);
   let editor = useEditorTiptap();
-
   if (!editor) return null;
-
+  let submit_url = "https://sentence.pecha.tools/api/text";
   function saveText() {
     setIsLoading(true);
     let current_text = editor!.getText();
@@ -124,11 +123,7 @@ function UserDetail() {
     formData.append("userId", annotator.id);
     formData.append("adminId", user?.id);
     axios
-      .post("/api/text", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .post(submit_url, formData)
       .then((response) => {
         revalidate.revalidate();
       })
@@ -150,11 +145,7 @@ function UserDetail() {
     formData.append("_action", "reject");
     formData.append("admin", true);
     axios
-      .patch("/api/text", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .patch(submit_url, formData)
       .then((response) => {
         revalidate.revalidate();
       })
@@ -176,11 +167,7 @@ function UserDetail() {
     formData.append("userId", user.id);
     formData.append("isReviewer", true);
     axios
-      .patch("/api/text", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      .patch(submit_url, formData)
       .then((response) => {
         revalidate.revalidate();
       })

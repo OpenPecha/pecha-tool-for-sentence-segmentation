@@ -164,7 +164,7 @@ function UserDetail() {
                 transcript
                 {isButtonDisabled && (
                   <div className="w-full flex justify-center items-center">
-                    saving
+                    {submit_fetcher.state}
                   </div>
                 )}
               </div>

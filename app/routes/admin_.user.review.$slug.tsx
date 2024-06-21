@@ -122,14 +122,16 @@ function UserDetail() {
     formData.append("reviewed_text", modified_text);
     formData.append("userId", annotator.id);
     formData.append("adminId", user?.id);
-    axios
-      .post(submit_url, formData)
-      .then((response) => {
+
+    fetch(submit_url, {
+      body: formData,
+      method: "POST",
+    })
+      .then((res) => {
         revalidate.revalidate();
       })
       .catch((error) => {
         console.error("Error saving text:", error);
-        revalidate.revalidate();
       })
       .finally(() => {
         setIsLoading(false);
@@ -144,14 +146,16 @@ function UserDetail() {
     formData.append("userId", annotator.id);
     formData.append("_action", "reject");
     formData.append("admin", true);
-    axios
-      .patch(submit_url, formData)
-      .then((response) => {
+
+    fetch(submit_url, {
+      body: formData,
+      method: "PATCH",
+    })
+      .then((res) => {
         revalidate.revalidate();
       })
       .catch((error) => {
-        revalidate.revalidate();
-        console.error("Error rejecting task:", error);
+        console.error("Error saving text:", error);
       })
       .finally(() => {
         setIsLoading(false);
@@ -166,14 +170,16 @@ function UserDetail() {
     formData.append("_action", "trash");
     formData.append("userId", user.id);
     formData.append("isReviewer", true);
-    axios
-      .patch(submit_url, formData)
-      .then((response) => {
+
+    fetch(submit_url, {
+      body: formData,
+      method: "PATCH",
+    })
+      .then((res) => {
         revalidate.revalidate();
       })
       .catch((error) => {
-        revalidate.revalidate();
-        console.error("Error trashing task:", error);
+        console.error("Error saving text:", error);
       })
       .finally(() => {
         setIsLoading(false);

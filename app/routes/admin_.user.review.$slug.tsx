@@ -131,6 +131,8 @@ function UserDetail() {
         revalidate.revalidate();
       })
       .catch((error) => {
+        revalidate.revalidate();
+
         console.error("Error saving text:", error);
       })
       .finally(() => {
@@ -156,6 +158,7 @@ function UserDetail() {
       })
       .catch((error) => {
         console.error("Error saving text:", error);
+        revalidate.revalidate();
       })
       .finally(() => {
         setIsLoading(false);
@@ -179,6 +182,8 @@ function UserDetail() {
         revalidate.revalidate();
       })
       .catch((error) => {
+        revalidate.revalidate();
+
         console.error("Error saving text:", error);
       })
       .finally(() => {

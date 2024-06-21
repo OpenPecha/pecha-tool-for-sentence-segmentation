@@ -6,7 +6,7 @@ import Button from "~/components/Button";
 import { db } from "~/service/db.server";
 import { useEditorTiptap } from "~/tiptapProps/useEditorTiptap";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 export const loader = async ({ request, params }: DataFunctionArgs) => {
   let url = new URL(request.url);
   let session = url.searchParams.get("session");
@@ -98,6 +98,7 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
 
 function UserDetail() {
   const revalidate = useRevalidator();
+  let interval = useRef();
   const { annotator, user, currentText } = useLoaderData();
   const submit_fetcher = useFetcher();
   let show = currentText?.reviewed
@@ -107,13 +108,22 @@ function UserDetail() {
     : currentText?.original_text;
   let newText = currentText ? insertHTMLonText(show) : "";
   let editor = useEditorTiptap();
+
+  useEffect(() => {
+    if (interval.current) {
+      console.log(interval.current);
+      clearTimeout(interval.current);
+    }
+  }, [submit_fetcher?.data]);
   if (!editor) return null;
   let submit_url = "/api/text";
   function saveText() {
     let current_text = editor!.getText();
     let savedModified = current_text.replaceAll("↩️", "").split("\n");
     let modified_text = JSON.stringify(savedModified);
-
+    interval.current = setTimeout(() => {
+      revalidate.revalidate();
+    }, 4000);
     let formData = new FormData();
     formData.append("id", currentText?.id!);
     formData.append("reviewed_text", modified_text);
@@ -131,6 +141,9 @@ function UserDetail() {
     formData.append("userId", annotator.id);
     formData.append("_action", "reject");
     formData.append("admin", true);
+    interval.current = setTimeout(() => {
+      revalidate.revalidate();
+    }, 4000);
     submit_fetcher.submit(formData, {
       method: "PATCH",
       action: submit_url,
@@ -143,11 +156,15 @@ function UserDetail() {
     formData.append("_action", "trash");
     formData.append("userId", user.id);
     formData.append("isReviewer", true);
+    interval.current = setTimeout(() => {
+      revalidate.revalidate();
+    }, 4000);
     submit_fetcher.submit(formData, {
       method: "PATCH",
       action: submit_url,
     });
   }
+
   let isButtonDisabled = !show || submit_fetcher.state !== "idle";
   return (
     <div className="flex flex-col md:flex-row">

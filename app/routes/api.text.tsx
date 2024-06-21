@@ -44,7 +44,8 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  let headerUrl = request.headers.get("referer") as string;
+  let headerUrl =
+    request.headers.get("referer") || ("http://localhost:3000" as string);
 
   let url = new URL(headerUrl);
   let detail = url.searchParams.get("detail");

@@ -110,7 +110,7 @@ function UserDetail() {
   const [isLoading, setIsLoading] = useState(false);
   let editor = useEditorTiptap();
   if (!editor) return null;
-  let submit_url = "https://sentence.pecha.tools/api/text";
+  let submit_url = "/api/text";
   function saveText() {
     setIsLoading(true);
     let current_text = editor!.getText();

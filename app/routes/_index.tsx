@@ -17,9 +17,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   let detail = url.searchParams.get("detail");
   let history = url.searchParams.get("history") || null;
   let activeWork = await db.system.findFirst();
-  if (activeWork?.status === "Activated") {
-    return { activeWork };
-  }
+
   if (!session) {
     return redirect("https://pecha.tools");
   } else {
@@ -30,6 +28,9 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
     if (user?.role === "OWNER") {
       return redirect(`/owner?session=${user.username}`);
+    }
+    if (activeWork?.status === "Activated") {
+      return { activeWork };
     }
     if (user?.allow_assign) {
       text = await getTextToDisplay(user?.id, history);

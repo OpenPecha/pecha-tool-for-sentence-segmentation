@@ -23,6 +23,7 @@
     "@tiptap/react": "2.1.12",
     "@tiptap/starter-kit": "2.1.12",
     "@uidotdev/usehooks": "2.4.0",
+    "axios": "^1.7.2",
     "chart.js": "^4.4.0",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",

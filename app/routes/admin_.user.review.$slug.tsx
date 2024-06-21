@@ -1,13 +1,11 @@
 import { DataFunctionArgs, redirect } from "@remix-run/node";
-import { useRevalidator } from "@remix-run/react";
-import { useLoaderData } from "react-router";
+import { useFetcher, useRevalidator, useLoaderData } from "@remix-run/react";
 import AdminHistorySidebar from "~/components/AdminHistorySidebar";
 import EditorContainer from "~/components/Editor";
 import Button from "~/components/Button";
 import { db } from "~/service/db.server";
 import { useEditorTiptap } from "~/tiptapProps/useEditorTiptap";
 import insertHTMLonText from "~/lib/insertHtmlOnText";
-import axios from "axios";
 import { useState } from "react";
 export const loader = async ({ request, params }: DataFunctionArgs) => {
   let url = new URL(request.url);
@@ -101,18 +99,17 @@ export const loader = async ({ request, params }: DataFunctionArgs) => {
 function UserDetail() {
   const revalidate = useRevalidator();
   const { annotator, user, currentText } = useLoaderData();
+  const submit_fetcher = useFetcher();
   let show = currentText?.reviewed
     ? JSON.parse(currentText?.reviewed_text!)?.join("\n")
     : !!currentText?.modified_text
     ? JSON.parse(currentText?.modified_text!)?.join("\n")
     : currentText?.original_text;
   let newText = currentText ? insertHTMLonText(show) : "";
-  const [isLoading, setIsLoading] = useState(false);
   let editor = useEditorTiptap();
   if (!editor) return null;
   let submit_url = "/api/text";
   function saveText() {
-    setIsLoading(true);
     let current_text = editor!.getText();
     let savedModified = current_text.replaceAll("↩️", "").split("\n");
     let modified_text = JSON.stringify(savedModified);
@@ -122,75 +119,36 @@ function UserDetail() {
     formData.append("reviewed_text", modified_text);
     formData.append("userId", annotator.id);
     formData.append("adminId", user?.id);
-
-    fetch(submit_url, {
-      body: formData,
+    submit_fetcher.submit(formData, {
       method: "POST",
-    })
-      .then((res) => {
-        revalidate.revalidate();
-      })
-      .catch((error) => {
-        revalidate.revalidate();
-
-        console.error("Error saving text:", error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      action: submit_url,
+    });
   }
 
   function rejectTask() {
-    setIsLoading(true);
-
     let formData = new FormData();
     formData.append("id", currentText?.id!);
     formData.append("userId", annotator.id);
     formData.append("_action", "reject");
     formData.append("admin", true);
-
-    fetch(submit_url, {
-      body: formData,
+    submit_fetcher.submit(formData, {
       method: "PATCH",
-    })
-      .then((res) => {
-        revalidate.revalidate();
-      })
-      .catch((error) => {
-        console.error("Error saving text:", error);
-        revalidate.revalidate();
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      action: submit_url,
+    });
   }
   function trashTask() {
-    setIsLoading(true);
-
     let id = currentText?.id!;
     let formData = new FormData();
     formData.append("id", id);
     formData.append("_action", "trash");
     formData.append("userId", user.id);
     formData.append("isReviewer", true);
-
-    fetch(submit_url, {
-      body: formData,
+    submit_fetcher.submit(formData, {
       method: "PATCH",
-    })
-      .then((res) => {
-        revalidate.revalidate();
-      })
-      .catch((error) => {
-        revalidate.revalidate();
-
-        console.error("Error saving text:", error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      action: submit_url,
+    });
   }
-  let isButtonDisabled = !show || revalidate.state !== "idle" || isLoading;
+  let isButtonDisabled = !show || submit_fetcher.state !== "idle";
   return (
     <div className="flex flex-col md:flex-row">
       <AdminHistorySidebar user={annotator} />
